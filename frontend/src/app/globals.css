@@ -2,23 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Light Mode (Bright Theme) */
+/* Light Mode (default) */
 :root {
-  --background: #ffffff;  /* White Background */
-  --foreground: #000000;  /* Black Text */
+  --background: #ffffff;
+  --foreground: #000000;
 }
 
-/* Dark Mode (Black Theme) */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #000000;  /* Black Background */
-    --foreground: #ffffff;  /* White Text */
-  }
+/* Dark Mode (applies when .dark class is added) */
+.dark {
+  --background: #000000;
+  --foreground: #ffffff;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
-  transition: background 0.3s, color 0.3s;  /* Smooth Theme Transition */
+  transition: background 0.3s, color 0.3s;
 }
