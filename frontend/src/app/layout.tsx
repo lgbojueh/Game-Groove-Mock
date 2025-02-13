@@ -1,10 +1,10 @@
 "use client";
 
+import React, { useEffect, useState } from "react";  // ✅ Import React explicitly
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "../components/Navbar";  // ✅ Import Navbar
 import { ThemeProvider } from "next-themes"; // ✅ Import ThemeProvider
-import { useEffect, useState } from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
