@@ -1,19 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { fetchGames } from "@/utils/fetchGames";  // ✅ Import API function
+import { fetchGames } from "@/utils/fetchGames";  // ✅ Ensure this path is correct
 
 export default function SearchPage() {
-  // State for search input & game results
+  // Ensure games is always an array
   const [searchQuery, setSearchQuery] = useState("");
-  const [games, setGames] = useState<any[]>([]);
+  const [games, setGames] = useState<any[]>([]);  // ✅ Initialize as empty array
   const [loading, setLoading] = useState(false);
 
   // Handle game search
   const handleSearch = async () => {
     setLoading(true);
     const results = await fetchGames(searchQuery);
-    setGames(results);
+
+    if (Array.isArray(results)) {
+      setGames(results); // ✅ Ensure only arrays are set
+    } else {
+      setGames([]); // ✅ Set empty array if results are invalid
+    }
+
     setLoading(false);
   };
 
@@ -52,7 +58,7 @@ export default function SearchPage() {
       <div className="w-full max-w-3xl mt-6">
         {games.length > 0 ? (
           <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {games.map((game, index) => (
+            {games.map((game: any, index: number) => (
               <li key={index} className="p-4 bg-gray-200 dark:bg-gray-800 rounded-lg shadow">
                 <h2 className="text-lg font-semibold">{game.name}</h2>
                 <p className="text-sm">Game ID: {game.id}</p>
