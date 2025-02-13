@@ -1,14 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
   const router = useRouter();
 
   const handleFindGameClick = () => {
-    router.push("/search");
+    router.push("/search?players=any&complexity=any&playtime=any&genre=any&age=any&theme=any");
   };
 
   return (
@@ -23,7 +22,7 @@ export default function Home() {
         className="mb-6"
       />
 
-      {/* "Find My Game" Button with Smooth Scroll */}
+      {/* "Find My Game" Button with Default Filters */}
       <button 
         onClick={handleFindGameClick}
         className="px-6 py-3 text-lg font-semibold rounded-lg transition
