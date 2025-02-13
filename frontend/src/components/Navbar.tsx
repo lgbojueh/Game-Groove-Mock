@@ -1,5 +1,5 @@
 import Link from "next/link";
-import ThemeToggle from "./ThemeToggle"; // Import ThemeToggle component
+import ThemeToggle from "./ThemeToggle";  // ✅ Ensure this matches the correct file path
 
 export default function Navbar() {
   return (
@@ -13,7 +13,7 @@ export default function Navbar() {
       </div>
 
       <div className="flex items-center space-x-4">
-        <ThemeToggle /> {/* 🌙 Theme Toggle Button */}
+        <ThemeToggle /> {/* ✅ Dark Mode Toggle Button */}
         <Link href="/signup" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">Sign Up</Link>
       </div>
     </nav>
