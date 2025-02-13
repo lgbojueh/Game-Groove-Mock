@@ -8,13 +8,15 @@ export default function SearchPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Get filters from URL
+  // Filters: Get values from URL or set defaults
   const [players, setPlayers] = useState(searchParams.get("players") || "any");
   const [complexity, setComplexity] = useState(searchParams.get("complexity") || "any");
   const [playtime, setPlaytime] = useState(searchParams.get("playtime") || "any");
   const [genre, setGenre] = useState(searchParams.get("genre") || "any");
   const [age, setAge] = useState(searchParams.get("age") || "any");
   const [theme, setTheme] = useState(searchParams.get("theme") || "any");
+
+  // Search input & results
   const [searchQuery, setSearchQuery] = useState("");
   const [games, setGames] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -124,6 +126,27 @@ export default function SearchPage() {
           </div>
         </form>
       </div>
+
+      {/* Search Bar */}
+      <div className="w-full max-w-md mt-6">
+        <input 
+          type="text" 
+          placeholder="Search for a game..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-700 text-black dark:text-white border border-gray-300 dark:border-gray-600"
+          aria-label="Search Games"
+        />
+      </div>
+
+      {/* Search Button */}
+      <button 
+        onClick={handleSearch}
+        className="mt-4 px-6 py-3 text-lg font-semibold rounded-lg transition
+                   bg-gray-400 hover:bg-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600
+                   text-[var(--foreground)]">
+        Search
+      </button>
     </main>
   );
 }
