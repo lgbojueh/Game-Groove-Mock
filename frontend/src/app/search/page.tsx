@@ -19,8 +19,8 @@ export default function SearchPage() {
           
           {/* Number of Players */}
           <div>
-            <label className="block font-semibold mb-1">Number of Players</label>
-            <select className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white">
+            <label htmlFor="players" className="block font-semibold mb-1">Number of Players</label>
+            <select id="players" aria-label="Number of Players" className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white">
               <option value="">Any</option>
               <option value="2">2 Players</option>
               <option value="3-4">3-4 Players</option>
@@ -30,8 +30,8 @@ export default function SearchPage() {
 
           {/* Complexity */}
           <div>
-            <label className="block font-semibold mb-1">Complexity</label>
-            <select className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white">
+            <label htmlFor="complexity" className="block font-semibold mb-1">Complexity</label>
+            <select id="complexity" aria-label="Complexity Level" className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white">
               <option value="">Any</option>
               <option value="easy">Easy</option>
               <option value="medium">Medium</option>
@@ -41,8 +41,8 @@ export default function SearchPage() {
 
           {/* Play Time */}
           <div>
-            <label className="block font-semibold mb-1">Play Time</label>
-            <select className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white">
+            <label htmlFor="playtime" className="block font-semibold mb-1">Play Time</label>
+            <select id="playtime" aria-label="Play Time" className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white">
               <option value="">Any</option>
               <option value="short">Short (30 min or less)</option>
               <option value="medium">Medium (30-60 min)</option>
@@ -52,8 +52,8 @@ export default function SearchPage() {
 
           {/* Genre */}
           <div>
-            <label className="block font-semibold mb-1">Genre</label>
-            <select className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white">
+            <label htmlFor="genre" className="block font-semibold mb-1">Genre</label>
+            <select id="genre" aria-label="Game Genre" className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white">
               <option value="">Any</option>
               <option value="strategy">Strategy</option>
               <option value="party">Party</option>
@@ -64,8 +64,8 @@ export default function SearchPage() {
 
           {/* Age Rating */}
           <div>
-            <label className="block font-semibold mb-1">Age Rating</label>
-            <select className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white">
+            <label htmlFor="age" className="block font-semibold mb-1">Age Rating</label>
+            <select id="age" aria-label="Age Rating" className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white">
               <option value="">Any</option>
               <option value="kids">Kids (5+)</option>
               <option value="teen">Teen (13+)</option>
@@ -75,8 +75,8 @@ export default function SearchPage() {
 
           {/* Theme */}
           <div>
-            <label className="block font-semibold mb-1">Theme</label>
-            <select className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white">
+            <label htmlFor="theme" className="block font-semibold mb-1">Theme</label>
+            <select id="theme" aria-label="Game Theme" className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white">
               <option value="">Any</option>
               <option value="fantasy">Fantasy</option>
               <option value="sci-fi">Sci-Fi</option>
@@ -95,6 +95,7 @@ export default function SearchPage() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-700 text-black dark:text-white border border-gray-300 dark:border-gray-600"
+          aria-label="Search Games"
         />
       </div>
 
