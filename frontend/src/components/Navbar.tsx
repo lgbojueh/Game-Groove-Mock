@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ThemeToggle from "./ThemeToggle"; // Import ThemeToggle component
 
 export default function Navbar() {
   return (
@@ -11,7 +12,10 @@ export default function Navbar() {
         <Link href="/about" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">About</Link>
       </div>
 
-      <Link href="/signup" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">Sign Up</Link>
+      <div className="flex items-center space-x-4">
+        <ThemeToggle /> {/* 🌙 Theme Toggle Button */}
+        <Link href="/signup" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">Sign Up</Link>
+      </div>
     </nav>
   );
 }
