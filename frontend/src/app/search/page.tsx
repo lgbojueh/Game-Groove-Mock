@@ -39,17 +39,16 @@ export default function SearchPage() {
 
     let results = [];
     if (searchQuery) {
-      console.log("🔎 Searching for:", searchQuery);  // ✅ Debugging Log
+      console.log("🔎 Searching for:", searchQuery);
       results = await fetchGames(searchQuery);
     } else {
-      // 🔹 Fetch recommended games based on filters
+      // Fetch recommended games based on filters
       const filterParams = `${players}-${complexity}-${playtime}-${genre}-${age}-${theme}`;
-      console.log("🎯 Fetching recommended games with filters:", filterParams);  // ✅ Debugging Log
+      console.log("🎯 Fetching recommended games with filters:", filterParams);
       results = await fetchGames(filterParams);
     }
 
-    console.log("🛠 Results received:", results);  // ✅ Log what games are returned
-
+    console.log("🛠 Results received:", results);
     setGames(Array.isArray(results) ? results : []);
     setLoading(false);
   };
@@ -86,6 +85,56 @@ export default function SearchPage() {
               <option value="hard">Hard</option>
             </select>
           </div>
+
+          {/* Play Time */}
+          <div>
+            <label htmlFor="playtime" className="block font-semibold mb-1">Play Time</label>
+            <select id="playtime" value={playtime} onChange={(e) => setPlaytime(e.target.value)}
+              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white">
+              <option value="any">Any</option>
+              <option value="short">Short (30 min or less)</option>
+              <option value="medium">Medium (30-60 min)</option>
+              <option value="long">Long (60+ min)</option>
+            </select>
+          </div>
+
+          {/* Genre */}
+          <div>
+            <label htmlFor="genre" className="block font-semibold mb-1">Genre</label>
+            <select id="genre" value={genre} onChange={(e) => setGenre(e.target.value)}
+              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white">
+              <option value="any">Any</option>
+              <option value="strategy">Strategy</option>
+              <option value="party">Party</option>
+              <option value="family">Family</option>
+              <option value="adventure">Adventure</option>
+            </select>
+          </div>
+
+          {/* Age Rating */}
+          <div>
+            <label htmlFor="age" className="block font-semibold mb-1">Age Rating</label>
+            <select id="age" value={age} onChange={(e) => setAge(e.target.value)}
+              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white">
+              <option value="any">Any</option>
+              <option value="kids">Kids (5+)</option>
+              <option value="teen">Teen (13+)</option>
+              <option value="adult">Adult (18+)</option>
+            </select>
+          </div>
+
+          {/* Theme */}
+          <div>
+            <label htmlFor="theme" className="block font-semibold mb-1">Theme</label>
+            <select id="theme" value={theme} onChange={(e) => setTheme(e.target.value)}
+              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white">
+              <option value="any">Any</option>
+              <option value="fantasy">Fantasy</option>
+              <option value="sci-fi">Sci-Fi</option>
+              <option value="horror">Horror</option>
+              <option value="historical">Historical</option>
+            </select>
+          </div>
         </form>
       </div>
 
@@ -109,31 +158,6 @@ export default function SearchPage() {
                    text-[var(--foreground)]">
         Search
       </button>
-
-      {/* Loading Indicator */}
-      {loading && <p className="mt-4 text-gray-500">Loading games...</p>}
-
-      {/* 🔹 Display Search Results - Updated Code */}
-      <div className="w-full max-w-3xl mt-6">
-        {games.length > 0 ? (
-          <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {games.map((game: any, index: number) => (
-              <li key={index} className="p-4 bg-gray-200 dark:bg-gray-800 rounded-lg shadow flex flex-col items-center">
-                {/* ✅ Ensure correct API data structure */}
-                <img 
-                  src={game.thumbnail || "/placeholder.jpg"} 
-                  alt={game.name?.value || "Game"} 
-                  className="w-32 h-32 rounded-lg mb-3" 
-                />
-                <h2 className="text-lg font-semibold">{game.name?.value || "Unknown Game"}</h2>
-                <p className="text-sm">🎲 Game ID: {game.id}</p>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-4 text-gray-500">❌ No games found. Try adjusting filters or searching again.</p>
-        )}
-      </div>
     </main>
   );
 }
