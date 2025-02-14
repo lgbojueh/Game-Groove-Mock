@@ -16,8 +16,8 @@ export default function Home() {
       <Image 
         src="/game-groove-logo.svg"
         alt="Game Groove Logo"
-        width={250} 
-        height={250}
+        width={550} 
+        height={550}
         priority 
         className="mb-6"
       />
