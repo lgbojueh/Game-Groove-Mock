@@ -13,8 +13,8 @@ export default function Home() {
       <Image 
         src={theme === "dark" ? "/game-groove-logo-light.svg" : "/game-groove-logo-dark.svg"}  
         alt="Game Groove Logo"
-        width={350}   
-        height={350}  
+        width={550}   
+        height={550}  
         priority 
         className="mb-6 mx-auto block"
       />
