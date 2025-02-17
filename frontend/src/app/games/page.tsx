@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { fetchGames } from "@/utils/fetchGames";
 
 export default function Games() {
@@ -7,7 +8,7 @@ export default function Games() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Function to fetch default games (for example, using a generic query "board game")
+  // Function to fetch a default list of games
   const getDefaultGames = async () => {
     setLoading(true);
     const results = await fetchGames("board game");
@@ -24,7 +25,6 @@ export default function Games() {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim() === "") {
-      // If search is empty, display default games
       getDefaultGames();
     } else {
       setLoading(true);
@@ -52,26 +52,28 @@ export default function Games() {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {games.map((game) => (
-            <div
-              key={game.id}
-              className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow"
-            >
-              <h2 className="font-semibold mb-2">{game.name}</h2>
-              {game.thumbnail ? (
-                <img
-                  src={game.thumbnail}
-                  alt={`${game.name} thumbnail`}
-                  className="w-full h-auto object-cover"
-                />
-              ) : (
-                <div className="w-full h-40 bg-gray-300 flex items-center justify-center">
-                  No Image
+        // Scrollable container with a maximum height set
+        <div className="overflow-y-auto max-h-[70vh]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {games.map((game) => (
+              <Link key={game.id} href={`/game/${game.id}`} className="block">
+                <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-lg transition">
+                  <h2 className="font-semibold mb-2">{game.name}</h2>
+                  {game.thumbnail ? (
+                    <img
+                      src={game.thumbnail}
+                      alt={`${game.name} thumbnail`}
+                      className="w-full h-auto object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-40 bg-gray-300 flex items-center justify-center">
+                      No Image
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          ))}
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </main>
