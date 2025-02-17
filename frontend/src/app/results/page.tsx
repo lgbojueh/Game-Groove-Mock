@@ -10,7 +10,6 @@ export default function ResultsPage() {
 
   // Read query parameters
   const query = searchParams.get("query") || "";
-  // (The filters are still captured, but for now we won't use them to build the search query)
   const players = searchParams.get("players") || "any";
   const complexity = searchParams.get("complexity") || "any";
   const playtime = searchParams.get("playtime") || "any";
@@ -25,22 +24,32 @@ export default function ResultsPage() {
     const getResults = async () => {
       setLoading(true);
       let results = [];
-
       if (query.trim()) {
-        // Exact search: user provided a game name.
+        // Exact search: use the provided query.
         console.log("🔎 Searching for exact game:", query);
         results = await fetchGames(query);
       } else {
-        // Recommended search: use a generic query like "board game"
-        // Note: The filters (players, complexity, etc.) aren't supported by the API.
+        // No query provided – use a generic term to fetch a broad list.
         console.log("🎯 No exact query provided. Fetching recommended games.");
         results = await fetchGames("board game");
+        // Now apply client-side filtering based on user-selected filters.
+        // For demonstration we are filtering only on players, complexity, and theme.
+        if (players !== "any") {
+          results = results.filter((game) => game.players === players);
+        }
+        if (complexity !== "any") {
+          results = results.filter((game) => game.complexity === complexity);
+        }
+        if (theme !== "any") {
+          results = results.filter((game) => game.theme === theme);
+        }
+        // You can add additional filtering here for playtime, genre, age, etc.,
+        // provided your data includes such fields.
       }
-
       setGames(Array.isArray(results) ? results : []);
       setLoading(false);
       if (results.length === 0) {
-        console.log("❌ No games found!");
+        console.log("❌ No games found after filtering!");
       }
     };
 
@@ -84,6 +93,18 @@ export default function ResultsPage() {
                         <span>No Image</span>
                       </div>
                     )}
+                    {/* Display the dummy filter fields for clarity */}
+                    <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                      <p>
+                        <strong>Players:</strong> {game.players}
+                      </p>
+                      <p>
+                        <strong>Complexity:</strong> {game.complexity}
+                      </p>
+                      <p>
+                        <strong>Theme:</strong> {game.theme}
+                      </p>
+                    </div>
                   </a>
                 </li>
               ))}
@@ -91,7 +112,7 @@ export default function ResultsPage() {
           </div>
         )}
         {!loading && games.length === 0 && (
-          <p>No games found. Try a different search.</p>
+          <p>No games found. Try a different search or adjust your filters.</p>
         )}
       </section>
     </main>
