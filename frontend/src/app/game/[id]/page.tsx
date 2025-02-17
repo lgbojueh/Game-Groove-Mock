@@ -26,12 +26,12 @@ export default function GameDetailsPage() {
 
   const handleRating = (newRating: number) => {
     setRating(newRating);
-    // You might want to persist the rating (e.g., via an API or localStorage)
+    // Optionally persist the rating here.
   };
 
   const toggleFavorite = () => {
     setIsFavorite((prev) => !prev);
-    // You can also persist the favorite state here (e.g., save to localStorage or your backend)
+    // Optionally persist the favorite state here.
   };
 
   if (loading) return <p className="p-6">Loading game details...</p>;
@@ -44,7 +44,7 @@ export default function GameDetailsPage() {
         <img
           src={game.thumbnail}
           alt={`${game.name} thumbnail`}
-          className="w-full max-w-md mb-4"
+          className="w-full max-w-md max-h-64 object-contain mb-4 mx-auto"
         />
       )}
       <p className="mb-6">{game.description}</p>
