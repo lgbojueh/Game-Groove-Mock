@@ -1,69 +1,50 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { fetchGames } from "@/utils/fetchGames";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-export default function SearchPage() {
+export default function SearchForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
-  // Filters: Get values from URL or set defaults
-  const [players, setPlayers] = useState(searchParams.get("players") || "any");
-  const [complexity, setComplexity] = useState(
-    searchParams.get("complexity") || "any"
-  );
-  const [playtime, setPlaytime] = useState(searchParams.get("playtime") || "any");
-  const [genre, setGenre] = useState(searchParams.get("genre") || "any");
-  const [age, setAge] = useState(searchParams.get("age") || "any");
-  const [theme, setTheme] = useState(searchParams.get("theme") || "any");
+  // Filters state
+  const [players, setPlayers] = useState("any");
+  const [complexity, setComplexity] = useState("any");
+  const [playtime, setPlaytime] = useState("any");
+  const [genre, setGenre] = useState("any");
+  const [age, setAge] = useState("any");
+  const [theme, setTheme] = useState("any");
 
-  // Search input & results
-  const [searchQuery, setSearchQuery] = useState(
-    searchParams.get("query") || ""
-  );
-  const [games, setGames] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  // Search query state
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch results when page loads (if URL has query/filters)
-  useEffect(() => {
-    handleSearch();
-  }, []);
+  // Handle form submission
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
 
-  // Function to handle search
-  const handleSearch = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault(); // Prevents form reload
-
-    setLoading(true);
-    let results = [];
-
+    // Build URL query parameters
+    const params = new URLSearchParams();
     if (searchQuery.trim()) {
-      console.log("🔎 Searching for:", searchQuery);
-      results = await fetchGames(searchQuery); // Fetch specific game
-    } else {
-      const filterParams = `${players}-${complexity}-${playtime}-${genre}-${age}-${theme}`;
-      console.log("🎯 Fetching recommended games with filters:", filterParams);
-      results = await fetchGames(filterParams); // Fetch recommended games
+      params.set("query", searchQuery);
     }
+    // Always include filters (they may be "any")
+    params.set("players", players);
+    params.set("complexity", complexity);
+    params.set("playtime", playtime);
+    params.set("genre", genre);
+    params.set("age", age);
+    params.set("theme", theme);
 
-    console.log("🛠 Results received:", results);
-    setGames(Array.isArray(results) ? results : []);
-    setLoading(false);
-
-    if (results.length === 0) {
-      console.log("❌ No games found!");
-    }
+    // Navigate to the results page with query parameters
+    router.push(`/results?${params.toString()}`);
   };
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-[var(--background)] text-[var(--foreground)] px-6">
       <h1 className="text-4xl sm:text-6xl font-bold text-center mb-10">
-        Start Your Next Adventure Here
+        Find Your Next Board Game
       </h1>
-
-      {/* Filters & Search Form */}
       <form
-        onSubmit={handleSearch}
+        onSubmit={handleSubmit}
         className="w-full max-w-3xl bg-gray-200 dark:bg-gray-800 p-6 rounded-lg shadow-md"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -193,43 +174,11 @@ export default function SearchPage() {
         {/* Search Button */}
         <button
           type="submit"
-          className="mt-4 px-6 py-3 text-lg font-semibold rounded-lg transition
-                     bg-gray-400 hover:bg-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600
-                     text-[var(--foreground)]"
+          className="mt-4 px-6 py-3 text-lg font-semibold rounded-lg transition bg-gray-400 hover:bg-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600 text-[var(--foreground)]"
         >
           Search
         </button>
       </form>
-
-      {/* Render Search Results */}
-      <div className="w-full max-w-3xl mt-6">
-        {loading && <p>Loading...</p>}
-        {!loading && games.length > 0 && (
-          <div>
-            <h2 className="text-2xl font-bold mb-4">Results:</h2>
-            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {games.map((game) => (
-                <li
-                  key={game.id}
-                  className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow"
-                >
-                  <h3 className="font-semibold">{game.name}</h3>
-                  {game.thumbnail && (
-                    <img
-                      src={game.thumbnail}
-                      alt={`${game.name} thumbnail`}
-                      className="mt-2 w-full object-cover"
-                    />
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        {!loading && games.length === 0 && (
-          <p>No games found. Try a different search.</p>
-        )}
-      </div>
     </main>
   );
 }
