@@ -25,11 +25,9 @@ export default function ResultsPage() {
       setLoading(true);
       let results = [];
       if (query.trim()) {
-        // Exact search: user provided a game name.
         console.log("🔎 Searching for exact game:", query);
         results = await fetchGames(query);
       } else {
-        // Filter-based search: no exact query provided.
         const filterParams = `${players}-${complexity}-${playtime}-${genre}-${age}-${theme}`;
         console.log("🎯 Fetching recommended games with filters:", filterParams);
         results = await fetchGames(filterParams);
@@ -45,28 +43,36 @@ export default function ResultsPage() {
   }, [query, players, complexity, playtime, genre, age, theme]);
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen bg-[var(--background)] text-[var(--foreground)] px-6">
+    <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)] px-6 py-6">
       <h1 className="text-4xl sm:text-6xl font-bold text-center mb-10">
         Search Results
       </h1>
 
       {loading && <p>Loading...</p>}
       {!loading && games.length > 0 && (
-        <div className="w-full max-w-3xl mt-6">
+        // Container with a max-height and vertical scroll enabled
+        <div className="w-full max-w-3xl mt-6 overflow-y-auto" style={{ maxHeight: "70vh" }}>
           <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {games.map((game) => (
               <li
                 key={game.id}
-                className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow"
+                className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-lg transition"
               >
-                <h3 className="font-semibold">{game.name}</h3>
-                {game.thumbnail && (
-                  <img
-                    src={game.thumbnail}
-                    alt={`${game.name} thumbnail`}
-                    className="mt-2 w-full object-cover"
-                  />
-                )}
+                {/* Each game is clickable. Update the href as needed */}
+                <a href={`/game/${game.id}`} className="block">
+                  <h3 className="font-semibold mb-2">{game.name}</h3>
+                  {game.thumbnail ? (
+                    <img
+                      src={game.thumbnail}
+                      alt={`${game.name} thumbnail`}
+                      className="w-full h-auto object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-40 bg-gray-300 flex items-center justify-center">
+                      <span>No Image</span>
+                    </div>
+                  )}
+                </a>
               </li>
             ))}
           </ul>

@@ -15,13 +15,16 @@ export const fetchGames = async (query: string) => {
     const xmlDoc = parser.parseFromString(xmlText, "text/xml");
     const items = Array.from(xmlDoc.getElementsByTagName("item"));
 
-    const games = items.map((item) => ({
-      id: item.getAttribute("id"),
-      name:
+    const games = items.map((item) => {
+      const id = item.getAttribute("id");
+      const name =
         item.getElementsByTagName("name")[0]?.getAttribute("value") ||
-        "Unknown Game",
-      thumbnail: `https://cf.geekdo-images.com/${item.getAttribute("id")}/img`,
-    }));
+        "Unknown Game";
+      // Extract the thumbnail from the XML if available.
+      const thumbnail =
+        item.getElementsByTagName("thumbnail")[0]?.textContent || "";
+      return { id, name, thumbnail };
+    });
 
     console.log("✅ Parsed Games:", games);
     return games;
