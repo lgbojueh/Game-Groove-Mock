@@ -1,15 +1,28 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import ThemeToggle from "./ThemeToggle";
 
 export default function Navbar() {
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    // Check for user data in localStorage
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
   return (
     <nav className="w-full flex justify-between items-center p-5 bg-[var(--background)]">
       
       {/* Left Side - Small Logo + Game Groove */}
       <div className="flex items-center space-x-3">
         <Image 
-          src="/game-groove-icon.svg"  // ✅ Small Logo on left side of Game Groove
+          src="/game-groove-icon.svg"  
           alt="Small Logo"
           width={30} 
           height={30} 
@@ -27,15 +40,23 @@ export default function Navbar() {
         <Link href="/about" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">About</Link>
       </div>
 
-      {/* Right Side - Theme Toggle + Login + Sign Up */}
+      {/* Right Side - Theme Toggle + Login/Sign Up OR Account */}
       <div className="flex items-center space-x-4">
         <ThemeToggle />
-        <Link href="/login" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400 whitespace-nowrap">
-          Login
-        </Link>
-        <Link href="/signup" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400 whitespace-nowrap">
-          Sign Up
-        </Link>
+        {user ? (
+          <Link href="/account" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400 whitespace-nowrap">
+            Account
+          </Link>
+        ) : (
+          <>
+            <Link href="/login" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400 whitespace-nowrap">
+              Login
+            </Link>
+            <Link href="/signup" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400 whitespace-nowrap">
+              Sign Up
+            </Link>
+          </>
+        )}
       </div>
     </nav>
   );
