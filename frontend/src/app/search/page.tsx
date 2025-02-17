@@ -21,7 +21,7 @@ export default function SearchPage() {
   const [games, setGames] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Fetch results when the page loads (if URL has query/filters)
+  // Fetch results when page loads (if URL has query/filters)
   useEffect(() => {
     handleSearch();
   }, []);
@@ -35,28 +35,20 @@ export default function SearchPage() {
 
     if (searchQuery.trim()) {
       console.log("🔎 Searching for:", searchQuery);
-      results = await fetchGames(searchQuery); // 🔹 Fetch specific game
+      results = await fetchGames(searchQuery); // ✅ Fetch specific game
     } else {
       const filterParams = `${players}-${complexity}-${playtime}-${genre}-${age}-${theme}`;
       console.log("🎯 Fetching recommended games with filters:", filterParams);
-      results = await fetchGames(filterParams); // 🔹 Fetch recommended games
+      results = await fetchGames(filterParams); // ✅ Fetch recommended games
     }
 
     console.log("🛠 Results received:", results);
     setGames(Array.isArray(results) ? results : []);
     setLoading(false);
 
-    // ✅ Update URL with query parameters
-    const params = new URLSearchParams();
-    if (searchQuery) params.set("query", searchQuery);
-    if (players !== "any") params.set("players", players);
-    if (complexity !== "any") params.set("complexity", complexity);
-    if (playtime !== "any") params.set("playtime", playtime);
-    if (genre !== "any") params.set("genre", genre);
-    if (age !== "any") params.set("age", age);
-    if (theme !== "any") params.set("theme", theme);
-
-    router.push(`/search?${params.toString()}`);
+    if (results.length === 0) {
+      console.log("❌ No games found!");
+    }
   };
 
   return (
@@ -143,31 +135,27 @@ export default function SearchPage() {
           </div>
         </div>
 
+        {/* Search Bar (Now Under Filters) */}
+        <div className="w-full max-w-md mt-6">
+          <input 
+            type="text" 
+            placeholder="Search for a game..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-700 text-black dark:text-white border border-gray-300 dark:border-gray-600"
+            aria-label="Search Games"
+          />
+        </div>
+
         {/* Search Button */}
         <button 
-          type="submit" // ✅ Ensures button submits the form
+          type="submit"
           className="mt-4 px-6 py-3 text-lg font-semibold rounded-lg transition
                      bg-gray-400 hover:bg-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600
                      text-[var(--foreground)]">
           Search
         </button>
       </form>
-
-      {/* Display Search Results */}
-      <div className="w-full max-w-3xl mt-6">
-        {games.length > 0 ? (
-          <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {games.map((game: any, index: number) => (
-              <li key={index} className="p-4 bg-gray-200 dark:bg-gray-800 rounded-lg shadow flex flex-col items-center">
-                <h2 className="text-lg font-semibold">{game.name}</h2>
-                <p className="text-sm">🎲 {game.id}</p>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-4 text-gray-500">❌ No games found. Try adjusting filters or searching again.</p>
-        )}
-      </div>
     </main>
   );
 }
