@@ -32,8 +32,7 @@ export default function ResultsPage() {
         // No query provided – use a generic term to fetch a broad list.
         console.log("🎯 No exact query provided. Fetching recommended games.");
         results = await fetchGames("board game");
-        // Now apply client-side filtering based on user-selected filters.
-        // For demonstration we are filtering only on players, complexity, and theme.
+        // Apply client-side filtering based on selected filters.
         if (players !== "any") {
           results = results.filter((game) => game.players === players);
         }
@@ -43,8 +42,6 @@ export default function ResultsPage() {
         if (theme !== "any") {
           results = results.filter((game) => game.theme === theme);
         }
-        // You can add additional filtering here for playtime, genre, age, etc.,
-        // provided your data includes such fields.
       }
       setGames(Array.isArray(results) ? results : []);
       setLoading(false);
@@ -73,7 +70,7 @@ export default function ResultsPage() {
       <section className="px-6 py-4">
         {loading && <p>Loading...</p>}
         {!loading && games.length > 0 && (
-          <div className="mt-6 overflow-y-auto" style={{ maxHeight: "70vh" }}>
+          <div className="mt-6 overflow-y-auto max-h-[70vh]">
             <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {games.map((game) => (
                 <li
@@ -93,7 +90,6 @@ export default function ResultsPage() {
                         <span>No Image</span>
                       </div>
                     )}
-                    {/* Display the dummy filter fields for clarity */}
                     <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                       <p>
                         <strong>Players:</strong> {game.players}
