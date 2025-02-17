@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { fetchGames } from "@/utils/fetchGames";
 
 export default function Games() {
@@ -57,22 +58,28 @@ export default function Games() {
             {games.map((game) => (
               <Link key={game.id} href={`/game/${game.id}`} className="block">
                 <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-lg transition">
-                  {/* Display game image if available; otherwise show a default placeholder */}
+                  {/* Display game image if available; otherwise show a default image */}
                   {game.thumbnail ? (
-                    <img
+                    <Image
                       src={game.thumbnail}
                       alt={`${game.name} thumbnail`}
+                      width={400}
+                      height={160}
                       className="w-full h-40 object-cover rounded mb-2"
                     />
                   ) : (
-                    <div className="w-full h-40 bg-gray-300 flex items-center justify-center rounded mb-2">
-                      <span className="text-gray-700">No Image Available</span>
-                    </div>
+                    <Image
+                      src="/default-game-thumbnail.jpg"
+                      alt="Default game thumbnail"
+                      width={400}
+                      height={160}
+                      className="w-full h-40 object-cover rounded mb-2"
+                    />
                   )}
                   <h2 className="font-semibold text-lg mb-1">{game.name}</h2>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    {/* If additional info is available, display it here; otherwise, a short default info */}
-                    Board game recommendation
+                    {game.summary ||
+                      "A fun and engaging game that you'll enjoy with friends and family."}
                   </p>
                 </div>
               </Link>
