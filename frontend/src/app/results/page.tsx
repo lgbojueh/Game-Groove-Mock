@@ -10,6 +10,7 @@ export default function ResultsPage() {
 
   // Read query parameters
   const query = searchParams.get("query") || "";
+  // (The filters are still captured, but for now we won't use them to build the search query)
   const players = searchParams.get("players") || "any";
   const complexity = searchParams.get("complexity") || "any";
   const playtime = searchParams.get("playtime") || "any";
@@ -24,14 +25,18 @@ export default function ResultsPage() {
     const getResults = async () => {
       setLoading(true);
       let results = [];
+
       if (query.trim()) {
+        // Exact search: user provided a game name.
         console.log("🔎 Searching for exact game:", query);
         results = await fetchGames(query);
       } else {
-        const filterParams = `${players}-${complexity}-${playtime}-${genre}-${age}-${theme}`;
-        console.log("🎯 Fetching recommended games with filters:", filterParams);
-        results = await fetchGames(filterParams);
+        // Recommended search: use a generic query like "board game"
+        // Note: The filters (players, complexity, etc.) aren't supported by the API.
+        console.log("🎯 No exact query provided. Fetching recommended games.");
+        results = await fetchGames("board game");
       }
+
       setGames(Array.isArray(results) ? results : []);
       setLoading(false);
       if (results.length === 0) {
