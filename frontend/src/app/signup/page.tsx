@@ -85,6 +85,9 @@ export default function SignUp() {
               className="border p-2 w-full rounded"
               required
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Password must be at least 8 characters long, include at least one uppercase letter, one lowercase letter, and one number.
+            </p>
           </div>
           <button
             type="submit"
