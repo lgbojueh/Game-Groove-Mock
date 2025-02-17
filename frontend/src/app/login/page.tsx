@@ -14,7 +14,6 @@ export default function Login() {
     e.preventDefault();
     setError("");
 
-    // Validate that identifier and password are provided
     if (!formData.identifier.trim()) {
       setError("Please enter your email or username.");
       return;
@@ -24,11 +23,10 @@ export default function Login() {
       return;
     }
 
-    // Simulate login
-    console.log("Login Data:", formData);
-    alert("Login successful! Welcome to your account.");
-    // In a real app, redirect the user to their account page, e.g.:
-    // router.push("/account");
+    // Simulate login by storing user info to localStorage.
+    // In a real app, you'd verify credentials before setting the user.
+    localStorage.setItem("user", JSON.stringify({ identifier: formData.identifier }));
+    router.push("/account");
   };
 
   return (

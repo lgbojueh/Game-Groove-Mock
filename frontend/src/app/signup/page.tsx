@@ -1,7 +1,9 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SignUp() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -19,7 +21,6 @@ export default function SignUp() {
     e.preventDefault();
     setError("");
 
-    // Check if the password meets criteria.
     if (!validatePassword(formData.password)) {
       setError(
         "Password must be at least 8 characters long, include at least one uppercase letter, one lowercase letter, and one number."
@@ -27,9 +28,10 @@ export default function SignUp() {
       return;
     }
 
-    // Here, you would typically call an API to create the user.
-    console.log("Sign Up Data:", formData);
-    alert("Sign up successful!");
+    // Simulate sign-up by saving user data to localStorage
+    localStorage.setItem("user", JSON.stringify(formData));
+    // Redirect to the Account page
+    router.push("/account");
   };
 
   return (
