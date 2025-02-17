@@ -8,7 +8,7 @@ export default function Games() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Function to fetch a default list of games
+  // Fetch default games (using "board game" as a generic query)
   const getDefaultGames = async () => {
     setLoading(true);
     const results = await fetchGames("board game");
@@ -16,7 +16,6 @@ export default function Games() {
     setLoading(false);
   };
 
-  // Fetch default games on component mount
   useEffect(() => {
     getDefaultGames();
   }, []);
@@ -58,18 +57,23 @@ export default function Games() {
             {games.map((game) => (
               <Link key={game.id} href={`/game/${game.id}`} className="block">
                 <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-lg transition">
-                  <h2 className="font-semibold mb-2">{game.name}</h2>
+                  {/* Display game image if available; otherwise show a default placeholder */}
                   {game.thumbnail ? (
                     <img
                       src={game.thumbnail}
                       alt={`${game.name} thumbnail`}
-                      className="w-full h-auto object-cover"
+                      className="w-full h-40 object-cover rounded mb-2"
                     />
                   ) : (
-                    <div className="w-full h-40 bg-gray-300 flex items-center justify-center">
-                      No Image
+                    <div className="w-full h-40 bg-gray-300 flex items-center justify-center rounded mb-2">
+                      <span className="text-gray-700">No Image Available</span>
                     </div>
                   )}
+                  <h2 className="font-semibold text-lg mb-1">{game.name}</h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    {/* If additional info is available, display it here; otherwise, a short default info */}
+                    Board game recommendation
+                  </p>
                 </div>
               </Link>
             ))}
