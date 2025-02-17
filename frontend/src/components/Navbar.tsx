@@ -1,25 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import ThemeToggle from "./ThemeToggle";
 
 export default function Navbar() {
   const [user, setUser] = useState<any>(null);
+  const pathname = usePathname();
 
+  // Re-read localStorage whenever the pathname changes (e.g. after logout)
   useEffect(() => {
-    // Check for user data in localStorage
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
+    setUser(storedUser ? JSON.parse(storedUser) : null);
+  }, [pathname]);
 
   return (
     <nav className="w-full flex justify-between items-center p-5 bg-[var(--background)]">
       
-      {/* Left Side - Small Logo + Game Groove */}
+      {/* Left Side - Logo and App Name */}
       <div className="flex items-center space-x-3">
         <Image 
           src="/game-groove-icon.svg"  
@@ -40,7 +40,7 @@ export default function Navbar() {
         <Link href="/about" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">About</Link>
       </div>
 
-      {/* Right Side - Theme Toggle + Login/Sign Up OR Account */}
+      {/* Right Side - Theme Toggle and Conditional Auth Links */}
       <div className="flex items-center space-x-4">
         <ThemeToggle />
         {user ? (
