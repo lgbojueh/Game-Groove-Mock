@@ -43,51 +43,52 @@ export default function ResultsPage() {
   }, [query, players, complexity, playtime, genre, age, theme]);
 
   return (
-    <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)] px-6 py-6">
-      <h1 className="text-4xl sm:text-6xl font-bold text-center mb-10">
-        Search Results
-      </h1>
+    <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+      {/* Fixed Header with Back Button */}
+      <header className="flex items-center justify-between px-6 py-4 border-b border-gray-300 dark:border-gray-600">
+        <h1 className="text-4xl sm:text-6xl font-bold">Search Results</h1>
+        <button
+          onClick={() => router.back()}
+          className="px-4 py-2 rounded bg-gray-400 hover:bg-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600"
+        >
+          Back
+        </button>
+      </header>
 
-      {loading && <p>Loading...</p>}
-      {!loading && games.length > 0 && (
-        // Container with a max-height and vertical scroll enabled
-        <div className="w-full max-w-3xl mt-6 overflow-y-auto" style={{ maxHeight: "70vh" }}>
-          <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {games.map((game) => (
-              <li
-                key={game.id}
-                className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-lg transition"
-              >
-                {/* Each game is clickable. Update the href as needed */}
-                <a href={`/game/${game.id}`} className="block">
-                  <h3 className="font-semibold mb-2">{game.name}</h3>
-                  {game.thumbnail ? (
-                    <img
-                      src={game.thumbnail}
-                      alt={`${game.name} thumbnail`}
-                      className="w-full h-auto object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-40 bg-gray-300 flex items-center justify-center">
-                      <span>No Image</span>
-                    </div>
-                  )}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-      {!loading && games.length === 0 && (
-        <p>No games found. Try a different search.</p>
-      )}
-
-      <button
-        onClick={() => router.back()}
-        className="mt-6 px-4 py-2 rounded bg-gray-400 hover:bg-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600"
-      >
-        Back
-      </button>
+      {/* Results Section */}
+      <section className="px-6 py-4">
+        {loading && <p>Loading...</p>}
+        {!loading && games.length > 0 && (
+          <div className="mt-6 overflow-y-auto" style={{ maxHeight: "70vh" }}>
+            <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {games.map((game) => (
+                <li
+                  key={game.id}
+                  className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-lg transition"
+                >
+                  <a href={`/game/${game.id}`} className="block">
+                    <h3 className="font-semibold mb-2">{game.name}</h3>
+                    {game.thumbnail ? (
+                      <img
+                        src={game.thumbnail}
+                        alt={`${game.name} thumbnail`}
+                        className="w-full h-auto object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-40 bg-gray-300 flex items-center justify-center">
+                        <span>No Image</span>
+                      </div>
+                    )}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {!loading && games.length === 0 && (
+          <p>No games found. Try a different search.</p>
+        )}
+      </section>
     </main>
   );
 }
