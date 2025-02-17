@@ -10,14 +10,18 @@ export default function SearchPage() {
 
   // Filters: Get values from URL or set defaults
   const [players, setPlayers] = useState(searchParams.get("players") || "any");
-  const [complexity, setComplexity] = useState(searchParams.get("complexity") || "any");
+  const [complexity, setComplexity] = useState(
+    searchParams.get("complexity") || "any"
+  );
   const [playtime, setPlaytime] = useState(searchParams.get("playtime") || "any");
   const [genre, setGenre] = useState(searchParams.get("genre") || "any");
   const [age, setAge] = useState(searchParams.get("age") || "any");
   const [theme, setTheme] = useState(searchParams.get("theme") || "any");
 
   // Search input & results
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("query") || "");
+  const [searchQuery, setSearchQuery] = useState(
+    searchParams.get("query") || ""
+  );
   const [games, setGames] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -28,18 +32,18 @@ export default function SearchPage() {
 
   // Function to handle search
   const handleSearch = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault(); // ✅ Prevents form reload
+    if (e) e.preventDefault(); // Prevents form reload
 
     setLoading(true);
     let results = [];
 
     if (searchQuery.trim()) {
       console.log("🔎 Searching for:", searchQuery);
-      results = await fetchGames(searchQuery); // ✅ Fetch specific game
+      results = await fetchGames(searchQuery); // Fetch specific game
     } else {
       const filterParams = `${players}-${complexity}-${playtime}-${genre}-${age}-${theme}`;
       console.log("🎯 Fetching recommended games with filters:", filterParams);
-      results = await fetchGames(filterParams); // ✅ Fetch recommended games
+      results = await fetchGames(filterParams); // Fetch recommended games
     }
 
     console.log("🛠 Results received:", results);
@@ -58,13 +62,22 @@ export default function SearchPage() {
       </h1>
 
       {/* Filters & Search Form */}
-      <form onSubmit={handleSearch} className="w-full max-w-3xl bg-gray-200 dark:bg-gray-800 p-6 rounded-lg shadow-md">
+      <form
+        onSubmit={handleSearch}
+        className="w-full max-w-3xl bg-gray-200 dark:bg-gray-800 p-6 rounded-lg shadow-md"
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Number of Players */}
           <div>
-            <label htmlFor="players" className="block font-semibold mb-1">Number of Players</label>
-            <select id="players" value={players} onChange={(e) => setPlayers(e.target.value)}
-              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white">
+            <label htmlFor="players" className="block font-semibold mb-1">
+              Number of Players
+            </label>
+            <select
+              id="players"
+              value={players}
+              onChange={(e) => setPlayers(e.target.value)}
+              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white"
+            >
               <option value="any">Any</option>
               <option value="2">2 Players</option>
               <option value="3-4">3-4 Players</option>
@@ -74,9 +87,15 @@ export default function SearchPage() {
 
           {/* Complexity */}
           <div>
-            <label htmlFor="complexity" className="block font-semibold mb-1">Complexity</label>
-            <select id="complexity" value={complexity} onChange={(e) => setComplexity(e.target.value)}
-              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white">
+            <label htmlFor="complexity" className="block font-semibold mb-1">
+              Complexity
+            </label>
+            <select
+              id="complexity"
+              value={complexity}
+              onChange={(e) => setComplexity(e.target.value)}
+              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white"
+            >
               <option value="any">Any</option>
               <option value="easy">Easy</option>
               <option value="medium">Medium</option>
@@ -86,9 +105,15 @@ export default function SearchPage() {
 
           {/* Play Time */}
           <div>
-            <label htmlFor="playtime" className="block font-semibold mb-1">Play Time</label>
-            <select id="playtime" value={playtime} onChange={(e) => setPlaytime(e.target.value)}
-              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white">
+            <label htmlFor="playtime" className="block font-semibold mb-1">
+              Play Time
+            </label>
+            <select
+              id="playtime"
+              value={playtime}
+              onChange={(e) => setPlaytime(e.target.value)}
+              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white"
+            >
               <option value="any">Any</option>
               <option value="short">Short (30 min or less)</option>
               <option value="medium">Medium (30-60 min)</option>
@@ -98,9 +123,15 @@ export default function SearchPage() {
 
           {/* Genre */}
           <div>
-            <label htmlFor="genre" className="block font-semibold mb-1">Genre</label>
-            <select id="genre" value={genre} onChange={(e) => setGenre(e.target.value)}
-              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white">
+            <label htmlFor="genre" className="block font-semibold mb-1">
+              Genre
+            </label>
+            <select
+              id="genre"
+              value={genre}
+              onChange={(e) => setGenre(e.target.value)}
+              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white"
+            >
               <option value="any">Any</option>
               <option value="strategy">Strategy</option>
               <option value="party">Party</option>
@@ -111,9 +142,15 @@ export default function SearchPage() {
 
           {/* Age Rating */}
           <div>
-            <label htmlFor="age" className="block font-semibold mb-1">Age Rating</label>
-            <select id="age" value={age} onChange={(e) => setAge(e.target.value)}
-              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white">
+            <label htmlFor="age" className="block font-semibold mb-1">
+              Age Rating
+            </label>
+            <select
+              id="age"
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white"
+            >
               <option value="any">Any</option>
               <option value="kids">Kids (5+)</option>
               <option value="teen">Teen (13+)</option>
@@ -123,9 +160,15 @@ export default function SearchPage() {
 
           {/* Theme */}
           <div>
-            <label htmlFor="theme" className="block font-semibold mb-1">Theme</label>
-            <select id="theme" value={theme} onChange={(e) => setTheme(e.target.value)}
-              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white">
+            <label htmlFor="theme" className="block font-semibold mb-1">
+              Theme
+            </label>
+            <select
+              id="theme"
+              value={theme}
+              onChange={(e) => setTheme(e.target.value)}
+              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white"
+            >
               <option value="any">Any</option>
               <option value="fantasy">Fantasy</option>
               <option value="sci-fi">Sci-Fi</option>
@@ -135,10 +178,10 @@ export default function SearchPage() {
           </div>
         </div>
 
-        {/* Search Bar (Now Under Filters) */}
+        {/* Search Bar */}
         <div className="w-full max-w-md mt-6">
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="Search for a game..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -148,14 +191,45 @@ export default function SearchPage() {
         </div>
 
         {/* Search Button */}
-        <button 
+        <button
           type="submit"
           className="mt-4 px-6 py-3 text-lg font-semibold rounded-lg transition
                      bg-gray-400 hover:bg-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600
-                     text-[var(--foreground)]">
+                     text-[var(--foreground)]"
+        >
           Search
         </button>
       </form>
+
+      {/* Render Search Results */}
+      <div className="w-full max-w-3xl mt-6">
+        {loading && <p>Loading...</p>}
+        {!loading && games.length > 0 && (
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Results:</h2>
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {games.map((game) => (
+                <li
+                  key={game.id}
+                  className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow"
+                >
+                  <h3 className="font-semibold">{game.name}</h3>
+                  {game.thumbnail && (
+                    <img
+                      src={game.thumbnail}
+                      alt={`${game.name} thumbnail`}
+                      className="mt-2 w-full object-cover"
+                    />
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {!loading && games.length === 0 && (
+          <p>No games found. Try a different search.</p>
+        )}
+      </div>
     </main>
   );
 }
