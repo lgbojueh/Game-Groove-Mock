@@ -6,21 +6,21 @@ const posts = [
     title: "Top 5 Board Games for Family Game Night",
     summary:
       "Discover the best board games that bring the family together for fun, laughter, and friendly competition. Perfect for all ages!",
-    date: "March 20, 2023",
+    date: "January 15, 2025",
   },
   {
     id: "2",
     title: "How to Host an Unforgettable Game Night",
     summary:
       "Learn practical tips and creative ideas for hosting a game night that your friends and family will never forget.",
-    date: "April 10, 2023",
+    date: "February 10, 2025",
   },
   {
     id: "3",
-    title: "New Releases: The Hottest Board Games of 2023",
+    title: "New Releases: The Hottest Board Games of 2025",
     summary:
       "Stay up-to-date with the latest board game releases and find out which ones are making waves in the gaming community.",
-    date: "May 5, 2023",
+    date: "March 5, 2025",
   },
 ];
 
