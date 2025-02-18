@@ -1,26 +1,27 @@
 export const fetchHotGames = async () => {
-  try {
-    console.log("Fetching hot games...");
-    // Update the URL below based on the API documentation.
-    // This example assumes an endpoint that returns popular games in JSON format.
-    const response = await fetch("https://api.boardgamesapi.com/games/popular");
-    if (!response.ok) {
-      throw new Error("Failed to fetch hot games");
-    }
-    const data = await response.json();
-    console.log("Hot games fetched:", data);
-    // Adjust the mapping based on the API response structure.
-    // For example, if the API returns an object with a "results" array:
-    const games = data.results || data;
-    // Optionally, map through the results to return only the necessary fields:
-    return games.map((game: any) => ({
-      id: game.id,
-      name: game.name,
-      thumbnail: game.thumbnail || "", // Provide a default if needed.
-      // You can include additional fields if required.
-    }));
-  } catch (error) {
-    console.error("Error fetching hot games:", error);
-    return [];
-  }
-};
+            try {
+              console.log("Fetching hot games...");
+              const response = await fetch("https://www.boardgamegeek.com/xmlapi2/hot?type=boardgame");
+              if (!response.ok) {
+                throw new Error("Failed to fetch hot games");
+              }
+              const xmlText = await response.text();
+              const parser = new DOMParser();
+              const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+              const items = Array.from(xmlDoc.getElementsByTagName("item"));
+          
+              const games = items.map((item) => {
+                const id = item.getAttribute("id");
+                const name = item.getElementsByTagName("name")[0]?.getAttribute("value") || "Unknown Game";
+                // The hot endpoint sometimes does not include a thumbnail; adjust if available.
+                const thumbnail = item.getElementsByTagName("thumbnail")[0]?.textContent || "";
+                return { id, name, thumbnail };
+              });
+          
+              console.log("Hot games fetched:", games);
+              return games;
+            } catch (error) {
+              console.error("Error fetching hot games:", error);
+              return [];
+            }
+          };          

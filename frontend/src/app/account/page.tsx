@@ -9,17 +9,14 @@ export default function Account() {
   const [savedGames, setSavedGames] = useState<any[]>([]);
 
   useEffect(() => {
-    // Retrieve the logged-in user
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
-      // Retrieve favorites and saved games (if stored)
       const storedFavorites = localStorage.getItem("favorites");
       const storedSavedGames = localStorage.getItem("savedGames");
       setFavorites(storedFavorites ? JSON.parse(storedFavorites) : []);
       setSavedGames(storedSavedGames ? JSON.parse(storedSavedGames) : []);
     } else {
-      // If no user is found, redirect to login
       router.push("/login");
     }
   }, [router]);
@@ -30,13 +27,23 @@ export default function Account() {
     router.push("/login");
   };
 
+  const removeFavorite = (id: string) => {
+    let updated = favorites.filter((game) => game.id !== id);
+    localStorage.setItem("favorites", JSON.stringify(updated));
+    setFavorites(updated);
+  };
+
+  const removeSavedGame = (id: string) => {
+    let updated = savedGames.filter((game) => game.id !== id);
+    localStorage.setItem("savedGames", JSON.stringify(updated));
+    setSavedGames(updated);
+  };
+
   const handleDeactivateAccount = () => {
-    // Built-in confirm dialog for additional safety
     const confirmDeactivate = confirm(
       "Are you sure you want to deactivate your account? This action cannot be undone."
     );
     if (confirmDeactivate) {
-      // Remove all account-related data
       localStorage.removeItem("user");
       localStorage.removeItem("favorites");
       localStorage.removeItem("savedGames");
@@ -57,8 +64,14 @@ export default function Account() {
         {favorites.length > 0 ? (
           <ul className="list-disc list-inside">
             {favorites.map((game, idx) => (
-              <li key={idx} className="mb-1">
-                {game.name}
+              <li key={idx} className="flex justify-between items-center mb-1">
+                <span>{game.name}</span>
+                <button
+                  onClick={() => removeFavorite(game.id)}
+                  className="text-red-500 text-sm hover:underline"
+                >
+                  Remove
+                </button>
               </li>
             ))}
           </ul>
@@ -72,8 +85,14 @@ export default function Account() {
         {savedGames.length > 0 ? (
           <ul className="list-disc list-inside">
             {savedGames.map((game, idx) => (
-              <li key={idx} className="mb-1">
-                {game.name}
+              <li key={idx} className="flex justify-between items-center mb-1">
+                <span>{game.name}</span>
+                <button
+                  onClick={() => removeSavedGame(game.id)}
+                  className="text-red-500 text-sm hover:underline"
+                >
+                  Remove
+                </button>
               </li>
             ))}
           </ul>
