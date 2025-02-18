@@ -1,25 +1,52 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import ThemeToggle from "./ThemeToggle";
 
 export default function Navbar() {
   const [user, setUser] = useState<any>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const router = useRouter();
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
-  // Re-read localStorage whenever the pathname changes (e.g. after logout)
+  // Check localStorage for user on mount and when route changes
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     setUser(storedUser ? JSON.parse(storedUser) : null);
   }, [pathname]);
 
+  // Open dropdown on hover or click
+  const handleMouseEnter = () => setDropdownOpen(true);
+  const handleMouseLeave = () => setDropdownOpen(false);
+  const handleToggle = () => setDropdownOpen((prev) => !prev);
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+    router.push("/login");
+  };
+
+  // Close dropdown if user clicks outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <nav className="w-full flex justify-between items-center p-5 bg-[var(--background)]">
-      
-      {/* Left Side - Logo and App Name */}
+      {/* Left Side: Logo and App Name */}
       <div className="flex items-center space-x-3">
         <Image 
           src="/game-groove-icon.svg"  
@@ -31,7 +58,7 @@ export default function Navbar() {
         <span className="text-xl font-bold text-[var(--foreground)]">Game Groove</span>
       </div>
 
-      {/* Center - Navigation Links */}
+      {/* Center: Navigation Links */}
       <div className="flex justify-center space-x-6">
         <Link href="/" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">Home</Link>
         <Link href="/games" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">Games</Link>
@@ -40,13 +67,45 @@ export default function Navbar() {
         <Link href="/about" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">About</Link>
       </div>
 
-      {/* Right Side - Theme Toggle and Conditional Auth Links */}
-      <div className="flex items-center space-x-4">
+      {/* Right Side: Theme Toggle and Authentication Options */}
+      <div className="flex items-center space-x-4 relative">
         <ThemeToggle />
         {user ? (
-          <Link href="/account" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400 whitespace-nowrap">
-            Account
-          </Link>
+          // Account text that shows dropdown on hover or click
+          <div
+            className="cursor-pointer"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            onClick={handleToggle}
+          >
+            <span className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400 whitespace-nowrap">
+              Account
+            </span>
+            {dropdownOpen && (
+              <div ref={dropdownRef} className="absolute right-0 mt-2 w-48 bg-gray-100 dark:bg-gray-700 rounded shadow-lg z-50">
+                <div className="py-1">
+                  <button
+                    onClick={() => router.push("/account/favorites")}
+                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 w-full text-left hover:bg-gray-200 dark:hover:bg-gray-600"
+                  >
+                    Favorite Games
+                  </button>
+                  <button
+                    onClick={() => router.push("/account/saved")}
+                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 w-full text-left hover:bg-gray-200 dark:hover:bg-gray-600"
+                  >
+                    Saved Games
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="block px-4 py-2 text-sm text-red-600 w-full text-left hover:bg-gray-200 dark:hover:bg-gray-600"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         ) : (
           <>
             <Link href="/login" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400 whitespace-nowrap">
