@@ -1,82 +1,84 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { fetchGameDetails } from "@/utils/fetchGameDetails";
 
 export default function GameDetailsPage() {
-  const params = useParams();
-  const gameId = params.id as string;
-
+  const { id } = useParams();
   const [game, setGame] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [rating, setRating] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
 
+  // Simulate fetching game details (replace with your actual fetch logic)
   useEffect(() => {
-    const getDetails = async () => {
-      setLoading(true);
-      const data = await fetchGameDetails(gameId);
-      setGame(data);
-      setLoading(false);
-    };
+    async function fetchGame() {
+      // For demonstration, we're using a static object.
+      // Replace this with an API call to fetch details by id.
+      const fetchedGame = {
+        id,
+        name: "Example Game",
+        thumbnail: "/example-game.jpg", // Ensure this image exists in public folder or use a URL.
+        summary: "This is an example game. It is fun, challenging, and great for game nights.",
+      };
+      setGame(fetchedGame);
+    }
+    fetchGame();
+  }, [id]);
 
-    getDetails();
-  }, [gameId]);
-
-  const handleRating = (newRating: number) => {
-    setRating(newRating);
-    // Optionally persist the rating here.
+  const handleAddFavorite = () => {
+    const storedFavorites = localStorage.getItem("favorites");
+    let favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
+    // Prevent duplicate favorites.
+    if (!favorites.find((fav: any) => fav.id === game.id)) {
+      favorites.push(game);
+      localStorage.setItem("favorites", JSON.stringify(favorites));
+      alert("Game added to favorites!");
+    } else {
+      alert("This game is already in your favorites!");
+    }
   };
 
-  const toggleFavorite = () => {
-    setIsFavorite((prev) => !prev);
-    // Optionally persist the favorite state here.
+  const handleSaveGame = () => {
+    const storedSaved = localStorage.getItem("savedGames");
+    let savedGames = storedSaved ? JSON.parse(storedSaved) : [];
+    // Prevent duplicate saved games.
+    if (!savedGames.find((saved: any) => saved.id === game.id)) {
+      savedGames.push(game);
+      localStorage.setItem("savedGames", JSON.stringify(savedGames));
+      alert("Game saved!");
+    } else {
+      alert("This game is already saved!");
+    }
   };
 
-  if (loading) return <p className="p-6">Loading game details...</p>;
-  if (!game) return <p className="p-6">Game details not found.</p>;
+  if (!game) return <p>Loading...</p>;
 
   return (
-    <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)] p-6">
+    <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen">
       <h1 className="text-4xl font-bold mb-4">{game.name}</h1>
-      {game.thumbnail && (
+      {game.thumbnail ? (
         <img
           src={game.thumbnail}
           alt={`${game.name} thumbnail`}
-          className="w-full max-w-md max-h-64 object-contain mb-4 mx-auto"
+          className="w-full max-w-md mb-4 object-cover rounded"
         />
-      )}
-      <p className="mb-6">{game.description}</p>
-
-      <div className="mb-6">
-        <h2 className="text-2xl font-semibold mb-2">Rate this game</h2>
-        <div className="flex items-center">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <button
-              key={star}
-              onClick={() => handleRating(star)}
-              className={`text-2xl ${
-                star <= rating ? "text-yellow-400" : "text-gray-400"
-              }`}
-              aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
-            >
-              ★
-            </button>
-          ))}
+      ) : (
+        <div className="w-full max-w-md h-48 bg-gray-300 flex items-center justify-center mb-4 rounded">
+          <span>No Image Available</span>
         </div>
+      )}
+      <p className="mb-4">{game.summary}</p>
+      <div className="flex space-x-4">
+        <button
+          onClick={handleAddFavorite}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+        >
+          Add to Favorites
+        </button>
+        <button
+          onClick={handleSaveGame}
+          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+        >
+          Save Game
+        </button>
       </div>
-
-      <button
-        onClick={toggleFavorite}
-        className={`px-4 py-2 rounded ${
-          isFavorite
-            ? "bg-red-500 hover:bg-red-600"
-            : "bg-blue-500 hover:bg-blue-600"
-        } text-white`}
-      >
-        {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
-      </button>
     </main>
   );
 }
