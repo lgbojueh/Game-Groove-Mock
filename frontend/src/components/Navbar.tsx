@@ -14,22 +14,18 @@ export default function Navbar() {
   const pathname = usePathname();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Check localStorage for user on mount and on route change
+  // Update user state on mount and route change.
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     setUser(storedUser ? JSON.parse(storedUser) : null);
   }, [pathname]);
 
   const handleMouseEnter = () => {
-    // Clear any pending timer so dropdown stays open
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
+    if (timerRef.current) clearTimeout(timerRef.current);
     setDropdownOpen(true);
   };
 
   const handleMouseLeave = () => {
-    // Delay closing the dropdown by 300ms so user can move into it
     timerRef.current = setTimeout(() => {
       setDropdownOpen(false);
     }, 300);
@@ -45,7 +41,7 @@ export default function Navbar() {
     router.push("/login");
   };
 
-  // Close dropdown if user clicks outside
+  // Close dropdown if clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -56,13 +52,12 @@ export default function Navbar() {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
     <nav className="w-full flex justify-between items-center p-5 bg-[var(--background)]">
-      {/* Left Side: Logo and App Name */}
+      {/* Left Side - Logo and App Name */}
       <div className="flex items-center space-x-3">
         <Image 
           src="/game-groove-icon.svg"  
@@ -71,46 +66,19 @@ export default function Navbar() {
           height={30} 
           priority
         />
-        <span className="text-xl font-bold text-[var(--foreground)]">
-          Game Groove
-        </span>
+        <span className="text-xl font-bold text-[var(--foreground)]">Game Groove</span>
       </div>
 
-      {/* Center: Navigation Links */}
+      {/* Center - Navigation Links */}
       <div className="flex justify-center space-x-6">
-        <Link
-          href="/"
-          className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400"
-        >
-          Home
-        </Link>
-        <Link
-          href="/games"
-          className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400"
-        >
-          Games
-        </Link>
-        <Link
-          href="/featured"
-          className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400"
-        >
-          Featured
-        </Link>
-        <Link
-          href="/blog"
-          className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400"
-        >
-          Blog
-        </Link>
-        <Link
-          href="/about"
-          className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400"
-        >
-          About
-        </Link>
+        <Link href="/" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">Home</Link>
+        <Link href="/games" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">Games</Link>
+        <Link href="/featured" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">Featured</Link>
+        <Link href="/blog" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">Blog</Link>
+        <Link href="/about" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">About</Link>
       </div>
 
-      {/* Right Side: Theme Toggle and Authentication Options */}
+      {/* Right Side - Theme Toggle and Auth Links/Account Dropdown */}
       <div className="flex items-center space-x-4 relative">
         <ThemeToggle />
         {user ? (
@@ -155,16 +123,10 @@ export default function Navbar() {
           </div>
         ) : (
           <>
-            <Link
-              href="/login"
-              className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400 whitespace-nowrap"
-            >
+            <Link href="/login" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400 whitespace-nowrap">
               Login
             </Link>
-            <Link
-              href="/signup"
-              className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400 whitespace-nowrap"
-            >
+            <Link href="/signup" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400 whitespace-nowrap">
               Sign Up
             </Link>
           </>
