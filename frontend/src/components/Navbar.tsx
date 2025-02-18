@@ -14,7 +14,7 @@ export default function Navbar() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Update user state on mount and on route change.
+  // Update user state on mount and when route changes.
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     setUser(storedUser ? JSON.parse(storedUser) : null);
@@ -74,20 +74,30 @@ export default function Navbar() {
 
       {/* Center: Navigation Links */}
       <div className="flex justify-center space-x-6">
-        <Link href="/" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">Home</Link>
-        <Link href="/games" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">Games</Link>
-        <Link href="/featured" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">Featured</Link>
-        <Link href="/blog" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">Blog</Link>
-        <Link href="/about" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">About</Link>
+        <Link href="/" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">
+          Home
+        </Link>
+        <Link href="/games" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">
+          Games
+        </Link>
+        <Link href="/featured" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">
+          Featured
+        </Link>
+        <Link href="/blog" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">
+          Blog
+        </Link>
+        <Link href="/about" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">
+          About
+        </Link>
       </div>
 
-      {/* Right Side: Theme Toggle and Auth Links */}
+      {/* Right Side: Theme Toggle and Auth Links/Account Dropdown */}
       <div className="flex items-center space-x-4 relative">
         <ThemeToggle />
         {user ? (
-          // Wrap Account link and arrow in a relative container.
+          // Container for Account link and dropdown toggle icon.
           <div className="relative flex items-center space-x-2">
-            {/* Account Link */}
+            {/* Account link always navigates to /account when clicked */}
             <Link href="/account" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400 whitespace-nowrap">
               Account
             </Link>
@@ -116,6 +126,13 @@ export default function Navbar() {
                 onMouseLeave={handleMouseLeave}
               >
                 <div className="py-1">
+                  {/* New "My Account" option */}
+                  <button
+                    onClick={() => router.push("/account")}
+                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 w-full text-left hover:bg-gray-200 dark:hover:bg-gray-600"
+                  >
+                    My Account
+                  </button>
                   <button
                     onClick={() => router.push("/account/favorites")}
                     className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 w-full text-left hover:bg-gray-200 dark:hover:bg-gray-600"
