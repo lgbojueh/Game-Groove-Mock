@@ -31,6 +31,7 @@ export default function Account() {
   };
 
   const handleDeactivateAccount = () => {
+    // Built-in confirm dialog for additional safety
     const confirmDeactivate = confirm(
       "Are you sure you want to deactivate your account? This action cannot be undone."
     );
