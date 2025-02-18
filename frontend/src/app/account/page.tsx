@@ -30,6 +30,23 @@ export default function Account() {
     router.push("/login");
   };
 
+  const handleDeactivateAccount = () => {
+    const confirmDeactivate = confirm(
+      "Are you sure you want to deactivate your account? This action cannot be undone."
+    );
+    if (confirmDeactivate) {
+      // Remove all account-related data
+      localStorage.removeItem("user");
+      localStorage.removeItem("favorites");
+      localStorage.removeItem("savedGames");
+      setUser(null);
+      alert("Your account has been deactivated.");
+      router.push("/signup");
+    }
+  };
+
+  if (!user) return <p>Loading...</p>;
+
   return (
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen">
       <h1 className="text-4xl font-bold mb-6">Account</h1>
@@ -64,12 +81,20 @@ export default function Account() {
         )}
       </section>
 
-      <button
-        onClick={handleLogout}
-        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
-      >
-        Logout
-      </button>
+      <div className="flex flex-col space-y-4">
+        <button
+          onClick={handleLogout}
+          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+        >
+          Logout
+        </button>
+        <button
+          onClick={handleDeactivateAccount}
+          className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
+        >
+          Deactivate Account
+        </button>
+      </div>
     </main>
   );
 }
