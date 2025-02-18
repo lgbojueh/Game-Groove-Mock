@@ -75,13 +75,13 @@ export default function GameDetailsPage() {
   if (!game) return <p className="p-6">No game found.</p>;
 
   return (
-    // If you have a fixed header, consider using a wrapper like below.
+    // Flex container that takes the full height of the viewport
     <div className="flex flex-col h-screen">
       {/* Optional fixed header */}
       <header className="p-4 bg-gray-800 text-white">
         <h2>Game Details</h2>
       </header>
-      {/* Scrollable content area */}
+      {/* Scrollable main content */}
       <main className="p-6 bg-[var(--background)] text-[var(--foreground)] flex-1 overflow-y-auto">
         <h1 className="text-4xl font-bold mb-4">{game.name}</h1>
         {game.thumbnail ? (
