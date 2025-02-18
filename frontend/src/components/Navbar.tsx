@@ -74,29 +74,20 @@ export default function Navbar() {
 
       {/* Center: Navigation Links */}
       <div className="flex justify-center space-x-6">
-        <Link href="/" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">
-          Home
-        </Link>
-        <Link href="/games" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">
-          Games
-        </Link>
-        <Link href="/featured" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">
-          Featured
-        </Link>
-        <Link href="/blog" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">
-          Blog
-        </Link>
-        <Link href="/about" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">
-          About
-        </Link>
+        <Link href="/" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">Home</Link>
+        <Link href="/games" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">Games</Link>
+        <Link href="/featured" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">Featured</Link>
+        <Link href="/blog" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">Blog</Link>
+        <Link href="/about" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">About</Link>
       </div>
 
       {/* Right Side: Theme Toggle and Auth Links */}
       <div className="flex items-center space-x-4 relative">
         <ThemeToggle />
         {user ? (
-          <div className="flex items-center space-x-2">
-            {/* Account Link - clicking it always navigates to /account */}
+          // Wrap Account link and arrow in a relative container.
+          <div className="relative flex items-center space-x-2">
+            {/* Account Link */}
             <Link href="/account" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400 whitespace-nowrap">
               Account
             </Link>
@@ -106,7 +97,6 @@ export default function Navbar() {
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
               onClick={handleToggle}
-              ref={dropdownRef}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -120,7 +110,8 @@ export default function Navbar() {
             </div>
             {dropdownOpen && (
               <div
-                className="absolute right-0 mt-8 w-48 bg-gray-100 dark:bg-gray-700 rounded shadow-lg z-50"
+                ref={dropdownRef}
+                className="absolute top-full right-0 mt-2 w-48 bg-gray-100 dark:bg-gray-700 rounded shadow-lg z-50"
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
               >
