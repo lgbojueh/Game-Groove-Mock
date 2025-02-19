@@ -56,7 +56,7 @@ export default function Account() {
   if (!user) return <p>Loading...</p>;
 
   return (
-    <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen overflow-y-auto">
+    <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen overflow-y-auto pb-10">
       <h1 className="text-4xl font-bold mb-6">Account</h1>
 
       {/* Favorite Games Section */}
