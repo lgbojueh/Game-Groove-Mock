@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import styles from "../../styles/styles.module.css";
 
 export default function SearchForm() {
   const router = useRouter();
@@ -45,12 +46,12 @@ export default function SearchForm() {
       </h1>
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-3xl bg-gray-200 dark:bg-gray-800 p-6 rounded-lg shadow-md"
+        className="w-full max-w-3xl bg-red-200 dark:bg-red-800 p-6 rounded-lg shadow-md"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-rows-1 md:grid-rows-2 gap-4">
           {/* Number of Players */}
           <div>
-            <label htmlFor="players" className="block font-semibold mb-1">
+            <label htmlFor="players" className={styles.SearchforBoardGames}>
               Number of Players
             </label>
             <select

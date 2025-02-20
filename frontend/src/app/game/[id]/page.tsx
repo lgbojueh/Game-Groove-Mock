@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useActionState } from "react";
 import { useParams } from "next/navigation";
 import { fetchGameDetails } from "@/utils/fetchGameDetails";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function GameDetailsPage() {
   const params = useParams();
@@ -12,6 +13,7 @@ export default function GameDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [rating, setRating] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isSave, setIsSave] = useState(false);
 
   useEffect(() => {
     const getDetails = async () => {
@@ -32,6 +34,10 @@ export default function GameDetailsPage() {
   const toggleFavorite = () => {
     setIsFavorite((prev) => !prev);
     // Optionally persist the favorite state here.
+  };
+
+  const toggleShare = () => {
+    setIsSave((prev) => !prev);
   };
 
   if (loading) return <p className="p-6">Loading game details...</p>;
@@ -76,6 +82,17 @@ export default function GameDetailsPage() {
         } text-white`}
       >
         {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
+      </button>
+
+      <button
+        onClick= {toggleShare}
+        className={`px-4 py-2 squared ${
+          isSave
+            ? "bg-purple-900 hover:bg-purple-1000"
+            : "bg-green-900 hoveer:bg-green-1000"
+        } text-white`}
+      >
+        {isSave ? "Unsave" : "Save Game"}
       </button>
     </main>
   );

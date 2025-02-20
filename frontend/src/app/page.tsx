@@ -31,7 +31,7 @@ export default function Home() {
       <button 
         onClick={handleFindGameClick}  // ✅ Attach Click Event
         className="px-6 py-3 text-lg font-semibold rounded-lg transition
-                   bg-gray-400 hover:bg-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600
+                   bg-lightblue-400 hover:bg-lightblue-500 dark:bg-blue-700 dark:hover:bg-blue-600
                    text-[var(--foreground)]">
         Find My Game
       </button>

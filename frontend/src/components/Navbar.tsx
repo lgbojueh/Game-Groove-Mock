@@ -22,7 +22,7 @@ export default function Navbar() {
       {/* Left Side - Logo and App Name */}
       <div className="flex items-center space-x-3">
         <Image 
-          src="/game-groove-icon.svg"  
+          src="/game.svg"  
           alt="Small Logo"
           width={30} 
           height={30} 
