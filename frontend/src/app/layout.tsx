@@ -34,7 +34,10 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system">
           <Navbar />
-          {children}
+          {/* Responsive container wrapping the page content */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {children}
+          </div>
         </ThemeProvider>
       </body>
     </html>
