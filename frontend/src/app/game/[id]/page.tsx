@@ -1,10 +1,5 @@
 "use client";
-<<<<<<< HEAD
-
-import { useState, useEffect, useActionState } from "react";
-=======
 import { useState, useEffect } from "react";
->>>>>>> d98153c409b64f8c4432e917daf959f4aa32649c
 import { useParams } from "next/navigation";
 import { fetchGameDetails } from "@/utils/fetchGameDetails";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -15,11 +10,7 @@ export default function GameDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isFavorite, setIsFavorite] = useState(false);
-<<<<<<< HEAD
-  const [isSave, setIsSave] = useState(false);
-=======
   const [isSaved, setIsSaved] = useState(false);
->>>>>>> d98153c409b64f8c4432e917daf959f4aa32649c
 
   useEffect(() => {
     async function getGameDetails() {
@@ -64,14 +55,6 @@ export default function GameDetailsPage() {
     }
   };
 
-<<<<<<< HEAD
-  const toggleShare = () => {
-    setIsSave((prev) => !prev);
-  };
-
-  if (loading) return <p className="p-6">Loading game details...</p>;
-  if (!game) return <p className="p-6">Game details not found.</p>;
-=======
   const toggleSaved = () => {
     const storedSaved = localStorage.getItem("savedGames");
     let savedGames = storedSaved ? JSON.parse(storedSaved) : [];
@@ -91,7 +74,6 @@ export default function GameDetailsPage() {
   if (loading) return <p className="p-6">Loading...</p>;
   if (error) return <p className="p-6">{error}</p>;
   if (!game) return <p className="p-6">No game found.</p>;
->>>>>>> d98153c409b64f8c4432e917daf959f4aa32649c
 
   return (
     // Flex container that takes the full height of the viewport
@@ -117,48 +99,21 @@ export default function GameDetailsPage() {
         <div className="mb-4">
           <p>{game.description || "No description available."}</p>
         </div>
-<<<<<<< HEAD
-      </div>
-
-      <button
-        onClick={toggleFavorite}
-        className={`px-4 py-2 rounded ${
-          isFavorite
-            ? "bg-red-500 hover:bg-red-600"
-            : "bg-blue-500 hover:bg-blue-600"
-        } text-white`}
-      >
-        {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
-      </button>
-
-      <button
-        onClick= {toggleShare}
-        className={`px-4 py-2 squared ${
-          isSave
-            ? "bg-purple-900 hover:bg-purple-1000"
-            : "bg-green-900 hoveer:bg-green-1000"
-        } text-white`}
-      >
-        {isSave ? "Unsave" : "Save Game"}
-      </button>
-    </main>
-=======
         <div className="flex space-x-4 mb-8">
           <button
             onClick={toggleFavorite}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
           >
             {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
           </button>
           <button
             onClick={toggleSaved}
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+            className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
           >
             {isSaved ? "Unsave Game" : "Save Game"}
           </button>
         </div>
       </main>
     </div>
->>>>>>> d98153c409b64f8c4432e917daf959f4aa32649c
   );
 }
