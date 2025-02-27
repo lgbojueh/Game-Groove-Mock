@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -9,8 +8,7 @@ import Image from "next/image";
 const cleanDescription = (desc?: string) =>
   desc ? desc.replace(/&#10;/g, " ") : "";
 
-// Define an interface for your game objects.
-// Ensure these properties are available in your detailed game objects.
+// Interface for game objects
 interface BasicGame {
   id: string | null;
   name: string;
@@ -18,61 +16,60 @@ interface BasicGame {
   description?: string;
   complexity?: string;
   players?: string;
-  theme?: string;
   playtime?: string;
   genre?: string;
   age?: string;
+  theme?: string;
 }
 
 export default function ResultsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Read filter query parameters.
+  // Read filter query parameters (defaults to "any")
   const query = searchParams.get("query") || "";
-  const players = searchParams.get("players") || "any";
-  const complexity = searchParams.get("complexity") || "any";
-  const playtime = searchParams.get("playtime") || "any";
-  const genre = searchParams.get("genre") || "any";
-  const age = searchParams.get("age") || "any";
-  const theme = searchParams.get("theme") || "any";
+  const playersFilter = searchParams.get("players") || "any";
+  const complexityFilter = searchParams.get("complexity") || "any";
+  const playtimeFilter = searchParams.get("playtime") || "any";
+  const genreFilter = searchParams.get("genre") || "any";
+  const ageFilter = searchParams.get("age") || "any";
+  const themeFilter = searchParams.get("theme") || "any";
 
   const [games, setGames] = useState<BasicGame[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Read the final detailed results (with thumbnails and filter properties) from localStorage.
+    // Read the detailed results from localStorage.
     const stored = localStorage.getItem("searchResults");
     if (stored) {
       let results = JSON.parse(stored) as BasicGame[];
 
-      // 2. Apply client-side filtering for each filter.
-      if (players !== "any") {
-        results = results.filter((game) => game.players === players);
+      // Apply each filter if the filter value is not "any"
+      if (playersFilter !== "any") {
+        results = results.filter((game) => game.players === playersFilter);
       }
-      if (complexity !== "any") {
-        results = results.filter((game) => game.complexity === complexity);
+      if (complexityFilter !== "any") {
+        results = results.filter((game) => game.complexity === complexityFilter);
       }
-      if (playtime !== "any") {
-        results = results.filter((game) => game.playtime === playtime);
+      if (playtimeFilter !== "any") {
+        results = results.filter((game) => game.playtime === playtimeFilter);
       }
-      if (genre !== "any") {
-        results = results.filter((game) => game.genre === genre);
+      if (genreFilter !== "any") {
+        results = results.filter((game) => game.genre === genreFilter);
       }
-      if (age !== "any") {
-        results = results.filter((game) => game.age === age);
+      if (ageFilter !== "any") {
+        results = results.filter((game) => game.age === ageFilter);
       }
-      if (theme !== "any") {
-        results = results.filter((game) => game.theme === theme);
+      if (themeFilter !== "any") {
+        results = results.filter((game) => game.theme === themeFilter);
       }
       setGames(Array.isArray(results) ? results : []);
     } else {
-      // If there's no stored data, you might consider redirecting or displaying a message.
       console.log("No searchResults in localStorage. Possibly user visited /results directly.");
       setGames([]);
     }
     setLoading(false);
-  }, [players, complexity, playtime, genre, age, theme]);
+  }, [playersFilter, complexityFilter, playtimeFilter, genreFilter, ageFilter, themeFilter]);
 
   return (
     <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -90,7 +87,7 @@ export default function ResultsPage() {
       {/* Results Section */}
       <section className="px-6 py-4">
         {loading && <p>Loading...</p>}
-        {!loading && games.length > 0 && (
+        {!loading && games.length > 0 ? (
           <div className="mt-6 overflow-y-auto max-h-[70vh]">
             <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {games.map((game) => (
@@ -110,7 +107,7 @@ export default function ResultsPage() {
                       />
                     ) : (
                       <div className="w-full h-[150px] bg-gray-300 flex items-center justify-center rounded mb-2">
-                        <span>No Image</span>
+                        <span>No Image Available</span>
                       </div>
                     )}
                     {game.description && (
@@ -123,9 +120,8 @@ export default function ResultsPage() {
               ))}
             </ul>
           </div>
-        )}
-        {!loading && games.length === 0 && (
-          <p>No games found. Try a different search or adjust your filters.</p>
+        ) : (
+          !loading && <p>No games found. Try a different search or adjust your filters.</p>
         )}
       </section>
     </main>
