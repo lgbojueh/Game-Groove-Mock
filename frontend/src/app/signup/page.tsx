@@ -2,9 +2,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+interface User {
+  username: string;
+  email: string;
+  password: string;
+}
+
 export default function SignUp() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<User>({
     username: "",
     email: "",
     password: "",
@@ -15,6 +21,20 @@ export default function SignUp() {
   const validatePassword = (password: string): boolean => {
     const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,}$/;
     return passwordRegex.test(password);
+  };
+
+  // Helper to retrieve users array from localStorage.
+  const getUsers = (): User[] => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("users");
+      return stored ? JSON.parse(stored) : [];
+    }
+    return [];
+  };
+
+  // Helper to save users array to localStorage.
+  const saveUsers = (users: User[]) => {
+    localStorage.setItem("users", JSON.stringify(users));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -28,9 +48,35 @@ export default function SignUp() {
       return;
     }
 
-    // Simulate sign-up by saving user data to localStorage
+    // Retrieve registered users from localStorage.
+    const users = getUsers();
+
+    // Check if username is already taken (case-insensitive).
+    const usernameTaken = users.find(
+      (user) => user.username.toLowerCase() === formData.username.toLowerCase()
+    );
+    if (usernameTaken) {
+      setError("Username is already taken. Please choose a different username.");
+      return;
+    }
+
+    // Check if email is already registered (case-insensitive).
+    const emailTaken = users.find(
+      (user) => user.email.toLowerCase() === formData.email.toLowerCase()
+    );
+    if (emailTaken) {
+      setError("This email is already registered. Please log in or deactivate your account to reuse it.");
+      return;
+    }
+
+    // If no conflicts, add the new user.
+    users.push(formData);
+    saveUsers(users);
+
+    // Optionally, mark the user as logged in.
     localStorage.setItem("user", JSON.stringify(formData));
-    // Redirect to the Account page
+
+    // Redirect to the account page.
     router.push("/account");
   };
 
