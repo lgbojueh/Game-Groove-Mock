@@ -28,8 +28,10 @@ export default function SearchForm() {
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Build URL query parameters for filters if needed.
     // Build URL query parameters for filters if needed.
     const params = new URLSearchParams();
     if (searchQuery.trim()) {
@@ -43,6 +45,25 @@ export default function SearchForm() {
     params.set("age", age);
     params.set("theme", theme);
 
+    // 1. Call fetchGames to get basic results (IDs and minimal info)
+    const basicResults = await fetchGames(searchQuery);
+    console.log("Basic search results:", basicResults);
+    // Extract IDs from basic results
+    const allIds = basicResults.map((game) => game.id);
+
+    // 2. Chunk IDs into groups of 20
+    const idChunks = chunkArray(allIds, 20);
+
+    let detailedResults: any[] = [];
+    // 3. For each chunk, fetch detailed game info
+    for (const chunk of idChunks) {
+      const details = await fetchDetailedGames(chunk);
+      detailedResults = detailedResults.concat(details);
+    }
+
+    // Now detailedResults contains full game info including thumbnails and descriptions.
+    // For demonstration, store the detailed results in localStorage and navigate to the results page.
+    localStorage.setItem("searchResults", JSON.stringify(detailedResults));
     // 1. Call fetchGames to get basic results (IDs and minimal info)
     const basicResults = await fetchGames(searchQuery);
     console.log("Basic search results:", basicResults);
