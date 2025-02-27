@@ -10,6 +10,7 @@ const cleanDescription = (desc?: string) =>
   desc ? desc.replace(/&#10;/g, " ") : "";
 
 // Define an interface for your game objects.
+// Ensure these properties are available in your detailed game objects.
 interface BasicGame {
   id: string | null;
   name: string;
@@ -40,12 +41,12 @@ export default function ResultsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // 1. Read the final detailed results (with thumbnails and filter properties) from localStorage.
     const stored = localStorage.getItem("searchResults");
     if (stored) {
       let results = JSON.parse(stored) as BasicGame[];
-      console.log("Stored searchResults:", results);
-      console.log("Filter values:", { players, complexity, playtime, genre, age, theme });
 
+      // 2. Apply client-side filtering for each filter.
       if (players !== "any") {
         results = results.filter((game) => game.players === players);
       }
@@ -64,9 +65,9 @@ export default function ResultsPage() {
       if (theme !== "any") {
         results = results.filter((game) => game.theme === theme);
       }
-      console.log("Filtered results:", results);
       setGames(Array.isArray(results) ? results : []);
     } else {
+      // If there's no stored data, you might consider redirecting or displaying a message.
       console.log("No searchResults in localStorage. Possibly user visited /results directly.");
       setGames([]);
     }
@@ -75,6 +76,7 @@ export default function ResultsPage() {
 
   return (
     <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+      {/* Fixed Header with Back Button */}
       <header className="flex items-center justify-between px-6 py-4 border-b border-gray-300 dark:border-gray-600">
         <h1 className="text-4xl sm:text-6xl font-bold">Search Results</h1>
         <button
@@ -84,13 +86,18 @@ export default function ResultsPage() {
           Back
         </button>
       </header>
+
+      {/* Results Section */}
       <section className="px-6 py-4">
         {loading && <p>Loading...</p>}
         {!loading && games.length > 0 && (
           <div className="mt-6 overflow-y-auto max-h-[70vh]">
             <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {games.map((game) => (
-                <li key={game.id!} className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-lg transition">
+                <li
+                  key={game.id!}
+                  className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-lg transition"
+                >
                   <Link href={`/game/${game.id}`} className="block">
                     <h3 className="font-semibold mb-2">{game.name}</h3>
                     {game.thumbnail ? (
