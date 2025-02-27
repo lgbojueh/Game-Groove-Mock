@@ -25,6 +25,24 @@ export default function Home() {
     : "/game-groove-logo-dark.svg";
 
   return (
+    <main className="flex flex-col items-center justify-center min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+      
+      {/* Dynamic Logo Based on Theme */}
+      <Image 
+        src={theme === "dark" ? "/game-groove-logo-light.svg" : "/game-groove-logo-dark.svg"}  
+        alt="Game Groove Logo"
+        width={550}   
+        height={550}  
+        priority 
+        className="mb-6 mx-auto block"
+      />
+
+      {/* "Find My Game" Button */}
+      <button 
+        onClick={handleFindGameClick}  // ✅ Attach Click Event
+        className="px-6 py-3 text-lg font-semibold rounded-lg transition
+                   bg-lightblue-400 hover:bg-lightblue-500 dark:bg-blue-700 dark:hover:bg-blue-600
+                   text-[var(--foreground)]">
     <main className="flex flex-col items-center justify-center min-h-screen bg-[var(--background)] text-[var(--foreground)] px-4">
       {/* Responsive container:
           - On mobile: w-full with max width 350px.

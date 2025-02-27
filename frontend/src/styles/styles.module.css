@@ -1,0 +1,11 @@
+.AboutText {
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    background-color: blueviolet;
+
+}
+
+.SearchForBoardGames {
+    background-color: crimson;
+    block-size: 0vmin;
+    font-style: oblique;
+}

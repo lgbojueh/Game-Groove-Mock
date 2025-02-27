@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { fetchGameDetails } from "@/utils/fetchGameDetails";
+import ThemeToggle from "@/components/ThemeToggle";
 
 // Helper to remove unwanted line-break entities from a description.
 const cleanDescription = (desc?: string) =>
@@ -102,13 +103,13 @@ export default function GameDetailsPage() {
         <div className="flex space-x-4 mb-8">
           <button
             onClick={toggleFavorite}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
           >
             {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
           </button>
           <button
             onClick={toggleSaved}
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+            className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
           >
             {isSaved ? "Unsave Game" : "Save Game"}
           </button>

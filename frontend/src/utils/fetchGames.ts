@@ -1,3 +1,9 @@
+import { stdout } from "process";
+import { config } from "next/dist/build/templates/pages";
+
+
+
+
 export const fetchGames = async (query: string) => {
   try {
     console.log("📡 Fetching games for query:", query);
