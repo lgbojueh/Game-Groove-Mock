@@ -5,7 +5,7 @@ import Image from "next/image";
 import { fetchGames } from "@/utils/fetchGames";
 import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
 
-// Helper function to chunk an array into smaller arrays of a given size.
+// Helper function to chunk an array.
 function chunkArray<T>(arr: T[], size: number): T[][] {
   const results: T[][] = [];
   for (let i = 0; i < arr.length; i += size) {
@@ -14,7 +14,6 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
   return results;
 }
 
-// Define an interface for our game object.
 interface BasicGame {
   id: string | null;
   name: string;
@@ -25,29 +24,27 @@ interface BasicGame {
   theme?: string;
 }
 
+// Helper to remove unwanted line breaks.
+const cleanDescription = (desc?: string) =>
+  desc ? desc.replace(/&#10;/g, " ") : "";
+
 export default function Games() {
   const [games, setGames] = useState<BasicGame[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Function to fetch default games (using "board game" as a generic query)
+  // Function to fetch default games (generic query "board game")
   const getDefaultGames = async () => {
     setLoading(true);
     let basicResults = (await fetchGames("board game")) as BasicGame[];
-    // Filter out games without a valid ID
     basicResults = basicResults.filter((game) => game.id !== null);
-
-    // Extract IDs (non-null asserted)
     const allIds = basicResults.map((game) => game.id!);
-    // Chunk IDs into groups of 20
     const idChunks = chunkArray(allIds, 20);
     let detailedResults: BasicGame[] = [];
-    // For each chunk, fetch detailed data
     for (const chunk of idChunks) {
       const details = await fetchDetailedGames(chunk);
       detailedResults = detailedResults.concat(details);
     }
-    // Merge detailed data into basic results
     for (const detail of detailedResults) {
       const idx = basicResults.findIndex((b) => b.id === detail.id);
       if (idx !== -1) {
@@ -59,7 +56,7 @@ export default function Games() {
     setLoading(false);
   };
 
-  // Handle search submission
+  // Handle search submission.
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -88,7 +85,6 @@ export default function Games() {
     setLoading(false);
   };
 
-  // Fetch default games on mount
   useEffect(() => {
     getDefaultGames();
   }, []);
@@ -111,7 +107,6 @@ export default function Games() {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        // Container with vertical scroll if content exceeds 70vh
         <div className="overflow-y-auto max-h-[70vh]">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {games.map((game) => (
@@ -121,22 +116,22 @@ export default function Games() {
                     <Image
                       src={game.thumbnail}
                       alt={`${game.name} thumbnail`}
-                      width={400}
-                      height={160}
-                      className="w-full h-40 object-cover rounded mb-2"
+                      width={200}
+                      height={150}
+                      className="w-full h-[150px] object-cover rounded mb-2"
                     />
                   ) : (
                     <Image
                       src="/default-game-thumbnail.jpg"
                       alt="Default game thumbnail"
-                      width={400}
-                      height={160}
-                      className="w-full h-40 object-cover rounded mb-2"
+                      width={200}
+                      height={150}
+                      className="w-full h-[150px] object-cover rounded mb-2"
                     />
                   )}
                   <h2 className="font-semibold text-lg mb-1">{game.name}</h2>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    {game.description ||
+                    {cleanDescription(game.description) ||
                       "A fun and engaging game that you'll enjoy with friends and family."}
                   </p>
                 </div>

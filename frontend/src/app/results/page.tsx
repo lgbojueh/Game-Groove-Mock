@@ -2,6 +2,22 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+
+// Helper to clean unwanted line break codes from descriptions.
+const cleanDescription = (desc?: string) =>
+  desc ? desc.replace(/&#10;/g, " ") : "";
+
+interface BasicGame {
+  id: string | null;
+  name: string;
+  thumbnail: string;
+  description?: string;
+  complexity?: string;
+  players?: string;
+  theme?: string;
+}
 
 export default function ResultsPage() {
   const searchParams = useSearchParams();
@@ -16,34 +32,28 @@ export default function ResultsPage() {
   const age = searchParams.get("age") || "any";
   const theme = searchParams.get("theme") || "any";
 
-  const [games, setGames] = useState<any[]>([]);
+  const [games, setGames] = useState<BasicGame[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // 1. Read the final detailed results (with thumbnails) from localStorage
     const stored = localStorage.getItem("searchResults");
     if (stored) {
-      let results = JSON.parse(stored);
+      let results = JSON.parse(stored) as BasicGame[];
 
-      // 2. Apply client-side filtering if needed
-      // If the user typed a query, you can optionally check it, but typically
-      // you’ve already used the query in your chunk-based approach. 
-      // However, if you want to further filter by "players", "complexity", etc., do it here:
-
+      // 2. Apply client-side filtering if needed.
       if (players !== "any") {
-        results = results.filter((game: any) => game.players === players);
+        results = results.filter((game) => game.players === players);
       }
       if (complexity !== "any") {
-        results = results.filter((game: any) => game.complexity === complexity);
+        results = results.filter((game) => game.complexity === complexity);
       }
       if (theme !== "any") {
-        results = results.filter((game: any) => game.theme === theme);
+        results = results.filter((game) => game.theme === theme);
       }
-      // etc., if you want to filter on playtime, genre, age, etc.
-
+      // You can add additional filters for playtime, genre, or age if desired.
       setGames(Array.isArray(results) ? results : []);
     } else {
-      // If there's no localStorage data, you could optionally redirect back to search
       console.log("No searchResults in localStorage. Possibly user visited /results directly.");
       setGames([]);
     }
@@ -71,30 +81,30 @@ export default function ResultsPage() {
             <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {games.map((game) => (
                 <li
-                  key={game.id}
+                  key={game.id!}
                   className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-lg transition"
                 >
-                  <a href={`/game/${game.id}`} className="block">
+                  <Link href={`/game/${game.id}`} className="block">
                     <h3 className="font-semibold mb-2">{game.name}</h3>
                     {game.thumbnail ? (
-                      <img
+                      <Image
                         src={game.thumbnail}
                         alt={`${game.name} thumbnail`}
-                        className="w-full h-auto object-cover"
+                        width={200}
+                        height={150}
+                        className="w-full h-[150px] object-cover rounded mb-2"
                       />
                     ) : (
-                      <div className="w-full h-40 bg-gray-300 flex items-center justify-center">
-                        <span>No Image</span>
+                      <div className="w-full h-[150px] bg-gray-300 flex items-center justify-center rounded mb-2">
+                        <span>No Image Available</span>
                       </div>
                     )}
-                    {/* If you have more details like description or stats, you can show them here */}
-                    {/* Example: */}
                     {game.description && (
                       <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
-                        {game.description}
+                        {cleanDescription(game.description)}
                       </p>
                     )}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
