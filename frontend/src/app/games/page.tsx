@@ -5,7 +5,7 @@ import Image from "next/image";
 import { fetchGames } from "@/utils/fetchGames";
 import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
 
-// Helper function to chunk an array.
+// Helper function to chunk an array into smaller arrays of a given size.
 function chunkArray<T>(arr: T[], size: number): T[][] {
   const results: T[][] = [];
   for (let i = 0; i < arr.length; i += size) {
@@ -14,6 +14,7 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
   return results;
 }
 
+// Define an interface for our game object.
 interface BasicGame {
   id: string | null;
   name: string;
@@ -24,27 +25,35 @@ interface BasicGame {
   theme?: string;
 }
 
-// Helper to remove unwanted line breaks.
+// Helper to clean unwanted line break codes from descriptions.
 const cleanDescription = (desc?: string) =>
   desc ? desc.replace(/&#10;/g, " ") : "";
 
 export default function Games() {
   const [games, setGames] = useState<BasicGame[]>([]);
+  const [visibleCount, setVisibleCount] = useState(9); // initially display 9 games (or any number you choose)
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Function to fetch default games (generic query "board game")
+  // Fetch default games (using "board game" as a generic query)
   const getDefaultGames = async () => {
     setLoading(true);
+    // 1. Fetch basic results.
     let basicResults = (await fetchGames("board game")) as BasicGame[];
+    // Filter out games without a valid ID.
     basicResults = basicResults.filter((game) => game.id !== null);
+
+    // 2. Extract all IDs (non-null asserted).
     const allIds = basicResults.map((game) => game.id!);
+    // 3. Chunk IDs into groups of 20.
     const idChunks = chunkArray(allIds, 20);
     let detailedResults: BasicGame[] = [];
+    // 4. For each chunk, fetch detailed data.
     for (const chunk of idChunks) {
       const details = await fetchDetailedGames(chunk);
       detailedResults = detailedResults.concat(details);
     }
+    // 5. Merge detailed data (description and updated thumbnail) into basic results.
     for (const detail of detailedResults) {
       const idx = basicResults.findIndex((b) => b.id === detail.id);
       if (idx !== -1) {
@@ -82,12 +91,14 @@ export default function Games() {
       }
     }
     setGames(basicResults);
+    setVisibleCount(9); // reset visible count on new search
     setLoading(false);
   };
 
-  useEffect(() => {
-    getDefaultGames();
-  }, []);
+  // Load more games.
+  const loadMore = () => {
+    setVisibleCount((prev) => prev + 9);
+  };
 
   return (
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen">
@@ -107,38 +118,52 @@ export default function Games() {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <div className="overflow-y-auto max-h-[70vh]">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {games.map((game) => (
-              <Link key={game.id!} href={`/game/${game.id}`} className="block">
-                <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-lg transition">
-                  {game.thumbnail ? (
-                    <Image
-                      src={game.thumbnail}
-                      alt={`${game.name} thumbnail`}
-                      width={200}
-                      height={150}
-                      className="w-full h-[150px] object-cover rounded mb-2"
-                    />
-                  ) : (
-                    <Image
-                      src="/default-game-thumbnail.jpg"
-                      alt="Default game thumbnail"
-                      width={200}
-                      height={150}
-                      className="w-full h-[150px] object-cover rounded mb-2"
-                    />
-                  )}
-                  <h2 className="font-semibold text-lg mb-1">{game.name}</h2>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    {cleanDescription(game.description) ||
-                      "A fun and engaging game that you'll enjoy with friends and family."}
-                  </p>
-                </div>
-              </Link>
-            ))}
+        <>
+          {/* Scrollable container with a maximum height */}
+          <div className="overflow-y-auto max-h-[70vh]">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {games.slice(0, visibleCount).map((game) => (
+                <Link key={game.id!} href={`/game/${game.id}`} className="block">
+                  <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-lg transition">
+                    {game.thumbnail ? (
+                      <Image
+                        src={game.thumbnail}
+                        alt={`${game.name} thumbnail`}
+                        width={200}
+                        height={150}
+                        className="w-full h-[150px] object-cover rounded mb-2"
+                      />
+                    ) : (
+                      <Image
+                        src="/default-game-thumbnail.jpg"
+                        alt="Default game thumbnail"
+                        width={200}
+                        height={150}
+                        className="w-full h-[150px] object-cover rounded mb-2"
+                      />
+                    )}
+                    <h2 className="font-semibold text-lg mb-1">{game.name}</h2>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      {cleanDescription(game.description) ||
+                        "A fun and engaging game that you'll enjoy with friends and family."}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
+          {/* Load More Button */}
+          {visibleCount < games.length && (
+            <div className="mt-4 text-center">
+              <button
+                onClick={loadMore}
+                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition"
+              >
+                Load More
+              </button>
+            </div>
+          )}
+        </>
       )}
     </main>
   );
