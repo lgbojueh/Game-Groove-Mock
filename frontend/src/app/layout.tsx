@@ -27,25 +27,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        {/* Ensure title is a string */}
         <title>{String(metadata.title)}</title>
-        {/* Use a fallback for description so it’s always a string */}
         <meta
           name="description"
           content={metadata.description || "Find the perfect board game"}
         />
       </head>
-      <body
-        suppressHydrationWarning
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system">
           <ClientNavbar />
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">{children}</div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {children}
+          </div>
         </ThemeProvider>
       </body>
     </html>
