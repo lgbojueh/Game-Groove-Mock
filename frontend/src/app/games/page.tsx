@@ -5,6 +5,7 @@ import Image from "next/image";
 import { fetchGames } from "@/utils/fetchGames";
 import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
 
+// Helper function to chunk an array into smaller arrays of a given size.
 function chunkArray<T>(arr: T[], size: number): T[][] {
   const results: T[][] = [];
   for (let i = 0; i < arr.length; i += size) {
@@ -13,7 +14,7 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
   return results;
 }
 
-// Define an interface for a basic game object without the summary property.
+// Define an interface for our game object.
 interface BasicGame {
   id: string | null;
   name: string;
@@ -29,25 +30,24 @@ export default function Games() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Fetch default games (using "board game" as a generic query)
+  // Function to fetch default games (using "board game" as a generic query)
   const getDefaultGames = async () => {
     setLoading(true);
-    // 1. Fetch basic results.
     let basicResults = (await fetchGames("board game")) as BasicGame[];
-    // Filter out games without a valid ID.
+    // Filter out games without a valid ID
     basicResults = basicResults.filter((game) => game.id !== null);
 
-    // 2. Extract all IDs (non-null asserted).
+    // Extract IDs (non-null asserted)
     const allIds = basicResults.map((game) => game.id!);
-    // 3. Chunk IDs into groups of 20.
+    // Chunk IDs into groups of 20
     const idChunks = chunkArray(allIds, 20);
     let detailedResults: BasicGame[] = [];
-    // 4. For each chunk, fetch detailed data.
+    // For each chunk, fetch detailed data
     for (const chunk of idChunks) {
       const details = await fetchDetailedGames(chunk);
       detailedResults = detailedResults.concat(details);
     }
-    // 5. Merge detailed data (description and updated thumbnail) into basic results.
+    // Merge detailed data into basic results
     for (const detail of detailedResults) {
       const idx = basicResults.findIndex((b) => b.id === detail.id);
       if (idx !== -1) {
@@ -88,6 +88,11 @@ export default function Games() {
     setLoading(false);
   };
 
+  // Fetch default games on mount
+  useEffect(() => {
+    getDefaultGames();
+  }, []);
+
   return (
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen">
       <h1 className="text-4xl font-bold mb-4">All Games</h1>
@@ -106,7 +111,7 @@ export default function Games() {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        // Scrollable container with a maximum height set
+        // Container with vertical scroll if content exceeds 70vh
         <div className="overflow-y-auto max-h-[70vh]">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {games.map((game) => (
