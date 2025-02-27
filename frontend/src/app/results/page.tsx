@@ -9,6 +9,8 @@ import Image from "next/image";
 const cleanDescription = (desc?: string) =>
   desc ? desc.replace(/&#10;/g, " ") : "";
 
+// Define an interface for your game objects.
+// Ensure these properties are available in your detailed game objects.
 interface BasicGame {
   id: string | null;
   name: string;
@@ -17,13 +19,16 @@ interface BasicGame {
   complexity?: string;
   players?: string;
   theme?: string;
+  playtime?: string;
+  genre?: string;
+  age?: string;
 }
 
 export default function ResultsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Read query parameters
+  // Read filter query parameters.
   const query = searchParams.get("query") || "";
   const players = searchParams.get("players") || "any";
   const complexity = searchParams.get("complexity") || "any";
@@ -36,24 +41,33 @@ export default function ResultsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Read the final detailed results (with thumbnails) from localStorage
+    // 1. Read the final detailed results (with thumbnails and filter properties) from localStorage.
     const stored = localStorage.getItem("searchResults");
     if (stored) {
       let results = JSON.parse(stored) as BasicGame[];
 
-      // 2. Apply client-side filtering if needed.
+      // 2. Apply client-side filtering for each filter.
       if (players !== "any") {
         results = results.filter((game) => game.players === players);
       }
       if (complexity !== "any") {
         results = results.filter((game) => game.complexity === complexity);
       }
+      if (playtime !== "any") {
+        results = results.filter((game) => game.playtime === playtime);
+      }
+      if (genre !== "any") {
+        results = results.filter((game) => game.genre === genre);
+      }
+      if (age !== "any") {
+        results = results.filter((game) => game.age === age);
+      }
       if (theme !== "any") {
         results = results.filter((game) => game.theme === theme);
       }
-      // You can add additional filters for playtime, genre, or age if desired.
       setGames(Array.isArray(results) ? results : []);
     } else {
+      // If there's no stored data, you might consider redirecting or displaying a message.
       console.log("No searchResults in localStorage. Possibly user visited /results directly.");
       setGames([]);
     }
@@ -96,7 +110,7 @@ export default function ResultsPage() {
                       />
                     ) : (
                       <div className="w-full h-[150px] bg-gray-300 flex items-center justify-center rounded mb-2">
-                        <span>No Image Available</span>
+                        <span>No Image</span>
                       </div>
                     )}
                     {game.description && (
