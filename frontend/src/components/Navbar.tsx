@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import Logo from "./Logo"; // Use the client-only logo component
+import Image from "next/image";
 import ThemeToggle from "./ThemeToggle";
 
 export default function Navbar() {
@@ -14,6 +14,7 @@ export default function Navbar() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Update user state on mount and when route changes.
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     setUser(storedUser ? JSON.parse(storedUser) : null);
@@ -40,6 +41,7 @@ export default function Navbar() {
     router.push("/login");
   };
 
+  // Close dropdown if clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -58,7 +60,13 @@ export default function Navbar() {
     <nav className="w-full flex justify-between items-center p-5 bg-[var(--background)]">
       {/* Left Side: Logo and App Name */}
       <div className="flex items-center space-x-3">
-        <Logo />
+        <Image 
+          src="/game-groove-icon.svg"  
+          alt="Game Groove Logo"
+          width={30} 
+          height={30} 
+          priority
+        />
         <span className="text-xl font-bold text-[var(--foreground)]">
           Game Groove
         </span>
