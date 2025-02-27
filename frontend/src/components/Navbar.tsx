@@ -61,6 +61,8 @@ export default function Navbar() {
       {/* Left Side: Logo and App Name */}
       <div className="flex items-center space-x-3">
         <Image 
+          src="/game-groove-icon.svg"  
+          alt="Game Groove Logo"
           src="/game.svg"  
           alt="Small Logo"
           width={30} 
@@ -95,13 +97,10 @@ export default function Navbar() {
       <div className="flex items-center space-x-4 relative">
         <ThemeToggle />
         {user ? (
-          // Container for Account link and dropdown toggle icon.
           <div className="relative flex items-center space-x-2">
-            {/* Account link always navigates to /account when clicked */}
             <Link href="/account" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400 whitespace-nowrap">
               Account
             </Link>
-            {/* Dropdown Toggle Icon */}
             <div
               className="cursor-pointer"
               onMouseEnter={handleMouseEnter}
@@ -126,7 +125,6 @@ export default function Navbar() {
                 onMouseLeave={handleMouseLeave}
               >
                 <div className="py-1">
-                  {/* New "My Account" option */}
                   <button
                     onClick={() => router.push("/account")}
                     className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 w-full text-left hover:bg-gray-200 dark:hover:bg-gray-600"
