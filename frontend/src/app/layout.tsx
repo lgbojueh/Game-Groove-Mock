@@ -1,10 +1,10 @@
-// app/layout.tsx
+// src/app/layout.tsx
 import type { Metadata } from "next";
 import React from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
-import ClientNavbar from "../components/ClientNavbar"; // a client-only wrapper for Navbar
+import ClientNavbar from "../components/ClientNavbar"; // Ensure this file exists!
 
 export const metadata: Metadata = {
   title: "Game Groove",
@@ -29,11 +29,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Essential meta tags */}
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>{metadata.title}</title>
-        <meta name="description" content={metadata.description} />
+        {/* Convert title to a string */}
+        <title>{String(metadata.title) || "Game Groove"}</title>
+        <meta name="description" content={metadata.description ?? "Find the perfect board game"} />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system">

@@ -5,7 +5,6 @@ import Image from "next/image";
 import { fetchGames } from "@/utils/fetchGames";
 import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
 
-// Helper: chunk an array into smaller arrays of a given size.
 function chunkArray<T>(arr: T[], size: number): T[][] {
   const results: T[][] = [];
   for (let i = 0; i < arr.length; i += size) {
@@ -14,14 +13,12 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
   return results;
 }
 
-// Define an interface for a basic game object.
+// Define an interface for a basic game object without the summary property.
 interface BasicGame {
   id: string | null;
   name: string;
   thumbnail: string;
   description?: string;
-  // Other dummy attributes (if any)
-  summary?: string;
   complexity?: string;
   players?: string;
   theme?: string;
@@ -32,12 +29,11 @@ export default function Games() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Function to fetch default games (generic query "board game")
+  // Fetch default games (using "board game" as a generic query)
   const getDefaultGames = async () => {
     setLoading(true);
     // 1. Fetch basic results.
     let basicResults = (await fetchGames("board game")) as BasicGame[];
-    console.log("Basic Results:", basicResults);
     // Filter out games without a valid ID.
     basicResults = basicResults.filter((game) => game.id !== null);
 
@@ -49,11 +45,9 @@ export default function Games() {
     // 4. For each chunk, fetch detailed data.
     for (const chunk of idChunks) {
       const details = await fetchDetailedGames(chunk);
-      console.log("Detailed results for chunk:", details);
       detailedResults = detailedResults.concat(details);
     }
-    console.log("All detailed results:", detailedResults);
-    // 5. Merge detailed info into basic results.
+    // 5. Merge detailed data (description and updated thumbnail) into basic results.
     for (const detail of detailedResults) {
       const idx = basicResults.findIndex((b) => b.id === detail.id);
       if (idx !== -1) {
@@ -75,8 +69,6 @@ export default function Games() {
     } else {
       basicResults = (await fetchGames(searchQuery)) as BasicGame[];
     }
-    console.log("Basic search results:", basicResults);
-    // Filter out items with null id.
     basicResults = basicResults.filter((game) => game.id !== null);
     const allIds = basicResults.map((game) => game.id!);
     const idChunks = chunkArray(allIds, 20);
@@ -114,7 +106,7 @@ export default function Games() {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        // Scrollable container with a maximum height.
+        // Scrollable container with a maximum height set
         <div className="overflow-y-auto max-h-[70vh]">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {games.map((game) => (
@@ -140,7 +132,6 @@ export default function Games() {
                   <h2 className="font-semibold text-lg mb-1">{game.name}</h2>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
                     {game.description ||
-                      game.summary ||
                       "A fun and engaging game that you'll enjoy with friends and family."}
                   </p>
                 </div>

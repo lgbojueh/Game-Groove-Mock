@@ -15,11 +15,6 @@ export const fetchGames = async (query: string) => {
     const xmlDoc = parser.parseFromString(xmlText, "text/xml");
     const items = Array.from(xmlDoc.getElementsByTagName("item"));
 
-    // Dummy filter values for demonstration:
-    const complexityLevels = ["easy", "medium", "hard"];
-    const playerOptions = ["2", "3-4", "5+"];
-    const themes = ["fantasy", "sci-fi", "horror", "historical", "adventure"];
-
     const games = items.map((item) => {
       const id = item.getAttribute("id");
       const name =
@@ -27,12 +22,10 @@ export const fetchGames = async (query: string) => {
         "Unknown Game";
       const thumbnail =
         item.getElementsByTagName("thumbnail")[0]?.textContent || "";
-      // Add dummy filtering attributes
-      const complexity =
-        complexityLevels[Math.floor(Math.random() * complexityLevels.length)];
-      const players =
-        playerOptions[Math.floor(Math.random() * playerOptions.length)];
-      const theme = themes[Math.floor(Math.random() * themes.length)];
+      // Use static default values instead of random ones:
+      const complexity = "medium";
+      const players = "3-4";
+      const theme = "adventure";
       return { id, name, thumbnail, complexity, players, theme };
     });
 
