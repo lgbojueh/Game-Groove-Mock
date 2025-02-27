@@ -22,14 +22,13 @@ export const fetchGames = async (query: string) => {
         "Unknown Game";
       const thumbnail =
         item.getElementsByTagName("thumbnail")[0]?.textContent || "";
-      // Use static default values for filtering
+      // Provide dummy filter values
       const complexity = "medium";
       const players = "3-4";
       const theme = "adventure";
-      const playtime = "medium"; // additional dummy filter value
-      const genre = "strategy";  // additional dummy filter value
-      const age = "teen";        // additional dummy filter value
-
+      const playtime = "medium";
+      const genre = "strategy";
+      const age = "teen";
       return { id, name, thumbnail, complexity, players, theme, playtime, genre, age };
     });
 
