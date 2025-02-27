@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { fetchGames } from "@/utils/fetchGames";
 
 export default function ResultsPage() {
   const searchParams = useSearchParams();
@@ -18,40 +17,38 @@ export default function ResultsPage() {
   const theme = searchParams.get("theme") || "any";
 
   const [games, setGames] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const getResults = async () => {
-      setLoading(true);
-      let results = [];
-      if (query.trim()) {
-        // Exact search: use the provided query.
-        console.log("🔎 Searching for exact game:", query);
-        results = await fetchGames(query);
-      } else {
-        // No query provided – use a generic term to fetch a broad list.
-        console.log("🎯 No exact query provided. Fetching recommended games.");
-        results = await fetchGames("board game");
-        // Apply client-side filtering based on selected filters.
-        if (players !== "any") {
-          results = results.filter((game) => game.players === players);
-        }
-        if (complexity !== "any") {
-          results = results.filter((game) => game.complexity === complexity);
-        }
-        if (theme !== "any") {
-          results = results.filter((game) => game.theme === theme);
-        }
-      }
-      setGames(Array.isArray(results) ? results : []);
-      setLoading(false);
-      if (results.length === 0) {
-        console.log("❌ No games found after filtering!");
-      }
-    };
+    // 1. Read the final detailed results (with thumbnails) from localStorage
+    const stored = localStorage.getItem("searchResults");
+    if (stored) {
+      let results = JSON.parse(stored);
 
-    getResults();
-  }, [query, players, complexity, playtime, genre, age, theme]);
+      // 2. Apply client-side filtering if needed
+      // If the user typed a query, you can optionally check it, but typically
+      // you’ve already used the query in your chunk-based approach. 
+      // However, if you want to further filter by "players", "complexity", etc., do it here:
+
+      if (players !== "any") {
+        results = results.filter((game: any) => game.players === players);
+      }
+      if (complexity !== "any") {
+        results = results.filter((game: any) => game.complexity === complexity);
+      }
+      if (theme !== "any") {
+        results = results.filter((game: any) => game.theme === theme);
+      }
+      // etc., if you want to filter on playtime, genre, age, etc.
+
+      setGames(Array.isArray(results) ? results : []);
+    } else {
+      // If there's no localStorage data, you could optionally redirect back to search
+      console.log("No searchResults in localStorage. Possibly user visited /results directly.");
+      setGames([]);
+    }
+    setLoading(false);
+  }, [players, complexity, playtime, genre, age, theme]);
 
   return (
     <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -90,17 +87,13 @@ export default function ResultsPage() {
                         <span>No Image</span>
                       </div>
                     )}
-                    <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                      <p>
-                        <strong>Players:</strong> {game.players}
+                    {/* If you have more details like description or stats, you can show them here */}
+                    {/* Example: */}
+                    {game.description && (
+                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
+                        {game.description}
                       </p>
-                      <p>
-                        <strong>Complexity:</strong> {game.complexity}
-                      </p>
-                      <p>
-                        <strong>Theme:</strong> {game.theme}
-                      </p>
-                    </div>
+                    )}
                   </a>
                 </li>
               ))}
