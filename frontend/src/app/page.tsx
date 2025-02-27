@@ -32,7 +32,7 @@ export default function Home() {
           src={logoSrc}
           alt="Game Groove Logo"
           width={550}
-          height={550}
+          height={500}
           priority
           className="w-full h-auto object-contain"
         />
