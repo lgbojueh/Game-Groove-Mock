@@ -17,15 +17,17 @@ export default function Home() {
     router.push("/search");
   };
 
-  // Determine which logo to use (using fallback until mounted)
+  // While mounting, render a fallback
   const logoSrc = mounted
     ? (theme === "dark" ? "/game-groove-logo-light.svg" : "/game-groove-logo-dark.svg")
     : "/game-groove-logo-dark.svg";
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-[var(--background)] text-[var(--foreground)] px-4">
-      {/* Logo Container constraining the logo size */}
-      <div className="w-full max-w-xs mx-auto">
+      {/* Container with responsive width:
+          - w-full on mobile (100% width)
+          - sm:w-[550px] on screens small and up */}
+      <div className="mx-auto w-full sm:w-[550px]">
         <Image 
           src={logoSrc}
           alt="Game Groove Logo"
