@@ -29,9 +29,9 @@ export default function Home() {
       {/* Responsive container:
           - On mobile: w-full with max width 350px.
           - On sm: max width increases to 550px.
-          - On md and above: fixed dimensions 570px x 473px.
+          - On md and above: fixed dimensions 600px x 473px.
       */}
-      <div className="relative w-full max-w-[350px] sm:max-w-[550px] md:w-[570px] md:h-[473px] mx-auto">
+      <div className="relative w-full max-w-[350px] sm:max-w-[550px] md:w-[600px] md:h-[473px] mx-auto">
         <Image
           src={logoSrc}
           alt="Game Groove Logo"
