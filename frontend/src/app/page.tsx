@@ -17,7 +17,7 @@ export default function Home() {
     router.push("/search");
   };
 
-  // Use the appropriate logo based on the current theme
+  // Choose logo based on theme. Until mounted, use fallback.
   const logoSrc = mounted
     ? theme === "dark"
       ? "/game-groove-logo-light.svg"
@@ -26,10 +26,11 @@ export default function Home() {
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-[var(--background)] text-[var(--foreground)] px-4">
-      {/* Logo container with responsive dimensions:
-          - On mobile (base): width 550px (height auto).
-          - On larger screens (sm and up): width 560px and height 470px */}
-      <div className="relative mx-auto w-[550px] sm:w-[560px] sm:h-[470px]">
+      {/* Responsive container:
+          - On mobile: full width up to a max of 550px.
+          - On larger screens: fixed width 560px and fixed height 470px.
+      */}
+      <div className="relative w-full max-w-[550px] sm:w-[560px] sm:h-[470px]">
         <Image
           src={logoSrc}
           alt="Game Groove Logo"
