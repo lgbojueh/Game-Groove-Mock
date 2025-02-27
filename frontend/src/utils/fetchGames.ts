@@ -10,7 +10,7 @@ export const fetchGames = async (query: string) => {
     const xmlText = await response.text();
     console.log("📜 API Response XML:", xmlText);
 
-    // Convert XML to JSON (since BGG API returns XML)
+    // Convert XML to JSON
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlText, "text/xml");
     const items = Array.from(xmlDoc.getElementsByTagName("item"));
@@ -22,7 +22,7 @@ export const fetchGames = async (query: string) => {
         "Unknown Game";
       const thumbnail =
         item.getElementsByTagName("thumbnail")[0]?.textContent || "";
-      // Provide dummy filter values
+      // Dummy/default filter values.
       const complexity = "medium";
       const players = "3-4";
       const theme = "adventure";
