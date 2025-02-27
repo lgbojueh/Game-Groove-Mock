@@ -1,10 +1,11 @@
-"use client";
-
-import React, { useEffect, useState } from "react";  // ✅ Import React explicitly
+import React, { useState, useEffect } from "react"; // Server components can import React without "use client"
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "../components/Navbar";  // ✅ Import Navbar
-import { ThemeProvider } from "next-themes"; // ✅ Import ThemeProvider
+import dynamic from "next/dynamic";
+import { ThemeProvider } from "next-themes";
+
+// Dynamically import client components (Navbar and ThemeToggle) so they work in a server component.
+const Navbar = dynamic(() => import("../components/Navbar"), { ssr: false });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,14 +27,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return <div />; // Prevent hydration issues
-
+  // If you need to handle client-specific logic (like mounting for theme), you can move that
+  // logic into a separate ClientWrapper component.
   return (
     <html lang="en">
       <head>
@@ -45,7 +40,6 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system">
           <Navbar />
-          {/* Responsive container wrapping the page content */}
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {children}
           </div>
