@@ -1,17 +1,26 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 
 export default function ResetPassword() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token"); // Get token from URL
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!token) {
+      setError("Invalid or expired reset link.");
+    }
+  }, [token]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
     if (!password || !confirmPassword) {
       setError("Please fill in both fields.");
       return;
@@ -20,12 +29,26 @@ export default function ResetPassword() {
       setError("Passwords do not match.");
       return;
     }
-    // Here you would update the password via your backend.
-    // For simulation, we set a success message and redirect.
-    setSuccess("Your password has been reset successfully!");
-    setTimeout(() => {
-      router.push("/login");
-    }, 2000);
+
+    try {
+      // Simulating API request (Replace with real API call)
+      const response = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, password }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to reset password. The link may have expired.");
+      }
+
+      setSuccess("Your password has been reset successfully!");
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
+    } catch (err) {
+      setError("Error resetting password. Please try again.");
+    }
   };
 
   return (
