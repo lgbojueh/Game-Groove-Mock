@@ -17,41 +17,27 @@ export default function Home() {
     router.push("/search");
   };
 
-  // While mounting, render a fallback logo so that server and client match.
-  if (!mounted) {
-    return (
-      <main className="flex flex-col items-center justify-center min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+  // Determine which logo to use (using fallback until mounted)
+  const logoSrc = mounted
+    ? (theme === "dark" ? "/game-groove-logo-light.svg" : "/game-groove-logo-dark.svg")
+    : "/game-groove-logo-dark.svg";
+
+  return (
+    <main className="flex flex-col items-center justify-center min-h-screen bg-[var(--background)] text-[var(--foreground)] px-4">
+      {/* Logo Container constraining the logo size */}
+      <div className="w-full max-w-xs mx-auto">
         <Image 
-          src="/game-groove-logo-dark.svg"
+          src={logoSrc}
           alt="Game Groove Logo"
           width={550}
           height={550}
           priority
-          className="mb-6 mx-auto block"
+          className="w-full h-auto object-contain"
         />
-        <button 
-          onClick={handleFindGameClick}
-          className="px-6 py-3 text-lg font-semibold rounded-lg transition bg-gray-400 hover:bg-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600 text-[var(--foreground)]"
-        >
-          Find My Game
-        </button>
-      </main>
-    );
-  }
-
-  return (
-    <main className="flex flex-col items-center justify-center min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-      <Image 
-        src={theme === "dark" ? "/game-groove-logo-light.svg" : "/game-groove-logo-dark.svg"}
-        alt="Game Groove Logo"
-        width={550}
-        height={550}
-        priority
-        className="mb-6 mx-auto block"
-      />
+      </div>
       <button 
         onClick={handleFindGameClick}
-        className="px-6 py-3 text-lg font-semibold rounded-lg transition bg-gray-400 hover:bg-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600 text-[var(--foreground)]"
+        className="mt-6 px-6 py-3 text-lg font-semibold rounded-lg transition bg-gray-400 hover:bg-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600 text-[var(--foreground)]"
       >
         Find My Game
       </button>
