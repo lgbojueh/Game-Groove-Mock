@@ -27,10 +27,11 @@ export default function Home() {
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-[var(--background)] text-[var(--foreground)] px-4">
       {/* Responsive container:
-          - On mobile: full width up to a max of 550px.
-          - On larger screens: fixed width 560px and fixed height 470px.
+          - On mobile: w-full with max width 350px.
+          - On sm: max width increases to 550px.
+          - On md and above: fixed dimensions 560px x 470px.
       */}
-      <div className="relative w-full max-w-[550px] sm:w-[560px] sm:h-[470px]">
+      <div className="relative w-full max-w-[350px] sm:max-w-[550px] md:w-[560px] md:h-[470px] mx-auto">
         <Image
           src={logoSrc}
           alt="Game Groove Logo"
