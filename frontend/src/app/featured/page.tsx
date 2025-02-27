@@ -36,7 +36,6 @@ export default function Featured() {
     setLoading(true);
     // 1. Fetch the basic list of hot games.
     const basicGames = (await fetchHotGames()) as BasicGame[];
-    // Filter out games without valid IDs.
     const basicGamesTyped = basicGames.filter((game) => game.id !== null);
 
     // 2. Extract IDs and chunk them.
@@ -50,7 +49,7 @@ export default function Featured() {
       detailedResults = detailedResults.concat(details);
     }
 
-    // 4. Merge detailed data into the basic game objects.
+    // 4. Merge detailed data into basic game objects.
     for (const detail of detailedResults) {
       const idx = basicGamesTyped.findIndex((b) => b.id === detail.id);
       if (idx !== -1) {
@@ -77,27 +76,24 @@ export default function Featured() {
           <div className="overflow-y-auto max-h-[70vh]">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {popularGames.map((game) => (
-                <Link key={game.id ?? ""} href={`/game/${game.id}`}>
-                  <a className="block p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-xl transition">
-                    <h3 className="font-semibold mb-2">{game.name}</h3>
-                    {game.thumbnail ? (
-                      <img
-                        src={game.thumbnail}
-                        alt={`${game.name} thumbnail`}
-                        width={200}
-                        height={150}
-                        className="w-full h-[150px] object-cover rounded mb-2"
-                      />
-                    ) : (
-                      <div className="w-full h-[150px] bg-gray-300 flex items-center justify-center rounded mb-2">
-                        <span>No Image Available</span>
-                      </div>
-                    )}
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      {cleanDescription(game.description) ||
-                        "A brief description of the game."}
-                    </p>
-                  </a>
+                <Link key={game.id ?? ""} href={`/game/${game.id}`} className="block p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-xl transition">
+                  <h3 className="font-semibold mb-2">{game.name}</h3>
+                  {game.thumbnail ? (
+                    <img
+                      src={game.thumbnail}
+                      alt={`${game.name} thumbnail`}
+                      width={200}
+                      height={150}
+                      className="w-full h-[150px] object-cover rounded mb-2"
+                    />
+                  ) : (
+                    <div className="w-full h-[150px] bg-gray-300 flex items-center justify-center rounded mb-2">
+                      <span>No Image Available</span>
+                    </div>
+                  )}
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    {cleanDescription(game.description) || "A brief description of the game."}
+                  </p>
                 </Link>
               ))}
             </div>
