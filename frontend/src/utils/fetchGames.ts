@@ -1,9 +1,3 @@
-import { stdout } from "process";
-import { config } from "next/dist/build/templates/pages";
-
-
-
-
 export const fetchGames = async (query: string) => {
   try {
     console.log("📡 Fetching games for query:", query);
@@ -15,12 +9,14 @@ export const fetchGames = async (query: string) => {
     }
     const xmlText = await response.text();
     console.log("📜 API Response XML:", xmlText);
-
+ 
+ 
     // Convert XML to JSON
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlText, "text/xml");
     const items = Array.from(xmlDoc.getElementsByTagName("item"));
-
+ 
+ 
     const games = items.map((item) => {
       const id = item.getAttribute("id");
       const name =
@@ -37,11 +33,12 @@ export const fetchGames = async (query: string) => {
       const age = "teen";
       return { id, name, thumbnail, complexity, players, theme, playtime, genre, age };
     });
-
+ 
+ 
     console.log("✅ Parsed Games:", games);
     return games;
   } catch (error) {
     console.error("❌ API Error:", error);
     return [];
   }
-};
+ }; 
