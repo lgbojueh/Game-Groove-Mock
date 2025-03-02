@@ -29,11 +29,12 @@ export default function SearchForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Use a default search term if the query is empty.
+    const effectiveQuery = searchQuery.trim() ? searchQuery.trim() : "board game";
+
     // Build URL query parameters for filters.
     const params = new URLSearchParams();
-    if (searchQuery.trim()) {
-      params.set("query", searchQuery);
-    }
+    params.set("query", effectiveQuery);
     params.set("players", players);
     params.set("complexity", complexity);
     params.set("playtime", playtime);
@@ -42,9 +43,8 @@ export default function SearchForm() {
     params.set("theme", theme);
 
     // 1. Fetch basic results (IDs and minimal info)
-    const basicResults = await fetchGames(searchQuery);
+    const basicResults = await fetchGames(effectiveQuery);
     console.log("Basic search results:", basicResults);
-
     // Extract IDs from basic results
     const allIds = basicResults.map((game) => game.id);
 
