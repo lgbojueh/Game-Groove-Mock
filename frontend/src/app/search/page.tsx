@@ -44,12 +44,13 @@ export default function SearchForm() {
     // 1. Fetch basic results (IDs and minimal info)
     const basicResults = await fetchGames(searchQuery);
     console.log("Basic search results:", basicResults);
+
     // Extract IDs from basic results
     const allIds = basicResults.map((game) => game.id);
-    
+
     // 2. Chunk IDs into groups of 20
     const idChunks = chunkArray(allIds, 20);
-    
+
     let detailedResults: any[] = [];
     // 3. For each chunk, fetch detailed game info
     for (const chunk of idChunks) {
@@ -59,7 +60,7 @@ export default function SearchForm() {
 
     // Store detailed results in localStorage
     localStorage.setItem("searchResults", JSON.stringify(detailedResults));
-    
+
     // Navigate to the results page with query parameters.
     router.push(`/results?${params.toString()}`);
   };
