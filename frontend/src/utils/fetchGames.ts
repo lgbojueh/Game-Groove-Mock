@@ -22,8 +22,16 @@ export const fetchGames = async (query: string) => {
         "Unknown Game";
       const thumbnail =
         item.getElementsByTagName("thumbnail")[0]?.textContent || "";
-      // Provide dummy default values (optional if you'll get details later)
-      return { id, name, thumbnail };
+      
+      // Dummy/default filter values (adjust these as needed)
+      const complexity = "medium";  // Options: "easy", "medium", "hard"
+      const players = "3-4";          // Options: "2", "3-4", "5+"
+      const theme = "adventure";      // Options: "adventure", "fantasy", etc.
+      const playtime = "medium";      // Options: "short", "medium", "long"
+      const genre = "strategy";       // Options: "strategy", "party", "family", etc.
+      const age = "teen";             // Options: "kids", "teen", "adult"
+      
+      return { id, name, thumbnail, complexity, players, theme, playtime, genre, age };
     });
 
     console.log("✅ Parsed Games:", games);
