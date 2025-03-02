@@ -1,11 +1,8 @@
 // src/utils/fetchDetailedGames.ts
 export const fetchDetailedGames = async (ids: string[]) => {
   try {
-    // Fetch details using the "thing" endpoint and request stats.
     const response = await fetch(
-      `https://www.boardgamegeek.com/xmlapi2/thing?id=${ids.join(
-        ","
-      )}&stats=1`
+      `https://www.boardgamegeek.com/xmlapi2/thing?id=${ids.join(",")}&stats=1`
     );
     if (!response.ok) {
       throw new Error(`API request failed: ${response.statusText}`);
@@ -25,86 +22,54 @@ export const fetchDetailedGames = async (ids: string[]) => {
       const description =
         item.getElementsByTagName("description")[0]?.textContent ||
         "No description available.";
+      const yearpublished =
+        item.getElementsByTagName("yearpublished")[0]?.getAttribute("value") ||
+        "0";
+      const minage =
+        item.getElementsByTagName("minage")[0]?.getAttribute("value") || "0";
+      const minplayers =
+        item.getElementsByTagName("minplayers")[0]?.getAttribute("value") ||
+        "0";
+      const maxplayers =
+        item.getElementsByTagName("maxplayers")[0]?.getAttribute("value") ||
+        "0";
+      const playingtime =
+        item.getElementsByTagName("playingtime")[0]?.getAttribute("value") ||
+        "0";
+      const averageRating =
+        item.getElementsByTagName("average")[0]?.getAttribute("value") ||
+        "0";
+      const averageWeight =
+        item.getElementsByTagName("averageweight")[0]?.textContent || "0";
 
-      // Parse numeric stats for players, playingtime, minage, and averageweight.
-      const minplayersText = item.getElementsByTagName("minplayers")[0]?.textContent;
-      const maxplayersText = item.getElementsByTagName("maxplayers")[0]?.textContent;
-      const playingtimeText = item.getElementsByTagName("playingtime")[0]?.textContent;
-      const minageText = item.getElementsByTagName("minage")[0]?.textContent;
-      const averageweightText = item.getElementsByTagName("averageweight")[0]?.textContent;
-
-      const minplayers = minplayersText ? parseInt(minplayersText, 10) : NaN;
-      const maxplayers = maxplayersText ? parseInt(maxplayersText, 10) : NaN;
-      const playingtime = playingtimeText ? parseInt(playingtimeText, 10) : NaN;
-      const minage = minageText ? parseInt(minageText, 10) : NaN;
-      const averageweight = averageweightText ? parseFloat(averageweightText) : NaN;
-
-      // Map number of players to a filter category.
-      let playersFilter = "any";
-      if (!isNaN(minplayers) && !isNaN(maxplayers)) {
-        if (minplayers === maxplayers) {
-          playersFilter = String(minplayers);
-        } else if (maxplayers <= 2) {
-          playersFilter = "2";
-        } else if (maxplayers >= 3 && maxplayers <= 4) {
-          playersFilter = "3-4";
-        } else if (maxplayers >= 5) {
-          playersFilter = "5+";
+      // Extract designer and publisher info from <link> elements.
+      let designers: string[] = [];
+      let publishers: string[] = [];
+      Array.from(item.getElementsByTagName("link")).forEach((link) => {
+        const type = link.getAttribute("type");
+        const value = link.getAttribute("value");
+        if (type === "boardgamedesigner" && value) {
+          designers.push(value);
         }
-      }
-
-      // Map average weight to complexity.
-      let complexityFilter = "any";
-      if (!isNaN(averageweight)) {
-        if (averageweight < 2.0) {
-          complexityFilter = "easy";
-        } else if (averageweight >= 3.5) {
-          complexityFilter = "hard";
-        } else {
-          complexityFilter = "medium";
+        if (type === "boardgamepublisher" && value) {
+          publishers.push(value);
         }
-      }
-
-      // Map playing time to playtime category.
-      let playtimeCategory = "any";
-      if (!isNaN(playingtime)) {
-        if (playingtime <= 30) {
-          playtimeCategory = "short";
-        } else if (playingtime > 60) {
-          playtimeCategory = "long";
-        } else {
-          playtimeCategory = "medium";
-        }
-      }
-
-      // Map minage to an age category.
-      let ageCategory = "any";
-      if (!isNaN(minage)) {
-        if (minage <= 5) {
-          ageCategory = "kids";
-        } else if (minage >= 18) {
-          ageCategory = "adult";
-        } else {
-          ageCategory = "teen";
-        }
-      }
-
-      // For Genre and Theme, BGG may provide data via <link> elements.
-      // You can try to parse those here. For now, we default to "any".
-      const genre = "any";
-      const theme = "any";
+      });
 
       return {
         id,
         name,
         thumbnail,
         description,
-        players: playersFilter,
-        complexity: complexityFilter,
-        playtime: playtimeCategory,
-        genre,
-        age: ageCategory,
-        theme,
+        yearpublished,
+        minage,
+        minplayers,
+        maxplayers,
+        playingtime,
+        averageRating,
+        averageWeight,
+        designers,
+        publishers,
       };
     });
 

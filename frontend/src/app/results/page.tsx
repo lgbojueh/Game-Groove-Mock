@@ -9,18 +9,27 @@ import Image from "next/image";
 const cleanDescription = (desc?: string) =>
   desc ? desc.replace(/&#10;/g, " ") : "";
 
-// Define an interface for your game objects.
+// Define an interface for your detailed game objects.
 interface BasicGame {
   id: string | null;
   name: string;
   thumbnail: string;
   description?: string;
-  complexity?: string;
+  // Fields from detailed fetch
+  yearpublished?: string;
+  minage?: string;
+  minplayers?: string;
+  maxplayers?: string;
+  playingtime?: string;
+  averageRating?: string;
+  averageWeight?: string;
+  // Existing dummy filter fields (if still used)
   players?: string;
-  theme?: string;
+  complexity?: string;
   playtime?: string;
   genre?: string;
   age?: string;
+  theme?: string;
 }
 
 export default function ResultsPage() {
@@ -29,61 +38,141 @@ export default function ResultsPage() {
 
   // Read filter query parameters.
   const query = searchParams.get("query") || "";
-  const playersFilter = searchParams.get("players") || "any";
-  const complexityFilter = searchParams.get("complexity") || "any";
-  const playtimeFilter = searchParams.get("playtime") || "any";
-  const genreFilter = searchParams.get("genre") || "any";
-  const ageFilter = searchParams.get("age") || "any";
-  const themeFilter = searchParams.get("theme") || "any";
+  const players = searchParams.get("players") || "any";
+  const complexity = searchParams.get("complexity") || "any";
+  const playtime = searchParams.get("playtime") || "any";
+  const genre = searchParams.get("genre") || "any";
+  const age = searchParams.get("age") || "any";
+  const theme = searchParams.get("theme") || "any";
+
+  // Additional filters based on BoardGameGeek data:
+  const yearMin = searchParams.get("yearMin");
+  const yearMax = searchParams.get("yearMax");
+  const minAge = searchParams.get("minAge");
+  const ratingMin = searchParams.get("ratingMin");
+  const ratingMax = searchParams.get("ratingMax");
+  const weightMin = searchParams.get("weightMin");
+  const weightMax = searchParams.get("weightMax");
 
   const [games, setGames] = useState<BasicGame[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Read the stored detailed results from localStorage.
+    // Retrieve detailed game objects from localStorage.
     const stored = localStorage.getItem("searchResults");
-    if (stored) {
-      let results = JSON.parse(stored) as BasicGame[];
+    let results: BasicGame[] = stored ? JSON.parse(stored) : [];
 
-      // Log the stored data and current filters for debugging.
-      console.log("Stored searchResults:", results);
-      console.log("Current filters:", {
-        playersFilter,
-        complexityFilter,
-        playtimeFilter,
-        genreFilter,
-        ageFilter,
-        themeFilter,
-      });
+    console.log("Stored searchResults:", results);
+    console.log("Current filters:", {
+      players,
+      complexity,
+      playtime,
+      genre,
+      age,
+      theme,
+      yearMin,
+      yearMax,
+      minAge,
+      ratingMin,
+      ratingMax,
+      weightMin,
+      weightMax,
+    });
 
-      // Apply client-side filtering for each filter.
-      if (playersFilter !== "any") {
-        results = results.filter((game) => game.players === playersFilter);
-      }
-      if (complexityFilter !== "any") {
-        results = results.filter((game) => game.complexity === complexityFilter);
-      }
-      if (playtimeFilter !== "any") {
-        results = results.filter((game) => game.playtime === playtimeFilter);
-      }
-      if (genreFilter !== "any") {
-        results = results.filter((game) => game.genre === genreFilter);
-      }
-      if (ageFilter !== "any") {
-        results = results.filter((game) => game.age === ageFilter);
-      }
-      if (themeFilter !== "any") {
-        results = results.filter((game) => game.theme === themeFilter);
-      }
-
-      console.log("Filtered results:", results);
-      setGames(Array.isArray(results) ? results : []);
-    } else {
-      console.log("No searchResults in localStorage. Possibly user visited /results directly.");
-      setGames([]);
+    // Apply additional filters if provided.
+    if (yearMin) {
+      results = results.filter(
+        (game) =>
+          game.yearpublished &&
+          parseInt(game.yearpublished, 10) >= parseInt(yearMin, 10)
+      );
     }
+    if (yearMax) {
+      results = results.filter(
+        (game) =>
+          game.yearpublished &&
+          parseInt(game.yearpublished, 10) <= parseInt(yearMax, 10)
+      );
+    }
+    if (minAge) {
+      results = results.filter(
+        (game) =>
+          game.minage &&
+          parseInt(game.minage, 10) >= parseInt(minAge, 10)
+      );
+    }
+    if (ratingMin) {
+      results = results.filter(
+        (game) =>
+          game.averageRating &&
+          parseFloat(game.averageRating) >= parseFloat(ratingMin)
+      );
+    }
+    if (ratingMax) {
+      results = results.filter(
+        (game) =>
+          game.averageRating &&
+          parseFloat(game.averageRating) <= parseFloat(ratingMax)
+      );
+    }
+    if (weightMin) {
+      results = results.filter(
+        (game) =>
+          game.averageWeight &&
+          parseFloat(game.averageWeight) >= parseFloat(weightMin)
+      );
+    }
+    if (weightMax) {
+      results = results.filter(
+        (game) =>
+          game.averageWeight &&
+          parseFloat(game.averageWeight) <= parseFloat(weightMax)
+      );
+    }
+
+    // Apply the original filters (for dummy fields or if available)
+    if (players !== "any" && gameHasProperty(results, "players")) {
+      results = results.filter((game) => game.players === players);
+    }
+    if (complexity !== "any" && gameHasProperty(results, "complexity")) {
+      results = results.filter((game) => game.complexity === complexity);
+    }
+    if (playtime !== "any" && gameHasProperty(results, "playtime")) {
+      results = results.filter((game) => game.playtime === playtime);
+    }
+    if (genre !== "any" && gameHasProperty(results, "genre")) {
+      results = results.filter((game) => game.genre === genre);
+    }
+    if (age !== "any" && gameHasProperty(results, "age")) {
+      results = results.filter((game) => game.age === age);
+    }
+    if (theme !== "any" && gameHasProperty(results, "theme")) {
+      results = results.filter((game) => game.theme === theme);
+    }
+
+    console.log("Filtered results:", results);
+    setGames(Array.isArray(results) ? results : []);
     setLoading(false);
-  }, [playersFilter, complexityFilter, playtimeFilter, genreFilter, ageFilter, themeFilter]);
+  }, [
+    players,
+    complexity,
+    playtime,
+    genre,
+    age,
+    theme,
+    yearMin,
+    yearMax,
+    minAge,
+    ratingMin,
+    ratingMax,
+    weightMin,
+    weightMax,
+  ]);
+
+  // Helper function to check if the first game in results has a given property.
+  function gameHasProperty(arr: BasicGame[], prop: keyof BasicGame): boolean {
+    return arr.length > 0 && arr[0][prop] !== undefined;
+  }
 
   return (
     <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -101,7 +190,7 @@ export default function ResultsPage() {
       {/* Results Section */}
       <section className="px-6 py-4">
         {loading && <p>Loading...</p>}
-        {!loading && games.length > 0 ? (
+        {!loading && games.length > 0 && (
           <div className="mt-6 overflow-y-auto max-h-[70vh]">
             <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {games.map((game) => (
@@ -134,8 +223,9 @@ export default function ResultsPage() {
               ))}
             </ul>
           </div>
-        ) : (
-          !loading && <p>No games found. Try a different search or adjust your filters.</p>
+        )}
+        {!loading && games.length === 0 && (
+          <p>No games found. Try a different search or adjust your filters.</p>
         )}
       </section>
     </main>
