@@ -15,7 +15,6 @@ interface BasicGame {
   name: string;
   thumbnail: string;
   description?: string;
-  // Fields from detailed fetch
   yearpublished?: string;
   minage?: string;
   minplayers?: string;
@@ -23,7 +22,6 @@ interface BasicGame {
   playingtime?: string;
   averageRating?: string;
   averageWeight?: string;
-  // Existing dummy filter fields (if still used)
   players?: string;
   complexity?: string;
   playtime?: string;
@@ -45,7 +43,7 @@ export default function ResultsPage() {
   const age = searchParams.get("age") || "any";
   const theme = searchParams.get("theme") || "any";
 
-  // Additional filters based on BoardGameGeek data:
+  // Additional filters (if you add these in your UI)
   const yearMin = searchParams.get("yearMin");
   const yearMax = searchParams.get("yearMax");
   const minAge = searchParams.get("minAge");
@@ -97,8 +95,7 @@ export default function ResultsPage() {
     if (minAge) {
       results = results.filter(
         (game) =>
-          game.minage &&
-          parseInt(game.minage, 10) >= parseInt(minAge, 10)
+          game.minage && parseInt(game.minage, 10) >= parseInt(minAge, 10)
       );
     }
     if (ratingMin) {
@@ -130,23 +127,23 @@ export default function ResultsPage() {
       );
     }
 
-    // Apply the original filters (for dummy fields or if available)
-    if (players !== "any" && gameHasProperty(results, "players")) {
+    // Apply the original filters.
+    if (players !== "any") {
       results = results.filter((game) => game.players === players);
     }
-    if (complexity !== "any" && gameHasProperty(results, "complexity")) {
+    if (complexity !== "any") {
       results = results.filter((game) => game.complexity === complexity);
     }
-    if (playtime !== "any" && gameHasProperty(results, "playtime")) {
+    if (playtime !== "any") {
       results = results.filter((game) => game.playtime === playtime);
     }
-    if (genre !== "any" && gameHasProperty(results, "genre")) {
+    if (genre !== "any") {
       results = results.filter((game) => game.genre === genre);
     }
-    if (age !== "any" && gameHasProperty(results, "age")) {
+    if (age !== "any") {
       results = results.filter((game) => game.age === age);
     }
-    if (theme !== "any" && gameHasProperty(results, "theme")) {
+    if (theme !== "any") {
       results = results.filter((game) => game.theme === theme);
     }
 
@@ -169,14 +166,8 @@ export default function ResultsPage() {
     weightMax,
   ]);
 
-  // Helper function to check if the first game in results has a given property.
-  function gameHasProperty(arr: BasicGame[], prop: keyof BasicGame): boolean {
-    return arr.length > 0 && arr[0][prop] !== undefined;
-  }
-
   return (
     <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-      {/* Fixed Header with Back Button */}
       <header className="flex items-center justify-between px-6 py-4 border-b border-gray-300 dark:border-gray-600">
         <h1 className="text-4xl sm:text-6xl font-bold">Search Results</h1>
         <button
@@ -186,8 +177,6 @@ export default function ResultsPage() {
           Back
         </button>
       </header>
-
-      {/* Results Section */}
       <section className="px-6 py-4">
         {loading && <p>Loading...</p>}
         {!loading && games.length > 0 && (
