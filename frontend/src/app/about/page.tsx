@@ -15,7 +15,6 @@ export default function About() {
                      Game Grove helps users find the best board game based on their preferences. Our recommendations consider several key factors, such as:
                   </p>
                   <p className={styles.AboutText}>
-                  <p className={styles.AboutText}>
                     <li><strong>Number of Players:</strong> Whether it's 2, 3, 4, or up to 6 players.</li>
                     <li><strong>Difficulty Level:</strong> Choose games from Easy, Medium, or Hard difficulty levels.</li>
                     <li><strong>Playtime:</strong> Options range from Short to Medium and Long sessions.</li>
