@@ -3,9 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { fetchGames } from "@/utils/fetchGames";
-<<<<<<< HEAD
 import { fetchGameDetails } from "@/utils/fetchGameDetails";
-=======
 import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
 
 // Helper function to chunk an array into smaller arrays of a given size.
@@ -31,7 +29,6 @@ interface BasicGame {
 // Helper to clean unwanted line break codes from descriptions.
 const cleanDescription = (desc?: string) =>
   desc ? desc.replace(/&#10;/g, " ") : "";
->>>>>>> 350fb1de936dd83a0b12511b0f3e0ad093417d47
 
 export default function Games() {
   const [games, setGames] = useState<BasicGame[]>([]);

@@ -1,3 +1,4 @@
+
 "use client";
 import { useState, useEffect } from "react";
 import { fetchHotGames } from "@/utils/fetchHotGames";
@@ -76,14 +77,7 @@ export default function Featured() {
           <div className="overflow-y-auto max-h-[70vh]">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {popularGames.map((game) => (
-<<<<<<< HEAD
-                <div
-                  key={game.id}
-                  className="p-4 bg-purple-100 dark:bg-purple-700 rounded shadow hover:shadow-xl transition"
-                >
-=======
                 <Link key={game.id ?? ""} href={`/game/${game.id}`} className="block p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-xl transition">
->>>>>>> 350fb1de936dd83a0b12511b0f3e0ad093417d47
                   <h3 className="font-semibold mb-2">{game.name}</h3>
                   {game.thumbnail ? (
                     <img

@@ -1,3 +1,4 @@
+
 "use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
@@ -15,18 +16,6 @@ export default function Home() {
    setMounted(true);
  }, []);
 
-<<<<<<< HEAD
-      {/* "Find My Game" Button */}
-      <button 
-        onClick={handleFindGameClick}  // ✅ Attach Click Event
-        className="px-6 py-3 text-lg font-semibold rounded-lg transition
-                   bg-blue-400 hover:bg-blue-500 dark:bg-blue-700 dark:hover:bg-blue-600
-                   text-[var(--foreground)]">
-        Find My Game
-      </button>
-    </main>
-  );
-=======
 
  const handleFindGameClick = () => {
    router.push("/search");
@@ -65,5 +54,4 @@ export default function Home() {
      </button>
    </main>
  );
->>>>>>> 350fb1de936dd83a0b12511b0f3e0ad093417d47
 }
