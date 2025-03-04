@@ -15,7 +15,9 @@ export default function Home() {
   };
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+    <main className="flex flex-col items-center justify-center h-screen bg-[var(--background)] text-[var(--foreground)]">
+      
+      <div className="flex flex-col items-center justify-center w-full max-w-3xl space-y-4 px-4 sm:px-6 lg:px-8">
       
       {/* Dynamic Logo Based on Theme */}
       <Image 
@@ -24,17 +26,18 @@ export default function Home() {
         width={550}   
         height={550}  
         priority 
-        className="mb-6 mx-auto block"
+        className="max-w-[100%] sm:max-w-[80%] md:max-w-[60%] h-auto"
       />
 
-      {/* "Find My Game" Button */}
+      {/* "Find My Game" Button and Adjusted for all screens*/ }
       <button 
         onClick={handleFindGameClick}  // ✅ Attach Click Event
         className="px-6 py-3 text-lg font-semibold rounded-lg transition
                    bg-gray-400 hover:bg-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600
-                   text-[var(--foreground)]">
+                   text-[var(--foreground)] -mt-4">
         Find My Game
       </button>
+      </div>
     </main>
   );
 }
