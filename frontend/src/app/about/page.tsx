@@ -5,7 +5,7 @@ export default function About() {
               <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen">
                 <h1 className={styles.AboutTitleText}>About Game Grove</h1>
                 <section className="mb-4">
-                  <p className="mb-2">
+                  <p className="text-lg">
                     Welcome to <strong>Game Grove</strong> – your ultimate board game recommendation app. We understand that finding the perfect board game for your group can be overwhelming. Whether you’re planning a game night, hosting an event, or simply looking for a new game to try, our app simplifies the selection process.
                   </p>
                   <p className={styles.AboutText}>
@@ -19,10 +19,10 @@ export default function About() {
                     <li><strong>Game Type/Genre:</strong> From Strategy and Party to Family and more, we cover a wide range of genres.</li>
                     <li><strong>Other Filters:</strong> Discover games that are cooperative or competitive, tailored to your group's style.</li>
                   </p>
-                  <p className="mb-2">
+                  <p className="text-lg">
                     Our mission at <strong>Game Grove</strong> is to make board game selection effortless and enjoyable. We leverage advanced recommendation algorithms and curated game data to match you with games that perfectly fit your unique preferences.
                   </p>
-                  <p>
+                  <p className="text-lg font-semibold">
                     Thank you for choosing Game Grove. We hope our app helps you create memorable game nights and discover new favorites for every occasion.
                   </p>
                 </section>

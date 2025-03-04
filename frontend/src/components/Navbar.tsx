@@ -7,6 +7,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import ThemeToggle from "./ThemeToggle";
+import styles from "../styles/styles.module.css"
 
 
 export default function Navbar() {
@@ -67,7 +68,7 @@ export default function Navbar() {
 
 
  return (
-   <nav className="w-full flex justify-between items-center p-5 bg-[var(--background)]">
+   <nav className="w-full flex justify-between items-center p-5 bg-[var(--background)] bg-red-500">
      {/* Left Side: Logo and App Name */}
      <div className="flex items-center space-x-3">
        <Image
@@ -130,26 +131,26 @@ export default function Navbar() {
            {dropdownOpen && (
              <div
                ref={dropdownRef}
-               className="absolute top-full right-0 mt-2 w-48 bg-gray-100 dark:bg-gray-700 rounded shadow-lg z-50"
+               className="absolute top-full right-0 mt-2 w-48 bg-purple-300 dark:bg-purple-700 rounded shadow-lg z-50"
                onMouseEnter={handleMouseEnter}
                onMouseLeave={handleMouseLeave}
              >
                <div className="py-1">
                  <button
                    onClick={() => router.push("/account")}
-                   className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 w-full text-left hover:bg-gray-200 dark:hover:bg-gray-600"
+                   className={styles.AccountInfo}
                  >
                    My Account
                  </button>
                  <button
                    onClick={() => router.push("/account/favorites")}
-                   className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 w-full text-left hover:bg-gray-200 dark:hover:bg-gray-600"
+                   className={styles.AccountInfo}
                  >
                    Favorite Games
                  </button>
                  <button
                    onClick={() => router.push("/account/saved")}
-                   className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 w-full text-left hover:bg-gray-200 dark:hover:bg-gray-600"
+                   className={styles.AccountInfo}
                  >
                    Saved Games
                  </button>

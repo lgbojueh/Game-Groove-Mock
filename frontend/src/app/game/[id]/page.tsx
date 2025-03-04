@@ -85,7 +85,7 @@ export default function GameDetailsPage() {
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="p-4 bg-gray-800 text-white">
+      <header className="p-4 bg-gray-500 text-white">
         <h2>Game Details</h2>
       </header>
       <main className="p-6 bg-[var(--background)] text-[var(--foreground)] flex-1 overflow-y-auto">

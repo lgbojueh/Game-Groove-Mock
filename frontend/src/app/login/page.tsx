@@ -33,7 +33,7 @@ export default function Login() {
 
   return (
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen flex items-center justify-center">
-      <div className="max-w-md w-full bg-green-200 dark:bg-green-800 p-6 rounded shadow">
+      <div className="max-w-md w-full bg-gray-400 dark:bg-gray-800 p-6 rounded shadow">
         <h1 className={styles.SignUp}>Login</h1>
         {error && <p className="text-red-500 mb-4">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
