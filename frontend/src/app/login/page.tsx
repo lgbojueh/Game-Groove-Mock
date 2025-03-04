@@ -1,7 +1,11 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+<<<<<<< HEAD
 import styles from "../../styles/styles.module.css";
+=======
+import Link from "next/link";
+>>>>>>> 350fb1de936dd83a0b12511b0f3e0ad093417d47
 
 export default function Login() {
   const router = useRouter();
@@ -67,6 +71,11 @@ export default function Login() {
               className="border p-2 w-full rounded"
               required
             />
+            <div className="mt-1 text-right">
+              <Link href="/forgot-password" className="text-sm text-blue-500 hover:underline">
+                Forgot Password?
+              </Link>
+            </div>
           </div>
           <button
             type="submit"

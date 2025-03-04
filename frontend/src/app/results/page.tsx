@@ -2,13 +2,33 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { fetchGames } from "@/utils/fetchGames";
+import Link from "next/link";
+import Image from "next/image";
+
+// Helper to clean unwanted line break codes from descriptions.
+const cleanDescription = (desc?: string) =>
+  desc ? desc.replace(/&#10;/g, " ") : "";
+
+// Define an interface for your game objects.
+// Ensure these properties are available in your detailed game objects.
+interface BasicGame {
+  id: string | null;
+  name: string;
+  thumbnail: string;
+  description?: string;
+  complexity?: string;
+  players?: string;
+  theme?: string;
+  playtime?: string;
+  genre?: string;
+  age?: string;
+}
 
 export default function ResultsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Read query parameters
+  // Read filter query parameters.
   const query = searchParams.get("query") || "";
   const players = searchParams.get("players") || "any";
   const complexity = searchParams.get("complexity") || "any";
@@ -17,41 +37,42 @@ export default function ResultsPage() {
   const age = searchParams.get("age") || "any";
   const theme = searchParams.get("theme") || "any";
 
-  const [games, setGames] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [games, setGames] = useState<BasicGame[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const getResults = async () => {
-      setLoading(true);
-      let results = [];
-      if (query.trim()) {
-        // Exact search: use the provided query.
-        console.log("🔎 Searching for exact game:", query);
-        results = await fetchGames(query);
-      } else {
-        // No query provided – use a generic term to fetch a broad list.
-        console.log("🎯 No exact query provided. Fetching recommended games.");
-        results = await fetchGames("board game");
-        // Apply client-side filtering based on selected filters.
-        if (players !== "any") {
-          results = results.filter((game) => game.players === players);
-        }
-        if (complexity !== "any") {
-          results = results.filter((game) => game.complexity === complexity);
-        }
-        if (theme !== "any") {
-          results = results.filter((game) => game.theme === theme);
-        }
+    // 1. Read the final detailed results (with thumbnails and filter properties) from localStorage.
+    const stored = localStorage.getItem("searchResults");
+    if (stored) {
+      let results = JSON.parse(stored) as BasicGame[];
+
+      // 2. Apply client-side filtering for each filter.
+      if (players !== "any") {
+        results = results.filter((game) => game.players === players);
+      }
+      if (complexity !== "any") {
+        results = results.filter((game) => game.complexity === complexity);
+      }
+      if (playtime !== "any") {
+        results = results.filter((game) => game.playtime === playtime);
+      }
+      if (genre !== "any") {
+        results = results.filter((game) => game.genre === genre);
+      }
+      if (age !== "any") {
+        results = results.filter((game) => game.age === age);
+      }
+      if (theme !== "any") {
+        results = results.filter((game) => game.theme === theme);
       }
       setGames(Array.isArray(results) ? results : []);
-      setLoading(false);
-      if (results.length === 0) {
-        console.log("❌ No games found after filtering!");
-      }
-    };
-
-    getResults();
-  }, [query, players, complexity, playtime, genre, age, theme]);
+    } else {
+      // If there's no stored data, you might consider redirecting or displaying a message.
+      console.log("No searchResults in localStorage. Possibly user visited /results directly.");
+      setGames([]);
+    }
+    setLoading(false);
+  }, [players, complexity, playtime, genre, age, theme]);
 
   return (
     <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -74,34 +95,30 @@ export default function ResultsPage() {
             <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {games.map((game) => (
                 <li
-                  key={game.id}
+                  key={game.id!}
                   className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-lg transition"
                 >
-                  <a href={`/game/${game.id}`} className="block">
+                  <Link href={`/game/${game.id}`} className="block">
                     <h3 className="font-semibold mb-2">{game.name}</h3>
                     {game.thumbnail ? (
-                      <img
+                      <Image
                         src={game.thumbnail}
                         alt={`${game.name} thumbnail`}
-                        className="w-full h-auto object-cover"
+                        width={200}
+                        height={150}
+                        className="w-full h-[150px] object-cover rounded mb-2"
                       />
                     ) : (
-                      <div className="w-full h-40 bg-gray-300 flex items-center justify-center">
+                      <div className="w-full h-[150px] bg-gray-300 flex items-center justify-center rounded mb-2">
                         <span>No Image</span>
                       </div>
                     )}
-                    <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                      <p>
-                        <strong>Players:</strong> {game.players}
+                    {game.description && (
+                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
+                        {cleanDescription(game.description)}
                       </p>
-                      <p>
-                        <strong>Complexity:</strong> {game.complexity}
-                      </p>
-                      <p>
-                        <strong>Theme:</strong> {game.theme}
-                      </p>
-                    </div>
-                  </a>
+                    )}
+                  </Link>
                 </li>
               ))}
             </ul>
