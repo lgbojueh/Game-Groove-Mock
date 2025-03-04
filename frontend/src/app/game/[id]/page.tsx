@@ -12,6 +12,8 @@ export default function GameDetailsPage() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
+
+
   useEffect(() => {
     async function getGameDetails() {
       try {
@@ -54,6 +56,8 @@ export default function GameDetailsPage() {
       alert("Added to favorites!");
     }
   };
+
+
 
   const toggleSaved = () => {
     const storedSaved = localStorage.getItem("savedGames");

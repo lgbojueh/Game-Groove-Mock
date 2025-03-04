@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { fetchGames } from "@/utils/fetchGames";
+import { fetchGameDetails } from "@/utils/fetchGameDetails";
 
 export default function Games() {
   const [games, setGames] = useState<any[]>([]);

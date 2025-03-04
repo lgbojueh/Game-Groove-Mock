@@ -1,6 +1,7 @@
 .AboutText {
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-    background-color: blueviolet;
+    color: blueviolet;
+    word-spacing: 7px;
 
 }
 
@@ -8,4 +9,45 @@
     background-color: crimson;
     block-size: 0vmin;
     font-style: oblique;
+}
+
+.SigningupandLoggingIn {
+    color: blue;
+    font-weight: bolder;
+    font-feature-settings: "salt";
+}
+
+.SignUp {
+    color: blue;
+    font-size: 2rem; 
+    font-style: italic;
+    text-decoration-color: blue;
+}
+
+.AboutTitleText {
+    font-size: 2rem;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.Navi {
+    background-color: darkviolet;
+    white-space: inherit;
+    text-indent: 0vmax;
+    word-spacing: 8px;
+}
+
+.AccountInfo {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    color: forestgreen;
+    text-align: left;
+}
+
+.AuthenticationCommands {
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    color:hotpink;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
 }

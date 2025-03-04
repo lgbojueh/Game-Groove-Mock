@@ -16,14 +16,19 @@ export const fetchGameDetails = async (id: string) => {
       throw new Error("No game details found");
     }
 
+
     // Extract the basic details
     const idAttr = item.getAttribute("id");
     const name =
       item.getElementsByTagName("name")[0]?.getAttribute("value") || "Unknown Game";
-    const thumbnail = item.getElementsByTagName("thumbnail")[0]?.textContent || "";
+    const thumbnail = item.getElementsByTagName("thumbnail")[0]?.textContent || "default-thumbnail.jpg";
     const description =
       item.getElementsByTagName("description")[0]?.textContent ||
       "No description available.";
+
+
+
+
 
     return { id: idAttr, name, thumbnail, description };
   } catch (error) {
@@ -31,3 +36,5 @@ export const fetchGameDetails = async (id: string) => {
     return null;
   }
 };
+
+

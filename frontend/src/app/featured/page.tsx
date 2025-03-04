@@ -30,7 +30,7 @@ export default function Featured() {
               {popularGames.map((game) => (
                 <div
                   key={game.id}
-                  className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-xl transition"
+                  className="p-4 bg-purple-100 dark:bg-purple-700 rounded shadow hover:shadow-xl transition"
                 >
                   <h3 className="font-semibold mb-2">{game.name}</h3>
                   {game.thumbnail ? (

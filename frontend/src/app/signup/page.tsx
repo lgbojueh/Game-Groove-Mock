@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import styles from "../../styles/styles.module.css";
 
 export default function SignUp() {
   const router = useRouter();
@@ -36,12 +37,12 @@ export default function SignUp() {
 
   return (
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen flex items-center justify-center">
-      <div className="max-w-md w-full bg-gray-200 dark:bg-gray-800 p-6 rounded shadow">
-        <h1 className="text-3xl font-bold mb-4">Sign Up</h1>
+      <div className="max-w-md w-full bg-green-200 dark:bg-green-800 p-6 rounded shadow">
+        <h1 className={styles.SignUp}>Sign Up</h1>
         {error && <p className="text-red-500 mb-4">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="signup-username" className="block mb-1">
+            <label htmlFor="signup-username" className={styles.SigningupandLoggingIn}>
               Username
             </label>
             <input
@@ -57,7 +58,7 @@ export default function SignUp() {
             />
           </div>
           <div>
-            <label htmlFor="signup-email" className="block mb-1">
+            <label htmlFor="signup-email" className={styles.SigningupandLoggingIn}>
               Email
             </label>
             <input
@@ -73,7 +74,7 @@ export default function SignUp() {
             />
           </div>
           <div>
-            <label htmlFor="signup-password" className="block mb-1">
+            <label htmlFor="signup-password" className={styles.SigningupandLoggingIn}>
               Password
             </label>
             <input
