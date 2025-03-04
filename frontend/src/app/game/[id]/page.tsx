@@ -2,6 +2,11 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { fetchGameDetails } from "@/utils/fetchGameDetails";
+import ThemeToggle from "@/components/ThemeToggle";
+
+// Helper to remove unwanted line-break entities from a description.
+const cleanDescription = (desc?: string) =>
+  desc ? desc.replace(/&#10;&#10;/g, " ") : "";
 
 export default function GameDetailsPage() {
   const { id } = useParams();
@@ -75,13 +80,10 @@ export default function GameDetailsPage() {
   if (!game) return <p className="p-6">No game found.</p>;
 
   return (
-    // Flex container that takes the full height of the viewport
     <div className="flex flex-col h-screen">
-      {/* Optional fixed header */}
       <header className="p-4 bg-gray-800 text-white">
         <h2>Game Details</h2>
       </header>
-      {/* Scrollable main content */}
       <main className="p-6 bg-[var(--background)] text-[var(--foreground)] flex-1 overflow-y-auto">
         <h1 className="text-4xl font-bold mb-4">{game.name}</h1>
         {game.thumbnail ? (
@@ -96,18 +98,18 @@ export default function GameDetailsPage() {
           </div>
         )}
         <div className="mb-4">
-          <p>{game.description || "No description available."}</p>
+          <p>{cleanDescription(game.description) || "No description available."}</p>
         </div>
         <div className="flex space-x-4 mb-8">
           <button
             onClick={toggleFavorite}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
           >
             {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
           </button>
           <button
             onClick={toggleSaved}
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+            className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
           >
             {isSaved ? "Unsave Game" : "Save Game"}
           </button>
