@@ -45,8 +45,11 @@ export const fetchGameDetails = async (id: string) => {
       age,
       theme,
     };
+    
   } catch (error) {
     console.error("Error fetching game details:", error);
     return null;
   }
 };
+
+

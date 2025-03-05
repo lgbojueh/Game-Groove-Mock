@@ -32,7 +32,7 @@ export default function Blog() {
         {posts.map((post) => (
           <article
             key={post.id}
-            className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-lg transition"
+            className="p-4 bg-gray-400 dark:bg-gray-700 rounded shadow hover:shadow-lg transition"
           >
             <Link href={`/blog/${post.id}`}>
               <h2 className="text-2xl font-semibold mb-2 hover:underline">
