@@ -1,9 +1,4 @@
-import { stdout } from "process";
-import { config } from "next/dist/build/templates/pages";
-
-
-
-
+// src/utils/fetchGames.ts
 export const fetchGames = async (query: string) => {
   try {
     console.log("📡 Fetching games for query:", query);
@@ -16,15 +11,9 @@ export const fetchGames = async (query: string) => {
     const xmlText = await response.text();
     console.log("📜 API Response XML:", xmlText);
 
-    // Convert XML to JSON (since BGG API returns XML)
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlText, "text/xml");
     const items = Array.from(xmlDoc.getElementsByTagName("item"));
-
-    // Dummy filter values for demonstration:
-    const complexityLevels = ["easy", "medium", "hard"];
-    const playerOptions = ["2", "3-4", "5+"];
-    const themes = ["fantasy", "sci-fi", "horror", "historical", "adventure"];
 
     const games = items.map((item) => {
       const id = item.getAttribute("id");
@@ -33,13 +22,16 @@ export const fetchGames = async (query: string) => {
         "Unknown Game";
       const thumbnail =
         item.getElementsByTagName("thumbnail")[0]?.textContent || "";
-      // Add dummy filtering attributes
-      const complexity =
-        complexityLevels[Math.floor(Math.random() * complexityLevels.length)];
-      const players =
-        playerOptions[Math.floor(Math.random() * playerOptions.length)];
-      const theme = themes[Math.floor(Math.random() * themes.length)];
-      return { id, name, thumbnail, complexity, players, theme };
+      
+      // Dummy/default filter values (adjust these as needed)
+      const complexity = "medium";  // Options: "easy", "medium", "hard"
+      const players = "3-4";          // Options: "2", "3-4", "5+"
+      const theme = "adventure";      // Options: "adventure", "fantasy", etc.
+      const playtime = "medium";      // Options: "short", "medium", "long"
+      const genre = "strategy";       // Options: "strategy", "party", "family", etc.
+      const age = "teen";             // Options: "kids", "teen", "adult"
+      
+      return { id, name, thumbnail, complexity, players, theme, playtime, genre, age };
     });
 
     console.log("✅ Parsed Games:", games);

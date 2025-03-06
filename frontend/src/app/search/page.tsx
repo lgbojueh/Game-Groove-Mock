@@ -1,8 +1,16 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import styles from "../../styles/styles.module.css";
+import { fetchGames } from "@/utils/fetchGames";
+import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
+
+function chunkArray(arr: any[], size: number) {
+  const results = [];
+  for (let i = 0; i < arr.length; i += size) {
+    results.push(arr.slice(i, i + size));
+  }
+  return results;
+}
 
 export default function SearchForm() {
   const router = useRouter();
@@ -18,16 +26,15 @@ export default function SearchForm() {
   // Search query state
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Build URL query parameters
+    // Use a default search term if the query is empty.
+    const effectiveQuery = searchQuery.trim() ? searchQuery.trim() : "board game";
+
+    // Build URL query parameters for filters.
     const params = new URLSearchParams();
-    if (searchQuery.trim()) {
-      params.set("query", searchQuery);
-    }
-    // Always include filters (they may be "any")
+    params.set("query", effectiveQuery);
     params.set("players", players);
     params.set("complexity", complexity);
     params.set("playtime", playtime);
@@ -35,7 +42,26 @@ export default function SearchForm() {
     params.set("age", age);
     params.set("theme", theme);
 
-    // Navigate to the results page with query parameters
+    // 1. Fetch basic results (IDs and minimal info)
+    const basicResults = await fetchGames(effectiveQuery);
+    console.log("Basic search results:", basicResults);
+    // Extract IDs from basic results
+    const allIds = basicResults.map((game) => game.id);
+
+    // 2. Chunk IDs into groups of 20
+    const idChunks = chunkArray(allIds, 20);
+
+    let detailedResults: any[] = [];
+    // 3. For each chunk, fetch detailed game info
+    for (const chunk of idChunks) {
+      const details = await fetchDetailedGames(chunk);
+      detailedResults = detailedResults.concat(details);
+    }
+
+    // Store detailed results in localStorage
+    localStorage.setItem("searchResults", JSON.stringify(detailedResults));
+
+    // Navigate to the results page with query parameters.
     router.push(`/results?${params.toString()}`);
   };
 
@@ -51,7 +77,7 @@ export default function SearchForm() {
         <div className="grid grid-rows-1 md:grid-rows-2 gap-4">
           {/* Number of Players */}
           <div>
-            <label htmlFor="players" className={styles.SearchforBoardGames}>
+            <label htmlFor="players" className="block mb-1">
               Number of Players
             </label>
             <select
