@@ -185,7 +185,7 @@ export default function ResultsPage() {
               {games.map((game) => (
                 <li
                   key={game.id!}
-                  className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-lg transition"
+                  className="p-4 bg-gray-400 dark:bg-gray-700 rounded shadow hover:shadow-lg transition"
                 >
                   <Link href={`/game/${game.id}`} className="block">
                     <h3 className="font-semibold mb-2">{game.name}</h3>
