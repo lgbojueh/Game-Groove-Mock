@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import he from "he"; // ✅ Import HTML entities decoder
 
 // Helper to clean unwanted line break codes from descriptions.
-const cleanDescription = (desc?: string) =>
-  desc ? desc.replace(/&#10;/g, " ") : "";
+const cleanDescription = (desc?: string) => {
+  return desc ? he.decode(desc.replace(/&#10;/g, " ")) : "";
+}; 
 
 // Define an interface for your game objects.
 // Ensure these properties are available in your detailed game objects.

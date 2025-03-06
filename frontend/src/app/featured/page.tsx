@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { fetchHotGames } from "@/utils/fetchHotGames";
 import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
 import Link from "next/link";
+import he from "he"; // ✅ Import HTML entities decoder
 
 // Helper to chunk an array into groups of a given size.
 function chunkArray<T>(arr: T[], size: number): T[][] {
@@ -25,8 +26,9 @@ interface BasicGame {
 }
 
 // Helper to clean unwanted line break codes from descriptions.
-const cleanDescription = (desc?: string) =>
-  desc ? desc.replace(/&#10;/g, " ") : "";
+const cleanDescription = (desc?: string) => {
+  return desc ? he.decode(desc.replace(/&#10;/g, " ")) : "";
+}; 
 
 export default function Featured() {
   const [popularGames, setPopularGames] = useState<BasicGame[]>([]);
