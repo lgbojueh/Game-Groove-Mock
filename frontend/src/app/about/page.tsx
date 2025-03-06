@@ -1,4 +1,4 @@
-import styles from "../../styles/styles.module.css";
+import styles from "../..styles/styles.module.css";
 
 export default function About() {
             return (
@@ -11,7 +11,10 @@ export default function About() {
                   <p className={styles.AboutText}>
                     <strong>Our Purpose: </strong> 
                      Game Grove helps users find the best board game based on their preferences. Our recommendations consider several key factors, such as:
+                    <strong>Our Purpose: </strong> 
+                     Game Grove helps users find the best board game based on their preferences. Our recommendations consider several key factors, such as:
                   </p>
+                  <p className={styles.AboutText}>
                   <p className={styles.AboutText}>
                     <li><strong>Number of Players:</strong> Whether it's 2, 3, 4, or up to 6 players.</li>
                     <li><strong>Difficulty Level:</strong> Choose games from Easy, Medium, or Hard difficulty levels.</li>
@@ -20,6 +23,8 @@ export default function About() {
                     <li><strong>Other Filters:</strong> Discover games that are cooperative or competitive, tailored to your group's style.</li>
                   </p>
                   <p className="text-lg">
+                  </p>
+                  <p className="mb-2">
                     Our mission at <strong>Game Grove</strong> is to make board game selection effortless and enjoyable. We leverage advanced recommendation algorithms and curated game data to match you with games that perfectly fit your unique preferences.
                   </p>
                   <p className="text-lg font-semibold">

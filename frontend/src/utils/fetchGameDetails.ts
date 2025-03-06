@@ -1,7 +1,8 @@
+// src/utils/fetchGameDetails.ts
 export const fetchGameDetails = async (id: string) => {
   try {
     console.log("Fetching game details for id:", id);
-    const response = await fetch(`https://www.boardgamegeek.com/xmlapi2/thing?id=${id}`);
+    const response = await fetch(`https://www.boardgamegeek.com/xmlapi2/thing?id=${id}&stats=1`);
     if (!response.ok) {
       throw new Error(`API request failed: ${response.statusText}`);
     }
@@ -17,7 +18,7 @@ export const fetchGameDetails = async (id: string) => {
     }
 
 
-    // Extract the basic details
+    // Extract basic details
     const idAttr = item.getAttribute("id");
     const name =
       item.getElementsByTagName("name")[0]?.getAttribute("value") || "Unknown Game";
@@ -36,5 +37,8 @@ export const fetchGameDetails = async (id: string) => {
     return null;
   }
 };
+
+
+
 
 

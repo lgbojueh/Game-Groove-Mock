@@ -9,19 +9,25 @@ import Image from "next/image";
 const cleanDescription = (desc?: string) =>
   desc ? desc.replace(/&#10;/g, " ") : "";
 
-// Define an interface for your game objects.
-// Ensure these properties are available in your detailed game objects.
+// Define an interface for your detailed game objects.
 interface BasicGame {
   id: string | null;
   name: string;
   thumbnail: string;
   description?: string;
-  complexity?: string;
+  yearpublished?: string;
+  minage?: string;
+  minplayers?: string;
+  maxplayers?: string;
+  playingtime?: string;
+  averageRating?: string;
+  averageWeight?: string;
   players?: string;
-  theme?: string;
+  complexity?: string;
   playtime?: string;
   genre?: string;
   age?: string;
+  theme?: string;
 }
 
 export default function ResultsPage() {
@@ -37,46 +43,131 @@ export default function ResultsPage() {
   const age = searchParams.get("age") || "any";
   const theme = searchParams.get("theme") || "any";
 
+  // Additional filters (if you add these in your UI)
+  const yearMin = searchParams.get("yearMin");
+  const yearMax = searchParams.get("yearMax");
+  const minAge = searchParams.get("minAge");
+  const ratingMin = searchParams.get("ratingMin");
+  const ratingMax = searchParams.get("ratingMax");
+  const weightMin = searchParams.get("weightMin");
+  const weightMax = searchParams.get("weightMax");
+
   const [games, setGames] = useState<BasicGame[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Read the final detailed results (with thumbnails and filter properties) from localStorage.
+    // Retrieve detailed game objects from localStorage.
     const stored = localStorage.getItem("searchResults");
-    if (stored) {
-      let results = JSON.parse(stored) as BasicGame[];
+    let results: BasicGame[] = stored ? JSON.parse(stored) : [];
 
-      // 2. Apply client-side filtering for each filter.
-      if (players !== "any") {
-        results = results.filter((game) => game.players === players);
-      }
-      if (complexity !== "any") {
-        results = results.filter((game) => game.complexity === complexity);
-      }
-      if (playtime !== "any") {
-        results = results.filter((game) => game.playtime === playtime);
-      }
-      if (genre !== "any") {
-        results = results.filter((game) => game.genre === genre);
-      }
-      if (age !== "any") {
-        results = results.filter((game) => game.age === age);
-      }
-      if (theme !== "any") {
-        results = results.filter((game) => game.theme === theme);
-      }
-      setGames(Array.isArray(results) ? results : []);
-    } else {
-      // If there's no stored data, you might consider redirecting or displaying a message.
-      console.log("No searchResults in localStorage. Possibly user visited /results directly.");
-      setGames([]);
+    console.log("Stored searchResults:", results);
+    console.log("Current filters:", {
+      players,
+      complexity,
+      playtime,
+      genre,
+      age,
+      theme,
+      yearMin,
+      yearMax,
+      minAge,
+      ratingMin,
+      ratingMax,
+      weightMin,
+      weightMax,
+    });
+
+    // Apply additional filters if provided.
+    if (yearMin) {
+      results = results.filter(
+        (game) =>
+          game.yearpublished &&
+          parseInt(game.yearpublished, 10) >= parseInt(yearMin, 10)
+      );
     }
+    if (yearMax) {
+      results = results.filter(
+        (game) =>
+          game.yearpublished &&
+          parseInt(game.yearpublished, 10) <= parseInt(yearMax, 10)
+      );
+    }
+    if (minAge) {
+      results = results.filter(
+        (game) =>
+          game.minage && parseInt(game.minage, 10) >= parseInt(minAge, 10)
+      );
+    }
+    if (ratingMin) {
+      results = results.filter(
+        (game) =>
+          game.averageRating &&
+          parseFloat(game.averageRating) >= parseFloat(ratingMin)
+      );
+    }
+    if (ratingMax) {
+      results = results.filter(
+        (game) =>
+          game.averageRating &&
+          parseFloat(game.averageRating) <= parseFloat(ratingMax)
+      );
+    }
+    if (weightMin) {
+      results = results.filter(
+        (game) =>
+          game.averageWeight &&
+          parseFloat(game.averageWeight) >= parseFloat(weightMin)
+      );
+    }
+    if (weightMax) {
+      results = results.filter(
+        (game) =>
+          game.averageWeight &&
+          parseFloat(game.averageWeight) <= parseFloat(weightMax)
+      );
+    }
+
+    // Apply the original filters.
+    if (players !== "any") {
+      results = results.filter((game) => game.players === players);
+    }
+    if (complexity !== "any") {
+      results = results.filter((game) => game.complexity === complexity);
+    }
+    if (playtime !== "any") {
+      results = results.filter((game) => game.playtime === playtime);
+    }
+    if (genre !== "any") {
+      results = results.filter((game) => game.genre === genre);
+    }
+    if (age !== "any") {
+      results = results.filter((game) => game.age === age);
+    }
+    if (theme !== "any") {
+      results = results.filter((game) => game.theme === theme);
+    }
+
+    console.log("Filtered results:", results);
+    setGames(Array.isArray(results) ? results : []);
     setLoading(false);
-  }, [players, complexity, playtime, genre, age, theme]);
+  }, [
+    players,
+    complexity,
+    playtime,
+    genre,
+    age,
+    theme,
+    yearMin,
+    yearMax,
+    minAge,
+    ratingMin,
+    ratingMax,
+    weightMin,
+    weightMax,
+  ]);
 
   return (
     <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-      {/* Fixed Header with Back Button */}
       <header className="flex items-center justify-between px-6 py-4 border-b border-gray-300 dark:border-gray-600">
         <h1 className="text-4xl sm:text-6xl font-bold">Search Results</h1>
         <button
@@ -86,8 +177,6 @@ export default function ResultsPage() {
           Back
         </button>
       </header>
-
-      {/* Results Section */}
       <section className="px-6 py-4">
         {loading && <p>Loading...</p>}
         {!loading && games.length > 0 && (
