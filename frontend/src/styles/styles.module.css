@@ -1,51 +1,50 @@
-.AboutText {
+.about-text {
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
     color: crimson;
     font-size: large;
-
 }
 
-.SearchForBoardGames {
+.search-for-board-games {
     background-color: crimson;
-    block-size: 0vmin;
+    block-size: 0;
     font-style: oblique;
 }
 
-.SigningupandLoggingIn {
+.signingup-and-logging-in {
     color: blue;
     font-weight: bolder;
     font-feature-settings: "salt";
 }
 
-.SignUp {
+.sign-up {
     color: blue;
     font-size: 2rem; 
     font-style: italic;
     text-decoration-color: blue;
 }
 
-.AboutTitleText {
+.about-title-text {
     font-size: 3rem;
     font-weight: bold;
     text-decoration: underline;
 }
 
-.Navi {
+.navi {
     background-color: darkviolet;
     white-space: inherit;
-    text-indent: 0vmax;
+    text-indent: 0;
     word-spacing: 8px;
 }
 
-.AccountInfo {
+.account-info {
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
     color: blue;
     text-align: left;
 }
 
-.AuthenticationCommands {
-    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    color:hotpink;
+.authentication-commands {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    color: hotpink;
     text-align: left;
     display: flex;
     flex-direction: column;

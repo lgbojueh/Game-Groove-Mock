@@ -4,14 +4,14 @@
 
 /* Light Mode (default) */
 :root {
-  --background: #ffffff;
-  --foreground: #000000;
+  --background: #fff;
+  --foreground: #000;
 }
 
 /* Dark Mode (applies when .dark class is added) */
 .dark {
-  --background: #000000;
-  --foreground: #ffffff;
+  --background: #000;
+  --foreground: #fff;
 }
 
 body {
@@ -19,26 +19,4 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
   transition: background 0.3s, color 0.3s;
-}
-
-/* Responsive typography using Tailwind's @apply */
-h1 {
-  @apply text-3xl md:text-5xl;
-}
-
-p {
-  @apply text-base md:text-lg;
-}
-
-/* Additional media queries for finer control */
-@media (max-width: 640px) {
-  body {
-    font-size: 14px;
-  }
-}
-
-@media (min-width: 1024px) {
-  body {
-    font-size: 16px;
-  }
 }
