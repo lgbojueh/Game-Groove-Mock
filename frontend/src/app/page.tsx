@@ -17,17 +17,15 @@ export default function Home() {
     router.push("/search");
   };
 
-  // Until mounted, use a fallback logo (to avoid hydration issues)
+  // Until mounted, use a fallback logo
   const logoSrc =
-    mounted && theme === "dark" ? "/game-groove-logo-light.svg" : "/game-groove-logo-dark.svg";
+    mounted && theme === "dark"
+      ? "/game-groove-logo-light.svg"
+      : "/game-groove-logo-dark.svg";
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen bg-[var(--background)] text-[var(--foreground)] px-4">
-      {/* Responsive container with explicit height:
-           - Mobile: max-width 350px and height 250px.
-           - Small screens: max-width 550px and height 300px.
-           - Medium and above: fixed dimensions 800px x 473px.
-      */}
+    <main className="flex flex-col items-center justify-center h-screen overflow-hidden bg-[var(--background)] text-[var(--foreground)] px-4">
+      {/* Responsive container with explicit dimensions for the logo */}
       <div className="relative w-full max-w-[350px] h-[250px] sm:max-w-[550px] sm:h-[300px] md:w-[800px] md:h-[473px] mx-auto">
         <Image
           src={logoSrc}
