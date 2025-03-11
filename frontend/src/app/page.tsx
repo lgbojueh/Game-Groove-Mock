@@ -17,16 +17,22 @@ export default function Home() {
     router.push("/search");
   };
 
-  // Choose logo based on theme; until mounted use a fallback.
+  // Until the component mounts, use a fallback for the logo source.
   const logoSrc =
     mounted && theme === "dark"
       ? "/game-groove-logo-light.svg"
       : "/game-groove-logo-dark.svg";
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] overflow-hidden bg-[var(--background)] text-[var(--foreground)] px-4">
-      {/* Responsive container for logo */}
-      <div className="relative w-full max-w-[350px] sm:max-w-[550px] md:w-[800px] md:h-[473px] mx-auto">
+    // Use h-screen so the whole viewport is taken, but then ensure that internal content does not force scrolling.
+    <main className="flex flex-col items-center justify-center h-screen bg-[var(--background)] text-[var(--foreground)] px-4">
+      {/* 
+        The container uses responsive max-width and height:
+         - On phones: max-width is 300px (and height auto via aspect ratio or intrinsic image)
+         - On small devices (sm): max-width increases to 550px (height adjusts accordingly)
+         - On medium and above: fixed dimensions 560px (width) x 470px (height)
+      */}
+      <div className="relative w-full max-w-[300px] sm:max-w-[550px] md:w-[560px] md:h-[470px] mx-auto">
         <Image
           src={logoSrc}
           alt="Game Groove Logo"
