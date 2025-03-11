@@ -17,16 +17,16 @@ export default function Home() {
     router.push("/search");
   };
 
-  // Until mounted, use a fallback logo.
+  // Choose logo based on theme; until mounted use a fallback.
   const logoSrc =
     mounted && theme === "dark"
       ? "/game-groove-logo-light.svg"
       : "/game-groove-logo-dark.svg";
 
   return (
-    // h-screen fills the viewport; overflow-hidden prevents any scroll bars.
-    <main className="flex flex-col items-center justify-center h-screen overflow-hidden bg-[var(--background)] text-[var(--foreground)] px-4">
-      <div className="relative w-full max-w-[300px] sm:max-w-[550px] md:w-[560px] md:h-[470px] mx-auto">
+    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] overflow-hidden bg-[var(--background)] text-[var(--foreground)] px-4">
+      {/* Responsive container for logo */}
+      <div className="relative w-full max-w-[350px] sm:max-w-[550px] md:w-[800px] md:h-[473px] mx-auto">
         <Image
           src={logoSrc}
           alt="Game Groove Logo"
