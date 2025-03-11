@@ -17,18 +17,15 @@ export default function Home() {
     router.push("/search");
   };
 
-  // Until mounted, use fallback logo.
+  // Choose logo based on theme; until mounted use a fallback.
   const logoSrc =
     mounted && theme === "dark"
       ? "/game-groove-logo-light.svg"
       : "/game-groove-logo-dark.svg";
 
   return (
-    <main className="flex flex-col items-center justify-center h-screen overflow-y-hidden bg-[var(--background)] text-[var(--foreground)] px-4">
-      {/* Responsive logo container:
-          - Mobile (max width 350px)
-          - Small devices: up to 550px
-          - Desktop: 800px x 473px */}
+    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] overflow-hidden bg-[var(--background)] text-[var(--foreground)] px-4">
+      {/* Responsive container for logo */}
       <div className="relative w-full max-w-[350px] sm:max-w-[550px] md:w-[800px] md:h-[473px] mx-auto">
         <Image
           src={logoSrc}
