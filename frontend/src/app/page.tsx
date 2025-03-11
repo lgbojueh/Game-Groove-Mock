@@ -17,7 +17,7 @@ export default function Home() {
     router.push("/search");
   };
 
-  // Until mounted, use a fallback logo
+  // Determine logo based on theme once mounted.
   const logoSrc =
     mounted && theme === "dark"
       ? "/game-groove-logo-light.svg"
@@ -25,7 +25,7 @@ export default function Home() {
 
   return (
     <main className="flex flex-col items-center justify-center h-screen overflow-hidden bg-[var(--background)] text-[var(--foreground)] px-4">
-      {/* Responsive container with explicit dimensions for the logo */}
+      {/* Responsive container for the logo */}
       <div className="relative w-full max-w-[350px] h-[250px] sm:max-w-[550px] sm:h-[300px] md:w-[800px] md:h-[473px] mx-auto">
         <Image
           src={logoSrc}
