@@ -1,65 +1,36 @@
-// app/api/auth/forgot-password/route.ts
-import { NextResponse } from "next/server";
-import crypto from "crypto";
-import nodemailer from "nodemailer";
-
-// In-memory store for tokens (for demonstration only—use a persistent store in production)
-const resetTokens: { [email: string]: { token: string; expires: number } } = {};
+// /app/api/auth/forgot-password/route.ts
+import { NextResponse } from 'next/server';
+import nodemailer from 'nodemailer';
 
 export async function POST(request: Request) {
   try {
     const { email } = await request.json();
-
     if (!email) {
-      return NextResponse.json(
-        { error: "Email is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
-    // Generate a secure token (64 hex characters)
-    const token = crypto.randomBytes(32).toString("hex");
-    // Set token expiration to 1 hour from now
-    const expires = Date.now() + 3600000; // 3600000 ms = 1 hour
-
-    // Store the token and expiration time in the in-memory store
-    resetTokens[email] = { token, expires };
-
-    // Construct the reset link.
-    // In production, use your actual domain (or environment variable).
-    const resetLink = `http://localhost:3000/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
-
-    // Create a Nodemailer transporter.
-    // Replace the host, port, and auth details with your email service's settings.
+    // Create a transporter using your actual SMTP configuration
     const transporter = nodemailer.createTransport({
-      host: "smtp.example.com", // e.g., smtp.gmail.com
-      port: 587,
-      secure: false, // true for 465, false for other ports
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
+      secure: Number(process.env.SMTP_PORT) === 465, // true for 465, false for other ports
       auth: {
-        user: "youruser@example.com",
-        pass: "yourpassword",
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
       },
     });
 
-    // Send the email with the reset link
-    const info = await transporter.sendMail({
-      from: '"Game Grove" <no-reply@gamegrove.com>',
+    const mailOptions = {
+      from: process.env.SMTP_USER,
       to: email,
-      subject: "Password Reset Request",
-      text: `You requested a password reset. Click the following link to reset your password: ${resetLink}`,
-      html: `<p>You requested a password reset. Click the following link to reset your password:</p><p><a href="${resetLink}">${resetLink}</a></p>`,
-    });
+      subject: 'Reset Your Password',
+      text: 'Click the link to reset your password: https://yourapp.com/reset-password?token=YOUR_TOKEN',
+    };
 
-    console.log("Message sent: %s", info.messageId);
-
-    return NextResponse.json({
-      message: "Password reset link sent to your email",
-    });
-  } catch (error) {
-    console.error("Error in forgot-password:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    await transporter.sendMail(mailOptions);
+    return NextResponse.json({ message: 'Reset link sent successfully' });
+  } catch (error: any) {
+    console.error('Error in forgot-password API:', error);
+    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
   }
 }
