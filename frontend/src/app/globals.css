@@ -1,14 +1,14 @@
-/* Reset default margins and paddings */
-html, body {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden; /* Prevent horizontal scroll */
-}
-
-/* Existing Tailwind directives */
+/* globals.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Reset default browser styles */
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
 
 /* Light Mode (default) */
 :root {
@@ -16,7 +16,7 @@ html, body {
   --foreground: #000000;
 }
 
-/* Dark Mode (applies when .dark class is added) */
+/* Dark Mode (when .dark class is added) */
 .dark {
   --background: #000000;
   --foreground: #ffffff;
