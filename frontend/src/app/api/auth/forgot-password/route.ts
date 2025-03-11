@@ -1,4 +1,3 @@
-// app/api/auth/forgot-password/route.ts
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
@@ -10,31 +9,31 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
-    // Create the transporter using Gmail settings
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST, // e.g., smtp.gmail.com
+      host: process.env.SMTP_HOST || 'smtp.office365.com',
       port: Number(process.env.SMTP_PORT) || 587,
-      secure: false, // false for TLS
+      secure: false, // Use false for port 587 (TLS)
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
     });
 
-    // Email message options
     const mailOptions = {
-      from: `"Game Grove" <${process.env.SMTP_USER}>`,
+      from: `"Game Groove" <${process.env.SMTP_USER}>`,
       to: email,
-      subject: "Reset your password",
-      text: "Please click on the link to reset your password: <reset-link>",
-      html: "<p>Please click on the link to reset your password: <a href='https://your-app/reset-password'>Reset Password</a></p>",
+      subject: 'Password Reset Request',
+      text: 'Please click the following link to reset your password: https://your-domain.com/reset-password?token=YOUR_TOKEN_HERE',
+      html: `<p>Please click the following link to reset your password:</p>
+             <p><a href="https://your-domain.com/reset-password?token=YOUR_TOKEN_HERE">Reset Password</a></p>`,
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log("Message sent:", info.messageId);
-    return NextResponse.json({ message: "Reset password email sent" });
+    console.log('Message sent: %s', info.messageId);
+
+    return NextResponse.json({ message: 'Password reset email sent' });
   } catch (error) {
-    console.error("Error in forgot-password:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error('Error in forgot-password:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
