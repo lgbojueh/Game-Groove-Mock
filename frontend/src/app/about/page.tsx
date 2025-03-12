@@ -12,13 +12,13 @@ export default function About() {
                     <strong>Our Purpose: </strong> 
                      Game Grove helps users find the best board game based on their preferences. Our recommendations consider several key factors, such as:
                   </p>
-                  <p className={styles.AboutText}>
+                  <ul className={styles.AboutText}>
                     <li><strong>Number of Players:</strong> Whether it's 2, 3, 4, or up to 6 players.</li>
                     <li><strong>Difficulty Level:</strong> Choose games from Easy, Medium, or Hard difficulty levels.</li>
                     <li><strong>Playtime:</strong> Options range from Short to Medium and Long sessions.</li>
                     <li><strong>Game Type/Genre:</strong> From Strategy and Party to Family and more, we cover a wide range of genres.</li>
                     <li><strong>Other Filters:</strong> Discover games that are cooperative or competitive, tailored to your group's style.</li>
-                  </p>
+                  </ul>
                   <p className="text-lg">
                     Our mission at <strong>Game Grove</strong> is to make board game selection effortless and enjoyable. We leverage advanced recommendation algorithms and curated game data to match you with games that perfectly fit your unique preferences.
                   </p>
