@@ -147,6 +147,7 @@ export default function Games() {
                         alt={`${game.name} thumbnail`}
                         width={200}
                         height={150}
+                        quality={100} // ✅ Ensure high quality
                         className="w-full h-[150px] object-cover rounded mb-2"
                       />
                     ) : (
