@@ -1,3 +1,4 @@
+
 "use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
@@ -47,7 +48,7 @@ export default function Home() {
      </div>
      <button
        onClick={handleFindGameClick}
-       className="mt-6 px-6 py-3 text-lg font-semibold rounded-lg transition bg-gray-400 hover:bg-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600 text-[var(--foreground)]"
+       className="mt-6 px-6 py-3 text-lg font-semibold rounded-lg transition bg-red-500 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-500 text-[var(--foreground)]"
      >
        Find My Game
      </button>

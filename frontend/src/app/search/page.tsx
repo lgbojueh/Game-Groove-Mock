@@ -29,11 +29,12 @@ export default function SearchForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Use a default search term if the query is empty.
+    const effectiveQuery = searchQuery.trim() ? searchQuery.trim() : "board game";
+
     // Build URL query parameters for filters.
     const params = new URLSearchParams();
-    if (searchQuery.trim()) {
-      params.set("query", searchQuery);
-    }
+    params.set("query", effectiveQuery);
     params.set("players", players);
     params.set("complexity", complexity);
     params.set("playtime", playtime);
@@ -42,14 +43,14 @@ export default function SearchForm() {
     params.set("theme", theme);
 
     // 1. Fetch basic results (IDs and minimal info)
-    const basicResults = await fetchGames(searchQuery);
+    const basicResults = await fetchGames(effectiveQuery);
     console.log("Basic search results:", basicResults);
     // Extract IDs from basic results
     const allIds = basicResults.map((game) => game.id);
-    
+
     // 2. Chunk IDs into groups of 20
     const idChunks = chunkArray(allIds, 20);
-    
+
     let detailedResults: any[] = [];
     // 3. For each chunk, fetch detailed game info
     for (const chunk of idChunks) {
@@ -59,7 +60,7 @@ export default function SearchForm() {
 
     // Store detailed results in localStorage
     localStorage.setItem("searchResults", JSON.stringify(detailedResults));
-    
+
     // Navigate to the results page with query parameters.
     router.push(`/results?${params.toString()}`);
   };
@@ -71,12 +72,12 @@ export default function SearchForm() {
       </h1>
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-3xl bg-red-200 dark:bg-red-800 p-6 rounded-lg shadow-md"
+        className="w-full max-w-3xl bg-red-600 dark:bg-red-400 p-6 rounded-lg shadow-md"
       >
         <div className="grid grid-rows-1 md:grid-rows-2 gap-4">
           {/* Number of Players */}
           <div>
-            <label htmlFor="players" className="block mb-1">
+            <label htmlFor="players" className="block font-semibold mb-1">
               Number of Players
             </label>
             <select
@@ -200,7 +201,7 @@ export default function SearchForm() {
         {/* Search Button */}
         <button
           type="submit"
-          className="mt-4 px-6 py-3 text-lg font-semibold rounded-lg transition bg-gray-400 hover:bg-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600 text-[var(--foreground)]"
+          className="mt-4 px-6 py-3 text-lg font-semibold rounded-lg transition bg-blue-400 hover:bg-gray-500 dark:bg-blue-700 dark:hover:bg-blue-600 text-[var(--foreground)]"
         >
           Search
         </button>

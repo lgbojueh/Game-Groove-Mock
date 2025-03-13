@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { fetchGames } from "@/utils/fetchGames";
+import { fetchGameDetails } from "@/utils/fetchGameDetails";
 import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
 import he from "he"; // ✅ Import HTML entities decoder
 
@@ -125,7 +126,7 @@ export default function Games() {
           placeholder="Search games..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="border border-gray-300 p-2 rounded flex-grow mr-2"
+          className="border border-gray-400 p-2 rounded flex-grow mr-2"
         />
         <button type="submit" className="bg-blue-500 text-white p-2 rounded">
           Search
@@ -140,7 +141,7 @@ export default function Games() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {games.slice(0, visibleCount).map((game) => (
                 <Link key={game.id} href={`/game/${game.id}`} className="block">
-                  <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-lg transition">
+                  <div className="p-4 bg-gray-400 dark:bg-gray-700 rounded shadow hover:shadow-lg transition">
                     {game.thumbnail ? (
                       <Image
                         src={game.thumbnail}
