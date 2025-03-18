@@ -5,6 +5,7 @@ import Image from "next/image";
 import { fetchGames } from "@/utils/fetchGames";
 import { fetchGameDetails } from "@/utils/fetchGameDetails";
 import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
+import he from "he"; // ✅ Import HTML entities decoder
 
 // Helper function to chunk an array into smaller arrays of a given size.
 function chunkArray<T>(arr: T[], size: number): T[][] {
@@ -27,8 +28,9 @@ interface BasicGame {
 }
 
 // Helper to clean unwanted line break codes from descriptions.
-const cleanDescription = (desc?: string) =>
-  desc ? desc.replace(/&#10;/g, " ") : "";
+const cleanDescription = (desc?: string) => {
+  return desc ? he.decode(desc.replace(/&#10;/g, " ")) : "";
+}; 
 
 export default function Games() {
   const [games, setGames] = useState<BasicGame[]>([]);
@@ -146,6 +148,7 @@ export default function Games() {
                         alt={`${game.name} thumbnail`}
                         width={200}
                         height={150}
+                        quality={100} // ✅ Ensure high quality
                         className="w-full h-[150px] object-cover rounded mb-2"
                       />
                     ) : (

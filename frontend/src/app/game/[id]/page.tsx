@@ -3,10 +3,12 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { fetchGameDetails } from "@/utils/fetchGameDetails";
 import ThemeToggle from "@/components/ThemeToggle";
+import he from "he"; // ✅ Import HTML entities decoder
 
 // Helper to remove unwanted line-break entities from a description.
-const cleanDescription = (desc?: string) =>
-  desc ? desc.replace(/&#10;&#10;/g, " ") : "";
+const cleanDescription = (desc?: string) => {
+  return desc ? he.decode(desc.replace(/&#10;&#10;/g, " ")) : "";
+};
 
 export default function GameDetailsPage() {
   const { id } = useParams();
