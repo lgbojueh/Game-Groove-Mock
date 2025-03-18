@@ -1,3 +1,4 @@
+
 export const fetchDetailedGames = async (ids: string[]) => {
   try {
     const response = await fetch(
