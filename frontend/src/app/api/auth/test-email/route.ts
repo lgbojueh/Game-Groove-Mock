@@ -1,63 +1,53 @@
-// app/api/test-email/route.ts
-import { NextRequest, NextResponse } from "next/server";
-import nodemailer from "nodemailer";
+// Example: app/api/test-email/route.ts (or .js)
+// For TypeScript, you can add types as needed
 
-export async function POST(req: NextRequest) {
+import nodemailer from 'nodemailer';
+
+export async function POST(request: Request) {
   try {
-    // 1. Generate a test account
+    // Create a test account. In production, you might use your own SMTP provider.
     const testAccount = await nodemailer.createTestAccount();
 
-    // 2. Create a transporter using Ethereal Email
-    //    The createTestAccount() call gives you random credentials
-    //    (host, port, secure, user, pass).
-    const transporter = nodemailer.createTransport({
+    // Create a transporter object using the test account's SMTP details.
+    let transporter = nodemailer.createTransport({
       host: testAccount.smtp.host,
       port: testAccount.smtp.port,
-      secure: testAccount.smtp.secure, // true if port is 465, false otherwise
+      secure: testAccount.smtp.secure, // true for 465, false for other ports
       auth: {
         user: testAccount.user,
         pass: testAccount.pass,
       },
     });
 
-    // 3. Read JSON data from the request if needed
-    const body = await req.json().catch(() => ({}));
-    const { to } = body; // e.g. { "to": "someone@example.com" }
+    // Parse the incoming JSON request (expects a "to" field).
+    const { to } = await request.json();
 
-    // 4. Define the email message
-    //    You can pass any valid fields like 'subject', 'text', 'html', etc.
-    const mailOptions = {
-      from: `"Game Groove Test" <${testAccount.user}>`,
-      to: to || "test@example.com",
-      subject: "Hello from Ethereal!",
-      text: "Hello world?",
-      html: "<b>Hello world?</b>",
+    // Define your message options.
+    let message = {
+      from: 'Game Grove <no-reply@gamegrove.test>',
+      to: to, // recipient address from the request
+      subject: 'Test Email from Game Grove',
+      text: 'Hello from Game Grove!',
+      html: '<p><b>Hello</b> from Game Grove!</p>',
     };
 
-    // 5. Send the email
-    const info = await transporter.sendMail(mailOptions);
+    // Send the email.
+    let info = await transporter.sendMail(message);
 
-    // 6. Return the test info and preview URL in the response
-    //    Ethereal provides a preview URL you can open in your browser
-    //    to see the “sent” message. It’s only valid for a short time.
-    console.log("Message sent:", info.messageId);
-    console.log("Preview URL:", nodemailer.getTestMessageUrl(info));
+    // Optionally, log the preview URL for Ethereal.
+    const previewUrl = nodemailer.getTestMessageUrl(info);
+    console.log('Message sent: %s', info.messageId);
+    console.log('Preview URL: %s', previewUrl);
 
-    return NextResponse.json({
-      success: true,
-      messageId: info.messageId,
-      previewUrl: nodemailer.getTestMessageUrl(info),
-      usedAccount: {
-        user: testAccount.user,
-        pass: testAccount.pass,
-        smtp: testAccount.smtp,
-      },
+    return new Response(JSON.stringify({ message: 'Email sent', previewUrl }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
     });
   } catch (error: any) {
-    console.error("Error sending test email:", error);
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error('Error in test-email:', error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }
