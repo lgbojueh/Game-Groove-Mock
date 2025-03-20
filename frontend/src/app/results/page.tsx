@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import he from "he"; // ✅ Import HTML entities decoder
 
 // Helper to clean unwanted line break codes from descriptions.
-const cleanDescription = (desc?: string) =>
-  desc ? desc.replace(/&#10;/g, " ") : "";
+const cleanDescription = (desc?: string) => {
+  return desc ? he.decode(desc.replace(/&#10;/g, " ")) : "";
+}; 
 
 // Define an interface for your detailed game objects.
 interface BasicGame {
@@ -185,7 +187,7 @@ export default function ResultsPage() {
               {games.map((game) => (
                 <li
                   key={game.id!}
-                  className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-lg transition"
+                  className="p-4 bg-gray-400 dark:bg-gray-700 rounded shadow hover:shadow-lg transition"
                 >
                   <Link href={`/game/${game.id}`} className="block">
                     <h3 className="font-semibold mb-2">{game.name}</h3>
@@ -195,7 +197,11 @@ export default function ResultsPage() {
                         alt={`${game.name} thumbnail`}
                         width={200}
                         height={150}
-                        className="w-full h-[150px] object-cover rounded mb-2"
+                        quality={100}
+                        priority
+                        placeholder="blur"
+                        blurDataURL="/placeholder.jpg"
+                        className="w-full h-auto object-contain rounded mb-2"
                       />
                     ) : (
                       <div className="w-full h-[150px] bg-gray-300 flex items-center justify-center rounded mb-2">

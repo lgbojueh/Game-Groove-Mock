@@ -3,10 +3,12 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { fetchGameDetails } from "@/utils/fetchGameDetails";
 import ThemeToggle from "@/components/ThemeToggle";
+import he from "he"; // ✅ Import HTML entities decoder
 
 // Helper to remove unwanted line-break entities from a description.
-const cleanDescription = (desc?: string) =>
-  desc ? desc.replace(/&#10;&#10;/g, " ") : "";
+const cleanDescription = (desc?: string) => {
+  return desc ? he.decode(desc.replace(/&#10;&#10;/g, " ")) : "";
+};
 
 export default function GameDetailsPage() {
   const { id } = useParams();
@@ -15,6 +17,8 @@ export default function GameDetailsPage() {
   const [error, setError] = useState("");
   const [isFavorite, setIsFavorite] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+
+
 
   useEffect(() => {
     async function getGameDetails() {
@@ -59,6 +63,8 @@ export default function GameDetailsPage() {
     }
   };
 
+
+
   const toggleSaved = () => {
     const storedSaved = localStorage.getItem("savedGames");
     let savedGames = storedSaved ? JSON.parse(storedSaved) : [];
@@ -81,7 +87,7 @@ export default function GameDetailsPage() {
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="p-4 bg-gray-800 text-white">
+      <header className="p-4 bg-gray-500 text-white">
         <h2>Game Details</h2>
       </header>
       <main className="p-6 bg-[var(--background)] text-[var(--foreground)] flex-1 overflow-y-auto">
