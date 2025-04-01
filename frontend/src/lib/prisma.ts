@@ -1,12 +1,9 @@
 // src/lib/prisma.ts
 import { PrismaClient } from '@prisma/client';
 
-// Log the DATABASE_URL for debugging (remove or disable in production)
-console.log('DATABASE_URL:', process.env.DATABASE_URL);
+console.log('DATABASE_URL:', process.env.DATABASE_URL); // Add this line to verify
 
 declare global {
-  // Prevent multiple instances of Prisma Client during hot reloads in development.
-  // eslint-disable-next-line no-var
   var prisma: PrismaClient | undefined;
 }
 
