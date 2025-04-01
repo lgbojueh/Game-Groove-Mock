@@ -17,6 +17,8 @@ export async function POST(request: Request) {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
+    console.log(typeof hashedPassword, hashedPassword);
+
     // Insert the new user using the hashed password
     const result = await pool.query(
       'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *',
