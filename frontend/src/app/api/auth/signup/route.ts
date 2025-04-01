@@ -1,41 +1,28 @@
-// app/api/auth/signup/route.ts
-import { NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
+// Example: pages/api/auth/signup.js (or under app/api if using the app directory)
+import { Pool } from 'pg';
 
-// For demonstration purposes only; in production use a proper database.
-let users: { id: number; username: string; email: string; password: string }[] = [];
+// Configure the pool using environment variables
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL, // set this in your .env.local
+});
 
-export async function POST(request: Request) {
+// Example API handler
+export default async function handler(req: { method: string; body: { username: any; email: any; password: any; }; }, res: { status: (arg0: number) => { (): any; new(): any; json: { (arg0: { error?: string; message?: string; user?: any; }): void; new(): any; }; }; }) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { username, email, password } = req.body;
+
   try {
-    const { username, email, password } = await request.json();
-
-    if (!username || !email || !password) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
-
-    // Check if a user with the same email or username already exists
-    const existingUser = users.find(
-      (user) => user.email === email || user.username === username
+    // Insert user into the database
+    const result = await pool.query(
+      'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *',
+      [username, email, password]
     );
-    if (existingUser) {
-      return NextResponse.json({ error: 'User already exists' }, { status: 400 });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = {
-      id: Date.now(), // In production use an auto-generated ID from your DB.
-      username,
-      email,
-      password: hashedPassword,
-    };
-
-    users.push(newUser);
-
-    return NextResponse.json({
-      message: 'Signup successful',
-      user: { id: newUser.id, username: newUser.username, email: newUser.email },
-    });
+    res.status(200).json({ message: 'Signup successful', user: result.rows[0] });
   } catch (error) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Error in signup:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 }
