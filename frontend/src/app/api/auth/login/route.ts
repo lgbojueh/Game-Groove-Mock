@@ -1,7 +1,8 @@
 // src/app/api/auth/login/route.ts
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import prisma from '../../../lib/prisma';
+import prisma from '@/lib/prisma';
+
  // adjust path to your Prisma client
 
 export async function POST(request: Request) {
