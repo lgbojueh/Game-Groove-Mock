@@ -1,6 +1,6 @@
 // app/api/auth/reset-password/route.ts
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 // Use the same in‑memory users array (for demonstration)
 let users: { id: number; username: string; email: string; password: string }[] = [];
