@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "../../styles/styles.module.css";
+import {doCreateUserWithEmailAndPassword} from "../firebase/auth";
 
 export default function SignUp() {
   const router = useRouter();
@@ -29,6 +30,7 @@ export default function SignUp() {
       return;
     }
 
+    doCreateUserWithEmailAndPassword(formData.email, formData.password);
     // Simulate sign-up by saving user data to localStorage
     localStorage.setItem("user", JSON.stringify(formData));
     // Redirect to the Account page

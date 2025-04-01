@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import {doPasswordReset} from "../firebase/auth";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -15,22 +16,23 @@ export default function ForgotPassword() {
       return;
     }
 
-    try {
-      // Simulating API request (Replace with real API call)
-      const response = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+    doPasswordReset(email);
+    // try {
+    //   // Simulating API request (Replace with real API call)
+    //   const response = await fetch("/api/auth/forgot-password", {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify({ email }),
+    //   });
 
-      if (!response.ok) {
-        throw new Error("Failed to send reset link. Please try again.");
-      }
+    //   if (!response.ok) {
+    //     throw new Error("Failed to send reset link. Please try again.");
+    //   }
 
-      setMessage("A password reset link has been sent to your email.");
-    } catch (err) {
-      setError("Error sending reset link. Please try again.");
-    }
+    //   setMessage("A password reset link has been sent to your email.");
+    // } catch (err) {
+    //   setError("Error sending reset link. Please try again.");
+    // }
   };
 
   return (

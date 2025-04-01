@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "../../styles/styles.module.css";
 import Link from "next/link";
+import {doSignInWithEmailAndPassword} from "../firebase/auth";
 
 export default function Login() {
   const router = useRouter();
@@ -24,11 +25,18 @@ export default function Login() {
       setError("Please enter your password.");
       return;
     }
-
+    
+  
+      doSignInWithEmailAndPassword(formData.identifier, formData.password).then(()=>{
+        localStorage.setItem("user", JSON.stringify({ identifier: formData.identifier }))
+        router.push("/account")
+      }).catch(()=>{
+          setError("Incorrect Email or Password.");
+        });
+    
     // Simulate login by storing user info to localStorage.
     // In a real app, you'd verify credentials before setting the user.
-    localStorage.setItem("user", JSON.stringify({ identifier: formData.identifier }));
-    router.push("/account");
+    
   };
 
   return (
