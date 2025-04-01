@@ -1,52 +1,48 @@
-// app/api/auth/forgot-password/route.ts
-import nodemailer from 'nodemailer';
+// File: frontend/src/app/api/auth/forgot-password/route.ts
+export const runtime = "nodejs";
+
+import { NextResponse } from "next/server";
+import nodemailer from "nodemailer";
 
 export async function POST(request: Request) {
   try {
-    // Parse the incoming JSON request. We expect a field "email".
     const { email } = await request.json();
     if (!email) {
-      return new Response(
-        JSON.stringify({ error: "Email is required" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    // Create a transporter using Ethereal SMTP settings from .env.local
+    // Create transporter with Ethereal for testing.
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: false, // use false for port 587; set to true if using port 465
+      host: process.env.SMTP_HOST || "smtp.ethereal.email",
+      port: Number(process.env.SMTP_PORT) || 587,
+      secure: Number(process.env.SMTP_PORT) === 465, // true for port 465, false for others
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user: process.env.SMTP_USER || "raina26@ethereal.email",
+        pass: process.env.SMTP_PASS || "hR23Uk9MYfbcFWpC97",
       },
     });
 
-    // Define the email message options
+    // Here, generate a reset token or link (omitted for brevity)
+    const resetLink = `https://yourdomain.com/reset-password?token=your-generated-token`;
+
     const message = {
-      from: `"Game Grove" <${process.env.SMTP_USER}>`,
+      from: `"Game Grove" <${process.env.SMTP_USER || "raina26@ethereal.email"}>`,
       to: email,
-      subject: "Password Reset Request",
-      text: "Please click the link to reset your password",
-      html: `<p>Please click <a href="https://your-app.com/reset-password?email=${encodeURIComponent(email)}">here</a> to reset your password.</p>`,
+      subject: "Reset Your Password",
+      text: `Please reset your password using this link: ${resetLink}`,
+      html: `<p>Please reset your password by clicking <a href="${resetLink}">here</a>.</p>`,
     };
 
-    // Send the email
     const info = await transporter.sendMail(message);
+    console.log("Reset password email sent:", info.messageId);
+    console.log("Preview URL:", nodemailer.getTestMessageUrl(info));
 
-    // For Ethereal you can log the preview URL
-    const previewUrl = nodemailer.getTestMessageUrl(info);
-
-    return new Response(
-      JSON.stringify({ message: "Password reset email sent", previewUrl }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
-  } catch (error: any) {
+    return NextResponse.json({
+      message: "Reset email sent successfully",
+      previewUrl: nodemailer.getTestMessageUrl(info),
+    });
+  } catch (error) {
     console.error("Error in forgot-password:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
