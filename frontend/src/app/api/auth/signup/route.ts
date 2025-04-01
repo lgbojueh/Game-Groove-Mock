@@ -1,6 +1,6 @@
 // app/api/auth/signup/route.ts
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 // For demonstration purposes only; in production use a proper database.
 let users: { id: number; username: string; email: string; password: string }[] = [];
