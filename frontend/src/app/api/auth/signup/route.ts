@@ -1,8 +1,6 @@
 // src/app/api/auth/signup/route.ts
 
-// Force load environment variables (only needed if Next.js isn’t auto-loading them)
-import 'dotenv/config';
-
+import 'dotenv/config'; // Ensure env vars are loaded
 import { NextResponse } from 'next/server';
 import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
@@ -24,7 +22,7 @@ export async function POST(request: Request) {
       'SELECT * FROM users WHERE email = $1 AND deactivated = FALSE',
       [email]
     );
-    if (emailCheck.rowCount > 0) {
+    if (emailCheck.rowCount! > 0) {
       return NextResponse.json(
         { error: 'An account with this email already exists.' },
         { status: 400 }
@@ -36,7 +34,7 @@ export async function POST(request: Request) {
       'SELECT * FROM users WHERE username = $1 AND deactivated = FALSE',
       [username]
     );
-    if (usernameCheck.rowCount > 0) {
+    if (usernameCheck.rowCount! > 0) {
       return NextResponse.json(
         { error: 'This username is taken. Please choose a different one.' },
         { status: 400 }
