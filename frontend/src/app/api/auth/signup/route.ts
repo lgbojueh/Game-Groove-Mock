@@ -2,13 +2,15 @@
 import { NextResponse } from 'next/server';
 import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
+
+// Log the DATABASE_URL to verify it's loaded correctly
 console.log('DATABASE_URL:', process.env.DATABASE_URL);
+
 // Configure the PostgreSQL pool using the environment variable
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-// Export a named function for the POST method
 export async function POST(request: Request) {
   try {
     const { username, email, password } = await request.json();
@@ -18,42 +20,30 @@ export async function POST(request: Request) {
       'SELECT * FROM users WHERE email = $1 AND deactivated = FALSE',
       [email]
     );
-    if (emailCheck.rows.length > 0) {
-      return NextResponse.json(
-        { error: 'An account with that email already exists.' },
-        { status: 400 }
-      );
+    if (emailCheck.rowCount !== null && emailCheck.rowCount > 0) {
+      return NextResponse.json({ error: 'An account with this email already exists.' }, { status: 400 });
     }
 
-    // Check if username is already taken by an active account
+    // Check if the username is taken
     const usernameCheck = await pool.query(
       'SELECT * FROM users WHERE username = $1 AND deactivated = FALSE',
       [username]
     );
-    if (usernameCheck.rows.length > 0) {
-      // Optionally, you could add logic here to suggest similar usernames.
-      return NextResponse.json(
-        { error: 'Username is taken. Please choose a different username.' },
-        { status: 400 }
-      );
+    if (usernameCheck.rowCount !== null && usernameCheck.rowCount > 0) {
+      return NextResponse.json({ error: 'This username is taken. Please choose a different one.' }, { status: 400 });
     }
 
     // Hash the password with bcrypt
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Insert the new user using the hashed password.
-    // Assume there is a boolean column "deactivated" to track active accounts.
+    // Insert the new user into the database using the hashed password
     const result = await pool.query(
-      `INSERT INTO users (username, email, password, deactivated)
-       VALUES ($1, $2, $3, FALSE) RETURNING *`,
+      'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *',
       [username, email, hashedPassword]
     );
 
-    return NextResponse.json(
-      { message: 'Signup successful', user: result.rows[0] },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: 'Signup successful', user: result.rows[0] });
   } catch (error) {
     console.error('Error in signup:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
