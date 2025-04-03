@@ -11,24 +11,54 @@ export default function Login() {
     password: "",
   });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
+    // Validate that both fields are filled
     if (!formData.identifier.trim()) {
       setError("Please enter your email or username.");
+      setLoading(false);
       return;
     }
     if (!formData.password.trim()) {
       setError("Please enter your password.");
+      setLoading(false);
       return;
     }
 
-    // Simulate login by storing user info to localStorage.
-    // In a real app, you'd verify credentials before setting the user.
-    localStorage.setItem("user", JSON.stringify({ identifier: formData.identifier }));
-    router.push("/account");
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        // For this example we assume identifier is email.
+        // If you want to support both email and username,
+        // your backend needs to handle that accordingly.
+        body: JSON.stringify({ email: formData.identifier, password: formData.password }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Login failed");
+        setLoading(false);
+        return;
+      }
+
+      // Optionally store the token in localStorage (or better, use an HTTP-only cookie)
+      localStorage.setItem("token", data.token);
+      // Optionally store the user data (without sensitive info)
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // Redirect the user after a successful login
+      router.push("/account");
+    } catch (err) {
+      console.error("Error in login:", err);
+      setError("An unexpected error occurred.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -76,9 +106,10 @@ export default function Login() {
           </div>
           <button
             type="submit"
-            className="bg-blue-500 text-white p-2 rounded w-full hover:bg-blue-600 transition"
+            disabled={loading}
+            className="bg-blue-500 text-white p-2 rounded w-full hover:bg-blue-600 transition disabled:opacity-50"
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
       </div>

@@ -11,6 +11,7 @@ export default function SignUp() {
     password: "",
   });
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   // Validate password: at least 8 characters, one uppercase, one lowercase, one digit.
   const validatePassword = (password: string): boolean => {
@@ -18,9 +19,10 @@ export default function SignUp() {
     return passwordRegex.test(password);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
 
     if (!validatePassword(formData.password)) {
       setError(
@@ -29,10 +31,30 @@ export default function SignUp() {
       return;
     }
 
-    // Simulate sign-up by saving user data to localStorage
-    localStorage.setItem("user", JSON.stringify(formData));
-    // Redirect to the Account page
-    router.push("/account");
+    try {
+      // Make a POST request to your signup API route
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        // If there's an error, display it
+        setError(data.error || "Signup failed");
+      } else {
+        // Optionally store user data or token if needed.
+        // For now, we display a success message and redirect to login or account page.
+        setSuccess("Signup successful! Redirecting...");
+        setTimeout(() => {
+          router.push("/account"); // Or /login, depending on your flow
+        }, 2000);
+      }
+    } catch (err) {
+      console.error("Error in signup:", err);
+      setError("An unexpected error occurred.");
+    }
   };
 
   return (
@@ -40,6 +62,7 @@ export default function SignUp() {
       <div className="max-w-md w-full bg-gray-400 dark:bg-gray-800 p-6 rounded shadow">
         <h1 className={styles.SignUp}>Sign Up</h1>
         {error && <p className="text-red-500 mb-4">{error}</p>}
+        {success && <p className="text-green-500 mb-4">{success}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="signup-username" className={styles.SigningupandLoggingIn}>

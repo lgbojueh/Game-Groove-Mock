@@ -10,6 +10,7 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -20,6 +21,7 @@ export default function ResetPassword() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
 
     if (!password || !confirmPassword) {
       setError("Please fill in both fields.");
@@ -30,16 +32,18 @@ export default function ResetPassword() {
       return;
     }
 
+    setLoading(true);
     try {
-      // Simulating API request (Replace with real API call)
       const response = await fetch("/api/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, password }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error("Failed to reset password. The link may have expired.");
+        throw new Error(data.error || "Failed to reset password. The link may have expired.");
       }
 
       setSuccess("Your password has been reset successfully!");
@@ -47,7 +51,10 @@ export default function ResetPassword() {
         router.push("/login");
       }, 2000);
     } catch (err) {
+      console.error("Error resetting password:", err);
       setError("Error resetting password. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -90,9 +97,10 @@ export default function ResetPassword() {
             </div>
             <button
               type="submit"
-              className="bg-blue-500 text-white p-2 rounded w-full hover:bg-blue-600 transition"
+              disabled={loading}
+              className="bg-blue-500 text-white p-2 rounded w-full hover:bg-blue-600 transition disabled:opacity-50"
             >
-              Reset Password
+              {loading ? "Resetting..." : "Reset Password"}
             </button>
           </form>
         )}
