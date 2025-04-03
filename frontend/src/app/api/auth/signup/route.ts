@@ -1,13 +1,12 @@
 // src/app/api/auth/signup/route.ts
-import 'dotenv/config'; // Loads environment variables from .env/.env.local
 import { NextResponse } from 'next/server';
 import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
 
-// Log DATABASE_URL for debugging
+// Log the DATABASE_URL for debugging (make sure this file is in your Next.js app root and that .env.local is present)
 console.log('DATABASE_URL:', process.env.DATABASE_URL);
 
-// Configure the PostgreSQL pool using the connection string from the environment variable
+// Configure the PostgreSQL pool using the environment variable
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
@@ -56,9 +55,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('Error in signup:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
