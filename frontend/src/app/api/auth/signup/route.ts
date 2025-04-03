@@ -1,6 +1,7 @@
 // src/app/api/auth/signup/route.ts
 
-import 'dotenv/config'; // Ensure env vars are loaded
+import dotenv from 'dotenv';
+dotenv.config({ path: '../../.env' }); // Adjust the path if necessary // Ensure env vars are loaded
 import { NextResponse } from 'next/server';
 import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
