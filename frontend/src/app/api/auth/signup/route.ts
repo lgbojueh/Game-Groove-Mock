@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
-
+console.log('DATABASE_URL:', process.env.DATABASE_URL);
 // Configure the PostgreSQL pool using the environment variable
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
