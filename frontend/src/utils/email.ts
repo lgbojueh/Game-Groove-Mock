@@ -1,4 +1,4 @@
-// Example: src/lib/email.ts
+// src/lib/email.ts
 import nodemailer from "nodemailer";
 
 interface SmtpConfig {
@@ -27,6 +27,12 @@ const providers: Record<string, SmtpConfig> = {
     port: Number(process.env.SMTP_YAHOO_PORT),
     user: process.env.SMTP_YAHOO_USER as string,
     pass: process.env.SMTP_YAHOO_PASS as string,
+  },
+  mail: {
+    host: process.env.SMTP_MAIL_HOST as string,
+    port: Number(process.env.SMTP_MAIL_PORT),
+    user: process.env.SMTP_MAIL_USER as string,
+    pass: process.env.SMTP_MAIL_PASS as string,
   },
 };
 
