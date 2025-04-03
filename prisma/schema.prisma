@@ -8,11 +8,13 @@ datasource db {
 }
 
 model User {
-  id         Int      @id @default(autoincrement())
-  username   String
-  email      String   @unique
-  password   String
-  created_at DateTime @default(now())
+  id               Int       @id @default(autoincrement())
+  username         String
+  email            String    @unique
+  password         String
+  created_at       DateTime  @default(now())
+  resetToken       String?   // optional field for reset token
+  resetTokenExpiry DateTime? // optional field for token expiry
 
   @@map("users")
 }

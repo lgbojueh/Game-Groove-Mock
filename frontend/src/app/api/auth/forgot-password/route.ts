@@ -1,48 +1,59 @@
-// File: frontend/src/app/api/auth/forgot-password/route.ts
-export const runtime = "nodejs";
-
-import { NextResponse } from "next/server";
-import nodemailer from "nodemailer";
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import nodemailer from 'nodemailer';
+import crypto from 'crypto';
 
 export async function POST(request: Request) {
   try {
     const { email } = await request.json();
-    if (!email) {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+
+    // Look up the user by email
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Create transporter with Ethereal for testing.
+    // Generate a secure reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const tokenExpiry = new Date(Date.now() + 3600000); // 1 hour from now
+
+    // Update the user record with reset token and expiry
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { resetToken, resetTokenExpiry: tokenExpiry },
+    });
+
+    // Configure the transporter using environment variables
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || "smtp.ethereal.email",
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: Number(process.env.SMTP_PORT) === 465, // true for port 465, false for others
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
+      secure: Number(process.env.SMTP_PORT) === 465,
       auth: {
-        user: process.env.SMTP_USER || "raina26@ethereal.email",
-        pass: process.env.SMTP_PASS || "hR23Uk9MYfbcFWpC97",
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
       },
     });
 
-    // Here, generate a reset token or link (omitted for brevity)
-    const resetLink = `https://yourdomain.com/reset-password?token=your-generated-token`;
+    // Create a reset URL (adjust the domain as needed)
+    const resetUrl = `https://yourdomain.com/reset-password?token=${resetToken}`;
 
+    // Email message options
     const message = {
-      from: `"Game Grove" <${process.env.SMTP_USER || "raina26@ethereal.email"}>`,
-      to: email,
-      subject: "Reset Your Password",
-      text: `Please reset your password using this link: ${resetLink}`,
-      html: `<p>Please reset your password by clicking <a href="${resetLink}">here</a>.</p>`,
+      from: `Game Grove <${process.env.SMTP_USER}>`,
+      to: user.email,
+      subject: 'Reset Your Password',
+      text: `Please use the following link to reset your password: ${resetUrl}`,
+      html: `<p>Please use the following link to reset your password:</p><a href="${resetUrl}">${resetUrl}</a>`,
     };
 
+    // Send the email
     const info = await transporter.sendMail(message);
-    console.log("Reset password email sent:", info.messageId);
-    console.log("Preview URL:", nodemailer.getTestMessageUrl(info));
-
     return NextResponse.json({
-      message: "Reset email sent successfully",
+      message: 'Reset email sent successfully',
       previewUrl: nodemailer.getTestMessageUrl(info),
     });
   } catch (error) {
-    console.error("Error in forgot-password:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error('Error in forgot-password:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

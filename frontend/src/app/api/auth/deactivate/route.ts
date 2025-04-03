@@ -1,25 +1,24 @@
-// app/api/auth/deactivate-account/route.ts
 import { NextResponse } from 'next/server';
-
-// Use the same in‑memory users array (for demonstration)
-let users: { id: number; username: string; email: string; password: string }[] = [];
+import prisma from '@/lib/prisma';
 
 export async function POST(request: Request) {
   try {
     const { userId } = await request.json();
-    if (!userId) {
-      return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
-    }
 
-    const index = users.findIndex((u) => u.id === userId);
-    if (index === -1) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
+    // Option 1: Delete the user (deactivates the account)
+    await prisma.user.delete({
+      where: { id: userId },
+    });
 
-    // In a real app you might mark the account as deactivated instead of deleting.
-    users.splice(index, 1);
+    // Option 2: Alternatively, you could update an `isActive` field:
+    // await prisma.user.update({
+    //   where: { id: userId },
+    //   data: { isActive: false },
+    // });
+
     return NextResponse.json({ message: 'Account deactivated successfully' });
   } catch (error) {
+    console.error('Error in deactivate account:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
