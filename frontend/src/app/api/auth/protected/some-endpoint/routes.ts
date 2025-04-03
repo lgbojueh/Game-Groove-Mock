@@ -1,8 +1,8 @@
 // src/app/api/protected/some-endpoint/route.ts
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { authenticateToken } from '@/lib/authMiddleware';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const authResult = authenticateToken(request);
   if (authResult instanceof NextResponse) {
     // If authentication fails, this returns a response with an error
