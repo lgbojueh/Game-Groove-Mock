@@ -24,18 +24,15 @@ export async function POST(request: Request) {
     }
 
     // Create a JWT payload
-    const payload = {
-      userId: user.id,
-      email: user.email,
-    };
+    const payload = { userId: user.id, email: user.email };
 
-    // Sign the token with your secret key from the environment variables
+    // Sign the token with your secret key from environment variables
     const token = jwt.sign(payload, process.env.JWT_SECRET as string, {
-      expiresIn: '1h', // Token expires in 1 hour
+      expiresIn: '1h',
     });
 
-    // Return the token along with user info (omit sensitive fields)
-    return NextResponse.json({
+    // Create a response and set the JWT as an HTTP-only cookie
+    const response = NextResponse.json({
       message: 'Login successful',
       user: {
         id: user.id,
@@ -43,8 +40,16 @@ export async function POST(request: Request) {
         email: user.email,
         created_at: user.created_at,
       },
-      token,
     });
+
+    response.cookies.set('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60, // 1 hour in seconds
+      path: '/',
+    });
+
+    return response;
   } catch (error) {
     console.error('Error in login:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
