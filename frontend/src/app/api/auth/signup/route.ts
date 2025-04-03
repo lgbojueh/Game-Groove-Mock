@@ -1,9 +1,13 @@
 // src/app/api/auth/signup/route.ts
+
+// Force load environment variables (only needed if Next.js isn’t auto-loading them)
+import 'dotenv/config';
+
 import { NextResponse } from 'next/server';
 import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
 
-// Log the DATABASE_URL to verify it's loaded correctly
+// Log the DATABASE_URL to verify it’s loaded
 console.log('DATABASE_URL:', process.env.DATABASE_URL);
 
 // Configure the PostgreSQL pool using the environment variable
@@ -20,8 +24,11 @@ export async function POST(request: Request) {
       'SELECT * FROM users WHERE email = $1 AND deactivated = FALSE',
       [email]
     );
-    if (emailCheck.rowCount !== null && emailCheck.rowCount > 0) {
-      return NextResponse.json({ error: 'An account with this email already exists.' }, { status: 400 });
+    if (emailCheck.rowCount > 0) {
+      return NextResponse.json(
+        { error: 'An account with this email already exists.' },
+        { status: 400 }
+      );
     }
 
     // Check if the username is taken
@@ -29,8 +36,11 @@ export async function POST(request: Request) {
       'SELECT * FROM users WHERE username = $1 AND deactivated = FALSE',
       [username]
     );
-    if (usernameCheck.rowCount !== null && usernameCheck.rowCount > 0) {
-      return NextResponse.json({ error: 'This username is taken. Please choose a different one.' }, { status: 400 });
+    if (usernameCheck.rowCount > 0) {
+      return NextResponse.json(
+        { error: 'This username is taken. Please choose a different one.' },
+        { status: 400 }
+      );
     }
 
     // Hash the password with bcrypt
