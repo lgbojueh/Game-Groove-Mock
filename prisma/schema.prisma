@@ -1,10 +1,10 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-}
-
-generator client {
-  provider = "prisma-client-js"
 }
 
 model User {
@@ -14,5 +14,5 @@ model User {
   password   String
   created_at DateTime @default(now())
 
-  @@map("users") // This tells Prisma to use the table named "users"
+  @@map("users")
 }
