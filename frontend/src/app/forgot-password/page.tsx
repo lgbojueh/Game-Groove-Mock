@@ -1,8 +1,11 @@
 "use client";
 import { useState } from "react";
 import {doPasswordReset} from "../firebase/auth";
+import { push } from "firebase/database";
+import { useRouter } from "next/navigation";
 
 export default function ForgotPassword() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -16,6 +19,19 @@ export default function ForgotPassword() {
       return;
     }
 
+
+    doPasswordReset(email).then(()=>{
+                setMessage("Email sent.")
+                router.push("login/")
+              }).catch((reason)=>{
+                if (reason.code === "auth/user-not-found"){
+                  setError("User not found")
+    
+                }
+                else{
+                  setError("Unknown Error.");
+                }
+                });
     doPasswordReset(email);
     // try {
     //   // Simulating API request (Replace with real API call)

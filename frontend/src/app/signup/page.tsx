@@ -30,11 +30,23 @@ export default function SignUp() {
       return;
     }
 
-    doCreateUserWithEmailAndPassword(formData.email, formData.password);
+    // doCreateUserWithEmailAndPassword(formData.email, formData.password);
     // Simulate sign-up by saving user data to localStorage
-    localStorage.setItem("user", JSON.stringify(formData));
+    // localStorage.setItem("user", JSON.stringify(formData));
     // Redirect to the Account page
-    router.push("/account");
+    // router.push("/account");
+    doCreateUserWithEmailAndPassword(formData.email, formData.password).then(()=>{
+            localStorage.setItem("user", JSON.stringify({ identifier: formData.email }))
+            router.push("/account")
+          }).catch((reason)=>{
+            if (reason.code === "auth/email-already-in-use"){
+              setError("Email Already in use.")
+
+            }
+            else{
+              setError("Incorrect Email or Password.");
+            }
+            });
   };
 
   return (
