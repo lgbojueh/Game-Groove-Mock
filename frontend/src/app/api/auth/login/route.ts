@@ -2,8 +2,7 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
-
- // adjust path to your Prisma client
+import jwt from 'jsonwebtoken';
 
 export async function POST(request: Request) {
   try {
@@ -24,8 +23,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Incorrect password' }, { status: 401 });
     }
 
-    // You can create and return a JWT or session here if needed.
-    return NextResponse.json({ message: 'Login successful', user });
+    // Create a JWT payload
+    const payload = {
+      userId: user.id,
+      email: user.email,
+    };
+
+    // Sign the token with your secret key from the environment variables
+    const token = jwt.sign(payload, process.env.JWT_SECRET as string, {
+      expiresIn: '1h', // Token expires in 1 hour
+    });
+
+    // Return the token along with user info (omit sensitive fields)
+    return NextResponse.json({
+      message: 'Login successful',
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        created_at: user.created_at,
+      },
+      token,
+    });
   } catch (error) {
     console.error('Error in login:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
