@@ -25,11 +25,11 @@ export default async function handler(
     case 'POST': {
       try {
         // Expecting userId and saved game data in the request body
-        const { userId, title, score } = req.body; // add other fields as needed
+        const { userId, title } = req.body; // add other fields as needed
         const newSavedGame = await prisma.savedGame.create({
           data: {
             title,
-            score,
+            // score field removed
             user: { connect: { id: Number(userId) } },
           },
         });
