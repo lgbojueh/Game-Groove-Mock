@@ -1,20 +1,36 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 
 export default function FavoritesPage() {
-  const router = useRouter();
   const [favorites, setFavorites] = useState<any[]>([]);
 
   useEffect(() => {
-    const storedFavorites = localStorage.getItem("favorites");
-    setFavorites(storedFavorites ? JSON.parse(storedFavorites) : []);
+    // Fetch the favorites from your API
+    const fetchFavorites = async () => {
+      try {
+        const res = await fetch("/api/favorites");
+        if (!res.ok) throw new Error("Failed to fetch favorites");
+        const data = await res.json();
+        setFavorites(data);
+      } catch (error) {
+        console.error("Error fetching favorites: ", error);
+      }
+    };
+
+    fetchFavorites();
   }, []);
 
-  const removeFavorite = (id: string) => {
-    const updated = favorites.filter((game) => game.id !== id);
-    localStorage.setItem("favorites", JSON.stringify(updated));
-    setFavorites(updated);
+  const removeFavorite = async (id: number) => {
+    try {
+      const res = await fetch(`/api/favorites/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete favorite");
+      // Update the local state after deletion
+      setFavorites((prev) => prev.filter((fav) => fav.id !== id));
+    } catch (error) {
+      console.error("Error deleting favorite: ", error);
+    }
   };
 
   return (
@@ -24,20 +40,20 @@ export default function FavoritesPage() {
         <p>You have no favorite games.</p>
       ) : (
         <ul className="space-y-4">
-          {favorites.map((game, idx) => (
-            <li key={idx} className="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-4 rounded shadow">
+          {favorites.map((fav) => (
+            <li key={fav.id} className="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-4 rounded shadow">
               <div>
-                <h2 className="text-xl font-semibold">{game.name}</h2>
-                {game.thumbnail && (
+                <h2 className="text-xl font-semibold">{fav.name}</h2>
+                {fav.thumbnail && (
                   <img
-                    src={game.thumbnail}
-                    alt={`${game.name} thumbnail`}
+                    src={fav.thumbnail}
+                    alt={`${fav.name} thumbnail`}
                     className="w-32 h-auto rounded mt-2"
                   />
                 )}
               </div>
               <button
-                onClick={() => removeFavorite(game.id)}
+                onClick={() => removeFavorite(fav.id)}
                 className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
               >
                 Remove

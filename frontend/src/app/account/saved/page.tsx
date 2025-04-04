@@ -1,20 +1,41 @@
 "use client";
+
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 
 export default function SavedGamesPage() {
-  const router = useRouter();
   const [savedGames, setSavedGames] = useState<any[]>([]);
 
   useEffect(() => {
-    const storedSaved = localStorage.getItem("savedGames");
-    setSavedGames(storedSaved ? JSON.parse(storedSaved) : []);
+    // Fetch the saved games from your API on mount
+    const fetchSavedGames = async () => {
+      try {
+        const res = await fetch("/api/saved-games");
+        if (!res.ok) {
+          throw new Error("Failed to fetch saved games");
+        }
+        const data = await res.json();
+        setSavedGames(data);
+      } catch (error) {
+        console.error("Error fetching saved games:", error);
+      }
+    };
+
+    fetchSavedGames();
   }, []);
 
-  const removeSavedGame = (id: string) => {
-    const updated = savedGames.filter((game) => game.id !== id);
-    localStorage.setItem("savedGames", JSON.stringify(updated));
-    setSavedGames(updated);
+  // Remove a saved game by its id
+  const removeSavedGame = async (id: number) => {
+    try {
+      const res = await fetch(`/api/saved-games/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        throw new Error("Failed to delete saved game");
+      }
+      setSavedGames((prev) => prev.filter((game) => game.id !== id));
+    } catch (error) {
+      console.error("Error deleting saved game:", error);
+    }
   };
 
   return (
@@ -24,14 +45,17 @@ export default function SavedGamesPage() {
         <p>You have no saved games.</p>
       ) : (
         <ul className="space-y-4">
-          {savedGames.map((game, idx) => (
-            <li key={idx} className="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-4 rounded shadow">
+          {savedGames.map((game) => (
+            <li
+              key={game.id}
+              className="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-4 rounded shadow"
+            >
               <div>
-                <h2 className="text-xl font-semibold">{game.name}</h2>
+                <h2 className="text-xl font-semibold">{game.title}</h2>
                 {game.thumbnail && (
                   <img
                     src={game.thumbnail}
-                    alt={`${game.name} thumbnail`}
+                    alt={`${game.title} thumbnail`}
                     className="w-32 h-auto rounded mt-2"
                   />
                 )}
