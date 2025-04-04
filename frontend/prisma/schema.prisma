@@ -19,3 +19,23 @@ model User {
 
   @@map("users")
 }
+
+model Favorite {
+  id      Int   @id @default(autoincrement())
+  name    String
+  // Other favorite-specific fields...
+
+  // Associate favorite with a user:
+  user    User  @relation(fields: [userId], references: [id])
+  userId  Int
+}
+
+model SavedGame {
+  id      Int   @id @default(autoincrement())
+  title   String
+  // Other saved game-specific fields...
+
+  // Associate saved game with a user:
+  user    User  @relation(fields: [userId], references: [id])
+  userId  Int
+}
