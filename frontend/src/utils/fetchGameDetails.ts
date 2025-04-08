@@ -22,6 +22,8 @@ export const fetchGameDetails = async (id: string) => {
     const name = item.getElementsByTagName("name")[0]?.getAttribute("value") || "Unknown Game";
     const thumbnail = item.getElementsByTagName("thumbnail")[0]?.textContent || "";
     const description = item.getElementsByTagName("description")[0]?.textContent || "No description available.";
+    // 🛒 Add purchase link (e.g., Amazon search)
+    const purchaseLink = `https://www.amazon.com/s?k=${encodeURIComponent(name)}+board+game`;
 
     // Optionally, if you want to include stats from the XML
     // (not all details are provided by the thing endpoint without additional parameters)
@@ -44,6 +46,7 @@ export const fetchGameDetails = async (id: string) => {
       genre,
       age,
       theme,
+      purchaseLink,
     };
     
   } catch (error) {

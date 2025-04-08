@@ -17,6 +17,7 @@ interface BasicGame {
   name: string;
   thumbnail: string;
   description?: string;
+  purchaseLink?: string;
   yearpublished?: string;
   minage?: string;
   minplayers?: string;
@@ -214,6 +215,27 @@ export default function ResultsPage() {
                       </p>
                     )}
                   </Link>
+                  <div className="mt-3 flex flex-col space-y-2">
+  {/* Search on Amazon */}
+  <a
+    href={`https://www.amazon.com/s?k=${encodeURIComponent(game.name)}+board+game`}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition text-center"
+  >
+    Search on Amazon
+  </a>
+
+  {/* Search on eBay */}
+  <a
+    href={`https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(game.name)}+board+game`}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="px-4 py-2 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700 transition text-center"
+  >
+    Search on eBay
+  </a>
+</div>
                 </li>
               ))}
             </ul>

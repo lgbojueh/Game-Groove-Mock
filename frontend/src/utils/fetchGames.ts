@@ -30,8 +30,11 @@ export const fetchGames = async (query: string) => {
       const playtime = "medium";      // Options: "short", "medium", "long"
       const genre = "strategy";       // Options: "strategy", "party", "family", etc.
       const age = "teen";             // Options: "kids", "teen", "adult"
+
+      // 🛒 Add purchase link (e.g., Amazon search)
+      const purchaseLink = `https://www.amazon.com/s?k=${encodeURIComponent(name)}+board+game`;
       
-      return { id, name, thumbnail, complexity, players, theme, playtime, genre, age };
+      return { id, name, thumbnail, complexity, players, theme, playtime, genre, age, purchaseLink };
     });
 
     console.log("✅ Parsed Games:", games);

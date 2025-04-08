@@ -22,6 +22,7 @@ interface BasicGame {
   name: string;
   thumbnail: string;
   description?: string;
+  purchaseLink?: string; //Link to the buy game idea
   complexity?: string;
   players?: string;
   theme?: string;
@@ -165,6 +166,17 @@ export default function Games() {
                       {cleanDescription(game.description) ||
                         "A fun and engaging game that you'll enjoy with friends and family."}
                     </p>
+                        {/* 🛒 Add purchase button if purchaseLink exists */}
+                      {game.purchaseLink && (
+                        <a
+                          href={game.purchaseLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-block mt-2 px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition"
+                        >
+                       Buy This Game
+                       </a>
+                    )}
                   </div>
                 </Link>
               ))}

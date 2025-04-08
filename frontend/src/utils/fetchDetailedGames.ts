@@ -39,6 +39,9 @@ export const fetchDetailedGames = async (ids: string[]) => {
       const age = ageOptions[Math.floor(Math.random() * ageOptions.length)];
       const genre = possibleGenres[Math.floor(Math.random() * possibleGenres.length)];
       const theme = possibleThemes[Math.floor(Math.random() * possibleThemes.length)];
+      // 🛒 Add purchase link (e.g., Amazon search)
+      const purchaseLink = `https://www.amazon.com/s?k=${encodeURIComponent(name)}+board+game`;
+
 
       return {
         id,
@@ -51,6 +54,7 @@ export const fetchDetailedGames = async (ids: string[]) => {
         age,
         genre,
         theme,
+        purchaseLink,
       };
     });
 
