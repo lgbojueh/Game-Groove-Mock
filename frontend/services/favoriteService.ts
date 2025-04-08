@@ -1,12 +1,24 @@
-// /services/favoriteService.ts
-import prisma from '@/lib/prisma'; // Adjust the path based on your project structure
+// favoriteService.ts
+import prisma from '@/lib/prisma';
 
-export async function createFavorite(userId: number, favoriteData: { name: string /*, other fields... */ }) {
+export async function getUserFavorites(userId: number) {
+  try {
+    const favorites = await prisma.favorite.findMany({
+      where: { userId },
+    });
+    return favorites;
+  } catch (error) {
+    console.error("Error fetching favorites: ", error);
+    throw error;
+  }
+}
+
+export async function createFavorite(userId: number, favoriteData: { name: string /*, etc. */ }) {
   try {
     const newFavorite = await prisma.favorite.create({
       data: {
-        ...favoriteData,
-        user: { connect: { id: userId } }
+        name: favoriteData.name,
+        user: { connect: { id: userId } },
       },
     });
     return newFavorite;

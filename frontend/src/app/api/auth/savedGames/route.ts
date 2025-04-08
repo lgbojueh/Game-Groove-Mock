@@ -1,25 +1,19 @@
-// pages/api/saved-games/index.ts
-
+// app/api/savedGames/route.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth';
 import prisma from '@/lib/prisma';
-import { AuthOptions } from 'next-auth'; // adjust path as needed
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const session = await getServerSession(req, res, authOptions);
-  if (!session) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
+  const { method } = req;
 
-  const userId = Number(session.user.id);
-
-  switch (req.method) {
+  switch (method) {
     case 'GET': {
       try {
+        const { userId } = req.query;
         const savedGames = await prisma.savedGame.findMany({
-          where: { userId },
+          where: { userId: Number(userId) },
         });
         res.status(200).json(savedGames);
       } catch (error) {
@@ -30,11 +24,11 @@ export default async function handler(
     }
     case 'POST': {
       try {
-        const { title } = req.body;
+        const { userId, title } = req.body;
         const newSavedGame = await prisma.savedGame.create({
           data: {
             title,
-            user: { connect: { id: userId } },
+            user: { connect: { id: Number(userId) } },
           },
         });
         res.status(201).json(newSavedGame);
@@ -46,6 +40,6 @@ export default async function handler(
     }
     default:
       res.setHeader('Allow', ['GET', 'POST']);
-      res.status(405).end(`Method ${req.method} Not Allowed`);
+      res.status(405).end(`Method ${method} Not Allowed`);
   }
 }
