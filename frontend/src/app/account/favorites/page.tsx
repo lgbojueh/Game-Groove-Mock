@@ -10,6 +10,9 @@ export default function FavoritesPage() {
     async function fetchFavorites() {
       try {
         const res = await fetch(`/api/favoriteService?userId=${defaultUserId}`);
+        if (!res.ok) {
+          throw new Error("Failed to fetch favorites");
+        }
         const data = await res.json();
         setFavorites(data);
       } catch (error) {
@@ -20,10 +23,19 @@ export default function FavoritesPage() {
   }, []);
 
   const removeFavorite = async (id: number) => {
-    // Optionally, you can call an API route to delete the favorite.
-    // For now, just filter locally:
-    const updated = favorites.filter((fav) => fav.id !== id);
-    setFavorites(updated);
+    try {
+      // Call a DELETE endpoint (this route must be implemented on the server side)
+      const res = await fetch(`/api/favoriteService/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        throw new Error("Failed to delete favorite");
+      }
+      // If successful, update the local state:
+      setFavorites((prev) => prev.filter((fav) => fav.id !== id));
+    } catch (error) {
+      console.error("Error deleting favorite: ", error);
+    }
   };
 
   return (
@@ -37,7 +49,7 @@ export default function FavoritesPage() {
             <li key={fav.id} className="flex justify-between items-center p-4 rounded shadow">
               <div>
                 <h2 className="text-xl font-semibold">{fav.name}</h2>
-                {/* Render other fields, e.g. thumbnail */}
+                {/* Add thumbnail or additional details if available */}
               </div>
               <button
                 onClick={() => removeFavorite(fav.id)}

@@ -1,4 +1,5 @@
-// app/api/savedGames/route.ts
+// /src/app/api/auth/savedGames/route.ts
+
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
 
@@ -11,6 +12,7 @@ export default async function handler(
   switch (method) {
     case 'GET': {
       try {
+        // Expecting a userId in the query string
         const { userId } = req.query;
         const savedGames = await prisma.savedGame.findMany({
           where: { userId: Number(userId) },
@@ -24,7 +26,8 @@ export default async function handler(
     }
     case 'POST': {
       try {
-        const { userId, title } = req.body;
+        // Expecting userId and saved game data in the request body
+        const { userId, title } = req.body; // add other fields as needed
         const newSavedGame = await prisma.savedGame.create({
           data: {
             title,
@@ -38,8 +41,22 @@ export default async function handler(
       }
       break;
     }
+    case 'DELETE': {
+      try {
+        // Expecting a saved game id in the query string
+        const { id } = req.query;
+        const deletedSavedGame = await prisma.savedGame.delete({
+          where: { id: Number(id) },
+        });
+        res.status(200).json(deletedSavedGame);
+      } catch (error) {
+        console.error('Error deleting saved game: ', error);
+        res.status(500).json({ error: 'Error deleting saved game' });
+      }
+      break;
+    }
     default:
-      res.setHeader('Allow', ['GET', 'POST']);
+      res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
       res.status(405).end(`Method ${method} Not Allowed`);
   }
 }

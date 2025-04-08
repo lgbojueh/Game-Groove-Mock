@@ -1,4 +1,5 @@
-// app/api/favoriteService/route.ts
+// /src/app/api/auth/favoriteService/route.ts
+
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
 
@@ -11,7 +12,8 @@ export default async function handler(
   switch (method) {
     case 'GET': {
       try {
-        const { userId } = req.query; // expected in query ?userId=...
+        // Expecting a userId in the query string
+        const { userId } = req.query;
         const favorites = await prisma.favorite.findMany({
           where: { userId: Number(userId) },
         });
@@ -24,6 +26,7 @@ export default async function handler(
     }
     case 'POST': {
       try {
+        // Expecting userId and favorite data in the request body
         const { userId, name } = req.body; // add other fields as needed
         const newFavorite = await prisma.favorite.create({
           data: {
@@ -38,8 +41,23 @@ export default async function handler(
       }
       break;
     }
+    case 'DELETE': {
+      try {
+        // Expecting an id in the query string or the request body
+        // Here, we're assuming you pass the favorite id in the query string
+        const { id } = req.query;
+        const deletedFavorite = await prisma.favorite.delete({
+          where: { id: Number(id) },
+        });
+        res.status(200).json(deletedFavorite);
+      } catch (error) {
+        console.error('Error deleting favorite: ', error);
+        res.status(500).json({ error: 'Error deleting favorite' });
+      }
+      break;
+    }
     default:
-      res.setHeader('Allow', ['GET', 'POST']);
+      res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
       res.status(405).end(`Method ${method} Not Allowed`);
   }
 }
