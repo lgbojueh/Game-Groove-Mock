@@ -1,19 +1,25 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '@/lib/prisma';
+// pages/api/saved-games/index.ts
 
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { getServerSession } from 'next-auth';
+import prisma from '@/lib/prisma';
+import { AuthOptions } from 'next-auth'; // adjust path as needed
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { method } = req;
+  const session = await getServerSession(req, res, authOptions);
+  if (!session) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
 
-  switch (method) {
+  const userId = Number(session.user.id);
+
+  switch (req.method) {
     case 'GET': {
       try {
-        // Expecting a userId in the query string
-        const { userId } = req.query;
         const savedGames = await prisma.savedGame.findMany({
-          where: { userId: Number(userId) },
+          where: { userId },
         });
         res.status(200).json(savedGames);
       } catch (error) {
@@ -24,13 +30,11 @@ export default async function handler(
     }
     case 'POST': {
       try {
-        // Expecting userId and saved game data in the request body
-        const { userId, title } = req.body; // add other fields as needed
+        const { title } = req.body;
         const newSavedGame = await prisma.savedGame.create({
           data: {
             title,
-            // score field removed
-            user: { connect: { id: Number(userId) } },
+            user: { connect: { id: userId } },
           },
         });
         res.status(201).json(newSavedGame);
@@ -42,6 +46,6 @@ export default async function handler(
     }
     default:
       res.setHeader('Allow', ['GET', 'POST']);
-      res.status(405).end(`Method ${method} Not Allowed`);
+      res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }

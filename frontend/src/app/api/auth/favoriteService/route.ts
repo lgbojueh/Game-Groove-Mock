@@ -1,19 +1,29 @@
+// pages/api/favorites/index.ts
+
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { getServerSession } from 'next-auth/next';
 import prisma from '@/lib/prisma';
+import { authOptions } from '../auth/[...nextauth]'; // adjust path as needed
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { method } = req;
+  // Get the session for authentication
+  const session = await getServerSession(req, res, authOptions);
+  if (!session) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
 
-  switch (method) {
+  // Assume session.user has an id property
+  const userId = Number(session.user.id);
+
+  switch (req.method) {
     case 'GET': {
       try {
-        // Expecting a userId in the query string
-        const { userId } = req.query;
+        // Now we query favorites for the authenticated user
         const favorites = await prisma.favorite.findMany({
-          where: { userId: Number(userId) },
+          where: { userId },
         });
         res.status(200).json(favorites);
       } catch (error) {
@@ -24,12 +34,12 @@ export default async function handler(
     }
     case 'POST': {
       try {
-        // Expecting userId and favorite data in the request body
-        const { userId, name } = req.body; // add other fields as needed
+        // Expect favorite data (e.g., name) in the request body.
+        const { name } = req.body;
         const newFavorite = await prisma.favorite.create({
           data: {
             name,
-            user: { connect: { id: Number(userId) } },
+            user: { connect: { id: userId } },
           },
         });
         res.status(201).json(newFavorite);
@@ -41,6 +51,6 @@ export default async function handler(
     }
     default:
       res.setHeader('Allow', ['GET', 'POST']);
-      res.status(405).end(`Method ${method} Not Allowed`);
+      res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }
