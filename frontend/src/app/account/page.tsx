@@ -7,6 +7,7 @@ export default function Account() {
   const [user, setUser] = useState<any>(null);
   const [favorites, setFavorites] = useState<any[]>([]);
   const [savedGames, setSavedGames] = useState<any[]>([]);
+  const [wishlistGames, setWishlistGames] = useState<any[]>([]);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -14,8 +15,10 @@ export default function Account() {
       setUser(JSON.parse(storedUser));
       const storedFavorites = localStorage.getItem("favorites");
       const storedSavedGames = localStorage.getItem("savedGames");
+      const storedWishlistGames = localStorage.getItem("wishlistGames");
       setFavorites(storedFavorites ? JSON.parse(storedFavorites) : []);
       setSavedGames(storedSavedGames ? JSON.parse(storedSavedGames) : []);
+      setWishlistGames(storedWishlistGames ? JSON.parse(storedWishlistGames) : []);
     } else {
       router.push("/login");
     }
@@ -35,6 +38,7 @@ export default function Account() {
       localStorage.removeItem("user");
       localStorage.removeItem("favorites");
       localStorage.removeItem("savedGames");
+      localStorage.removeItem("wishlistGames");
       setUser(null);
       alert("Your account has been deactivated.");
       router.push("/signup");
@@ -53,6 +57,12 @@ export default function Account() {
     setSavedGames(updated);
   };
 
+  const removeGamefromWishlist = (id: string) => {
+    const updated = savedGames.filter((game) => game.id !== id);
+    localStorage.setItem("wishlistGames", JSON.stringify(updated));
+    setWishlistGames(updated);
+  };
+
   if (!user) return <p>Loading...</p>;
 
   return (
@@ -69,7 +79,7 @@ export default function Account() {
             {favorites.map((game, idx) => (
               <div
                 key={idx}
-                className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow flex flex-col items-center"
+                className="bg-gray-400 dark:bg-gray-300 p-4 rounded shadow flex flex-col items-center"
               >
                 {game.thumbnail && (
                   <img
@@ -101,7 +111,7 @@ export default function Account() {
             {savedGames.map((game, idx) => (
               <div
                 key={idx}
-                className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow flex flex-col items-center"
+                className="bg-gray-400 dark:bg-gray-300 p-4 rounded shadow flex flex-col items-center"
               >
                 {game.thumbnail && (
                   <img
@@ -116,6 +126,38 @@ export default function Account() {
                   className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
                 >
                   Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Wishlist Section */}
+      <section className="mb-8">
+        <h2 className="text 2x1 font-semibold mb-4">Wishlist</h2>
+        {wishlistGames.length === 0 ? (
+          <p>You have no games on your wishlist.</p>
+        ) : (
+          <div className="grid-grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {wishlistGames.map((game, idx) => (
+              <div 
+                key={idx}
+                className="bg:gray-400 dark:bg-gray-300 p-4 rounded shadow flex flex-col items-center"
+              >
+                {game.thumbnail && (
+                  <img
+                    src={game.thumbnail}
+                    alt={`${game.name} thumbnail`}
+                    className="w-32 h-auto rounded mb-2"
+                  />
+                )}
+                <h3 className="text-xl font-semibold mb-2">{game.name}</h3>
+                <button
+                  onClick={() => removeGamefromWishlist(game.id)}
+                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                  >
+                    Remove
                 </button>
               </div>
             ))}

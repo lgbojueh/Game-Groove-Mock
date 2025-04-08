@@ -15,6 +15,7 @@ export default function GameDetailsPage() {
   const [error, setError] = useState("");
   const [isFavorite, setIsFavorite] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [isWishlist, setIsWishlist] = useState(false);
 
 
 
@@ -42,6 +43,10 @@ export default function GameDetailsPage() {
       const storedSaved = localStorage.getItem("savedGames");
       let savedGames = storedSaved ? JSON.parse(storedSaved) : [];
       setIsSaved(savedGames.some((saved: any) => saved.id === game.id));
+
+      const storedWishlist = localStorage.getItem("wishlistGames");
+      let wishlistGames = storedWishlist ? JSON.parse(storedWishlist) : [];
+      setIsWishlist(wishlistGames.some((wishlistGame: any) => wishlistGame.id === game.id));
     }
   }, [game]);
 
@@ -79,6 +84,22 @@ export default function GameDetailsPage() {
     }
   };
 
+  const toggleWishlist = () => {
+    const storedWishlist  = localStorage.getItem("wishlistGames");
+    let wishlistGames = storedWishlist ? JSON.parse(storedWishlist) : [];
+    if (wishlistGames.some((wishlistGame: any) => wishlistGame.id === game.id)) {
+      wishlistGames = wishlistGames.filter((wishlistGame: any) => wishlistGame.id !== game.id);
+      localStorage.setItem("wishlistGames", JSON.stringify(wishlistGames));
+      setIsWishlist(false);
+      alert("Game removed from wishlist!");
+    } else {
+      wishlistGames.push(game);
+      localStorage.setItem("wishlistGames", JSON.stringify(wishlistGames));
+      setIsWishlist(true);
+      alert("Game added to wishlist!");
+    }
+  };
+
   if (loading) return <p className="p-6">Loading...</p>;
   if (error) return <p className="p-6">{error}</p>;
   if (!game) return <p className="p-6">No game found.</p>;
@@ -107,15 +128,21 @@ export default function GameDetailsPage() {
         <div className="flex space-x-4 mb-8">
           <button
             onClick={toggleFavorite}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
           >
             {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
           </button>
           <button
             onClick={toggleSaved}
-            className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+            className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition"
           >
             {isSaved ? "Unsave Game" : "Save Game"}
+          </button>
+          <button
+            onClick={toggleWishlist}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+            >
+            {isWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
           </button>
         </div>
       </main>

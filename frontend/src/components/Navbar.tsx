@@ -68,7 +68,7 @@ export default function Navbar() {
 
 
  return (
-   <nav className="w-full flex justify-between items-center p-5 bg-[var(--background)] bg-red-500">
+   <nav className="w-full flex justify-between items-center p-5 bg-[var(--background)]">
      {/* Left Side: Logo and App Name */}
      <div className="flex items-center space-x-3">
        <Image
@@ -131,7 +131,7 @@ export default function Navbar() {
            {dropdownOpen && (
              <div
                ref={dropdownRef}
-               className="absolute top-full right-0 mt-2 w-48 bg-purple-300 dark:bg-purple-700 rounded shadow-lg z-50"
+               className="absolute top-full right-0 mt-2 w-48 bg-purple-400 dark:bg-purple-300 rounded shadow-lg z-50"
                onMouseEnter={handleMouseEnter}
                onMouseLeave={handleMouseLeave}
              >
@@ -155,8 +155,14 @@ export default function Navbar() {
                    Saved Games
                  </button>
                  <button
+                    onClick={() => router.push("/account/wishlist")}
+                    className={styles.AccountInfo}
+                  >
+                    Wishlist
+                 </button>
+                 <button
                    onClick={handleLogout}
-                   className="block px-4 py-2 text-sm text-red-600 w-full text-left hover:bg-gray-200 dark:hover:bg-gray-600"
+                   className={styles.Logout}
                  >
                    Logout
                  </button>

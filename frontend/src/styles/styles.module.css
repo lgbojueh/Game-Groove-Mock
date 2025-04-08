@@ -30,24 +30,16 @@
     text-decoration: underline;
 }
 
-.Navi {
-    background-color: darkviolet;
-    white-space: inherit;
-    text-indent: 0vmax;
-    word-spacing: 8px;
-}
-
 .AccountInfo {
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
     color: blue;
     text-align: left;
+    display: flex;
 }
 
-.AuthenticationCommands {
-    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    color:hotpink;
+.Logout {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    color: red;
     text-align: left;
-    display: flex;
-    flex-direction: column;
-    gap: 9px;
+    
 }

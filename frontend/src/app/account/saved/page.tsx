@@ -25,7 +25,7 @@ export default function SavedGamesPage() {
       ) : (
         <ul className="space-y-4">
           {savedGames.map((game, idx) => (
-            <li key={idx} className="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-4 rounded shadow">
+            <li key={idx} className="flex justify-between items-center bg-gray-400 dark:bg-gray-300 p-4 rounded shadow">
               <div>
                 <h2 className="text-xl font-semibold">{game.name}</h2>
                 {game.thumbnail && (

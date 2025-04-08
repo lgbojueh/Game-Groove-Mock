@@ -201,7 +201,7 @@ export default function SearchForm() {
         {/* Search Button */}
         <button
           type="submit"
-          className="mt-4 px-6 py-3 text-lg font-semibold rounded-lg transition bg-blue-400 hover:bg-gray-500 dark:bg-blue-700 dark:hover:bg-blue-600 text-[var(--foreground)]"
+          className="mt-4 px-6 py-3 text-lg font-semibold rounded-lg transition bg-blue-400 hover:bg-blue-500 dark:bg-blue-700 dark:hover:bg-blue-600 text-[var(--foreground)]"
         >
           Search
         </button>
