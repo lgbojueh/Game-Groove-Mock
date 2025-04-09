@@ -1,7 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ["cf.geekdo-images.com"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "cf.geekdo-images.com",
+        pathname: "/**", // Allow all paths under this hostname
+      },
+    ],
   },
 };
 
