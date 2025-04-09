@@ -1,30 +1,45 @@
 "use client";
 import { useState, useEffect } from "react";
 
-interface SavedGame {
+interface Game {
   id: number;
   title: string;
   thumbnail?: string; // Optional thumbnail field
 }
 
-export default function SavedGamesPage() {
+export default function AccountPage() {
   const userId = 1; // Replace with the current user's ID (when available)
-  const [savedGames, setSavedGames] = useState<SavedGame[]>([]);
+  const [savedGames, setSavedGames] = useState<Game[]>([]);
+  const [favoriteGames, setFavoriteGames] = useState<Game[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchSavedGames() {
+    async function fetchGames() {
       try {
-        const res = await fetch(`/api/auth/savedGames?userId=${userId}`);
-        if (!res.ok) {
+        setLoading(true);
+
+        // Fetch saved games
+        const savedRes = await fetch(`/api/auth/savedGames?userId=${userId}`);
+        if (!savedRes.ok) {
           throw new Error("Failed to fetch saved games");
         }
-        const data = await res.json();
-        setSavedGames(data);
+        const savedData = await savedRes.json();
+        setSavedGames(savedData);
+
+        // Fetch favorite games
+        const favoriteRes = await fetch(`/api/auth/favorites?userId=${userId}`);
+        if (!favoriteRes.ok) {
+          throw new Error("Failed to fetch favorite games");
+        }
+        const favoriteData = await favoriteRes.json();
+        setFavoriteGames(favoriteData);
       } catch (error) {
-        console.error("Error loading saved games:", error);
+        console.error("Error loading games:", error);
+      } finally {
+        setLoading(false);
       }
     }
-    fetchSavedGames();
+    fetchGames();
   }, [userId]);
 
   const removeSavedGame = async (id: number) => {
@@ -41,35 +56,89 @@ export default function SavedGamesPage() {
     }
   };
 
+  const removeFavoriteGame = async (id: number) => {
+    try {
+      const res = await fetch(`/api/auth/favorites/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        throw new Error("Failed to delete favorite game");
+      }
+      setFavoriteGames((prev) => prev.filter((game) => game.id !== id));
+    } catch (error) {
+      console.error("Error removing favorite game:", error);
+    }
+  };
+
   return (
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen overflow-y-auto">
-      <h1 className="text-4xl font-bold mb-6">Saved Games</h1>
-      {savedGames.length === 0 ? (
-        <p>You have no saved games.</p>
+      <h1 className="text-4xl font-bold mb-6">My Games</h1>
+      {loading ? (
+        <p>Loading...</p>
       ) : (
-        <ul className="space-y-4">
-          {savedGames.map((game) => (
-            <li
-              key={game.id}
-              className="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-4 rounded shadow"
-            >
-              <div>
-                <h2 className="text-xl font-semibold">{game.title}</h2>
-                <img
-                  src={game.thumbnail || '/default-game-thumbnail.jpg'}
-                  alt={`${game.title} thumbnail`}
-                  className="w-32 h-auto rounded mt-2"
-                />
-              </div>
-              <button
-                onClick={() => removeSavedGame(game.id)}
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-              >
-                Remove
-              </button>
-            </li>
-          ))}
-        </ul>
+        <>
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">Favorite Games</h2>
+            {favoriteGames.length === 0 ? (
+              <p>You have no favorite games.</p>
+            ) : (
+              <ul className="space-y-4">
+                {favoriteGames.map((game) => (
+                  <li
+                    key={game.id}
+                    className="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-4 rounded shadow"
+                  >
+                    <div>
+                      <h3 className="text-xl font-semibold">{game.title}</h3>
+                      <img
+                        src={game.thumbnail || "/default-game-thumbnail.jpg"}
+                        alt={`${game.title} thumbnail`}
+                        className="w-32 h-auto rounded mt-2"
+                      />
+                    </div>
+                    <button
+                      onClick={() => removeFavoriteGame(game.id)}
+                      className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold mb-4">Saved Games</h2>
+            {savedGames.length === 0 ? (
+              <p>You have no saved games.</p>
+            ) : (
+              <ul className="space-y-4">
+                {savedGames.map((game) => (
+                  <li
+                    key={game.id}
+                    className="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-4 rounded shadow"
+                  >
+                    <div>
+                      <h3 className="text-xl font-semibold">{game.title}</h3>
+                      <img
+                        src={game.thumbnail || "/default-game-thumbnail.jpg"}
+                        alt={`${game.title} thumbnail`}
+                        className="w-32 h-auto rounded mt-2"
+                      />
+                    </div>
+                    <button
+                      onClick={() => removeSavedGame(game.id)}
+                      className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </>
       )}
     </main>
   );
