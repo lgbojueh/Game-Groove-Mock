@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 
 interface Game {
   id: number;
@@ -8,39 +9,50 @@ interface Game {
 }
 
 export default function AccountPage() {
-  const userId = 1; // Replace with the current user's ID (when available)
+  const { data: session, status } = useSession();
   const [savedGames, setSavedGames] = useState<Game[]>([]);
   const [favoriteGames, setFavoriteGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    async function fetchGames() {
-      try {
-        setLoading(true);
+    if (status === "authenticated" && session?.user?.id) {
+      async function fetchGames() {
+        try {
+          setLoading(true);
+          setError("");
 
-        // Fetch saved games
-        const savedRes = await fetch(`/api/auth/savedGames?userId=${userId}`);
-        if (!savedRes.ok) {
-          throw new Error("Failed to fetch saved games");
-        }
-        const savedData = await savedRes.json();
-        setSavedGames(savedData);
+          const userId = session?.user?.id;
+          if (!userId) {
+            throw new Error("User ID is not available");
+          }
 
-        // Fetch favorite games
-        const favoriteRes = await fetch(`/api/auth/favorites?userId=${userId}`);
-        if (!favoriteRes.ok) {
-          throw new Error("Failed to fetch favorite games");
+          // Fetch saved games
+          const savedRes = await fetch(`/api/auth/savedGames?userId=${userId}`);
+          if (!savedRes.ok) {
+            throw new Error("Failed to fetch saved games");
+          }
+          const savedData = await savedRes.json();
+          setSavedGames(savedData);
+
+          // Fetch favorite games
+          const favoriteRes = await fetch(`/api/auth/favorites?userId=${userId}`);
+          if (!favoriteRes.ok) {
+            throw new Error("Failed to fetch favorite games");
+          }
+          const favoriteData = await favoriteRes.json();
+          setFavoriteGames(favoriteData);
+        } catch (error: any) {
+          console.error("Error loading games:", error);
+          setError(error.message || "An error occurred while loading games.");
+        } finally {
+          setLoading(false);
         }
-        const favoriteData = await favoriteRes.json();
-        setFavoriteGames(favoriteData);
-      } catch (error) {
-        console.error("Error loading games:", error);
-      } finally {
-        setLoading(false);
       }
+
+      fetchGames();
     }
-    fetchGames();
-  }, [userId]);
+  }, [status, session]);
 
   const removeSavedGame = async (id: number) => {
     try {
@@ -70,11 +82,21 @@ export default function AccountPage() {
     }
   };
 
+  if (status === "loading") {
+    return <p>Loading...</p>;
+  }
+
+  if (status === "unauthenticated") {
+    return <p>You need to log in to view your games.</p>;
+  }
+
   return (
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen overflow-y-auto">
       <h1 className="text-4xl font-bold mb-6">My Games</h1>
       {loading ? (
         <p>Loading...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
       ) : (
         <>
           <section className="mb-8">
