@@ -1,4 +1,3 @@
-// src/app/api/auth/forgot-password/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import nodemailer from 'nodemailer';
@@ -8,12 +7,19 @@ export async function POST(request: Request) {
   try {
     const { email } = await request.json();
 
+    // Validate input
+    if (!email || typeof email !== 'string') {
+      return NextResponse.json({ error: 'A valid email is required' }, { status: 400 });
+    }
+
     // Look up the user by email, only active accounts (deactivated = false)
     const user = await prisma.user.findFirst({
-      where: { email, deactivated: false },
+      where: { email, isActive: false },
     });
+
+    // Always return a generic success message to prevent email enumeration
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ message: 'If the email exists, a reset link will be sent.' });
     }
 
     // Generate a secure reset token
@@ -26,11 +32,11 @@ export async function POST(request: Request) {
       data: { resetToken, resetTokenExpiry: tokenExpiry },
     });
 
-    // Debug: Log the SMTP settings
-    console.log('SMTP_HOST:', process.env.SMTP_HOST);
-    console.log('SMTP_PORT:', process.env.SMTP_PORT);
-    console.log('SMTP_USER:', process.env.SMTP_USER);
-    console.log('SMTP_PASS:', process.env.SMTP_PASS);
+    // Validate environment variables
+    if (!process.env.SMTP_HOST || !process.env.SMTP_PORT || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.error('SMTP configuration is missing in environment variables');
+      return NextResponse.json({ error: 'Email service is not configured' }, { status: 500 });
+    }
 
     // Configure the transporter using environment variables
     const transporter = nodemailer.createTransport({
@@ -41,7 +47,6 @@ export async function POST(request: Request) {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
-      // Optional: Set a connection timeout (in milliseconds)
       connectionTimeout: 10000,
     });
 
@@ -62,7 +67,7 @@ export async function POST(request: Request) {
     console.log('Email sent. Preview URL:', nodemailer.getTestMessageUrl(info));
 
     return NextResponse.json({
-      message: 'Reset email sent successfully',
+      message: 'If the email exists, a reset link will be sent.',
       previewUrl: nodemailer.getTestMessageUrl(info),
     });
   } catch (error) {

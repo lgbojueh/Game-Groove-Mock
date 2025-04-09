@@ -23,6 +23,15 @@ export default function ResetPassword() {
     setError("");
     setSuccess("");
 
+    // Validate password strength
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      setError(
+        "Password must be at least 8 characters long, include at least one uppercase letter, one lowercase letter, and one number."
+      );
+      return;
+    }
+
     if (!password || !confirmPassword) {
       setError("Please fill in both fields.");
       return;
@@ -52,7 +61,11 @@ export default function ResetPassword() {
       }, 2000);
     } catch (err) {
       console.error("Error resetting password:", err);
-      setError("Error resetting password. Please try again.");
+      setError(
+        (err instanceof Error && err.message === "Failed to fetch")
+          ? "Network error. Please check your connection and try again."
+          : "Error resetting password. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -62,9 +75,15 @@ export default function ResetPassword() {
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen flex items-center justify-center">
       <div className="max-w-md w-full bg-gray-200 dark:bg-gray-800 p-6 rounded shadow">
         <h1 className="text-3xl font-bold mb-4">Reset Password</h1>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
+        {error && (
+          <p className="text-red-500 mb-4" aria-live="assertive">
+            {error}
+          </p>
+        )}
         {success ? (
-          <p className="text-green-600 mb-4">{success}</p>
+          <p className="text-green-600 mb-4" aria-live="polite">
+            {success}
+          </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -79,6 +98,7 @@ export default function ResetPassword() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="border p-2 w-full rounded"
                 required
+                disabled={loading}
               />
             </div>
             <div>
@@ -93,6 +113,7 @@ export default function ResetPassword() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="border p-2 w-full rounded"
                 required
+                disabled={loading}
               />
             </div>
             <button
@@ -100,7 +121,33 @@ export default function ResetPassword() {
               disabled={loading}
               className="bg-blue-500 text-white p-2 rounded w-full hover:bg-blue-600 transition disabled:opacity-50"
             >
-              {loading ? "Resetting..." : "Reset Password"}
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <svg
+                    className="animate-spin h-5 w-5 mr-2 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8H4z"
+                    ></path>
+                  </svg>
+                  Resetting...
+                </span>
+              ) : (
+                "Reset Password"
+              )}
             </button>
           </form>
         )}

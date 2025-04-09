@@ -13,8 +13,10 @@ export default function ForgotPassword() {
     setMessage("");
     setLoading(true);
 
-    if (!email.trim()) {
-      setError("Please enter your email address.");
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim() || !emailRegex.test(email)) {
+      setError("Please enter a valid email address.");
       setLoading(false);
       return;
     }
@@ -35,7 +37,11 @@ export default function ForgotPassword() {
       setMessage("A password reset link has been sent to your email.");
     } catch (err: any) {
       console.error("Error sending reset link:", err);
-      setError("Error sending reset link. Please try again.");
+      setError(
+        err.message === "Failed to fetch"
+          ? "Network error. Please check your connection and try again."
+          : "Error sending reset link. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -45,9 +51,15 @@ export default function ForgotPassword() {
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen flex items-center justify-center">
       <div className="max-w-md w-full bg-gray-200 dark:bg-gray-800 p-6 rounded shadow">
         <h1 className="text-3xl font-bold mb-4">Forgot Password</h1>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
+        {error && (
+          <p className="text-red-500 mb-4" aria-live="assertive">
+            {error}
+          </p>
+        )}
         {message ? (
-          <p className="text-green-600 mb-4">{message}</p>
+          <p className="text-green-600 mb-4" aria-live="polite">
+            {message}
+          </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -62,6 +74,7 @@ export default function ForgotPassword() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="border p-2 w-full rounded"
                 required
+                disabled={loading}
               />
             </div>
             <button
@@ -69,7 +82,33 @@ export default function ForgotPassword() {
               disabled={loading}
               className="bg-blue-500 text-white p-2 rounded w-full hover:bg-blue-600 transition disabled:opacity-50"
             >
-              {loading ? "Sending..." : "Send Reset Link"}
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <svg
+                    className="animate-spin h-5 w-5 mr-2 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8H4z"
+                    ></path>
+                  </svg>
+                  Sending...
+                </span>
+              ) : (
+                "Send Reset Link"
+              )}
             </button>
           </form>
         )}
