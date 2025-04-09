@@ -9,7 +9,7 @@ export default function SavedGamesPage() {
   useEffect(() => {
     async function fetchSavedGames() {
       try {
-        const res = await fetch(`/frontend/src/app/api/auth/savedGames/route.ts?userId=${userId}`);
+        const res = await fetch(`/api/auth/savedGames/?userId=${userId}`);
         if (!res.ok) {
           throw new Error("Failed to fetch saved games");
         }
@@ -25,7 +25,7 @@ export default function SavedGamesPage() {
   const removeSavedGame = async (id: number) => {
     try {
       // Call an API endpoint to remove the saved game
-      const res = await fetch(`/frontend/src/app/api/auth/savedGames/route.ts${id}`, {
+      const res = await fetch(`/api/auth/savedGames/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) {

@@ -1,62 +1,53 @@
-// /src/app/api/auth/savedGames/route.ts
-
-import type { NextApiRequest, NextApiResponse } from 'next';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  const { method } = req;
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get('userId');
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+    }
+    const savedGames = await prisma.savedGame.findMany({
+      where: { userId: Number(userId) },
+    });
+    return NextResponse.json(savedGames);
+  } catch (error) {
+    console.error('Error fetching saved games: ', error);
+    return NextResponse.json({ error: 'Error fetching saved games' }, { status: 500 });
+  }
+}
 
-  switch (method) {
-    case 'GET': {
-      try {
-        // Expecting a userId in the query string
-        const { userId } = req.query;
-        const savedGames = await prisma.savedGame.findMany({
-          where: { userId: Number(userId) },
-        });
-        res.status(200).json(savedGames);
-      } catch (error) {
-        console.error('Error fetching saved games: ', error);
-        res.status(500).json({ error: 'Error fetching saved games' });
-      }
-      break;
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
+    const { userId, title } = body; // Add other fields as needed
+    const newSavedGame = await prisma.savedGame.create({
+      data: {
+        title,
+        user: { connect: { id: Number(userId) } },
+      },
+    });
+    return NextResponse.json(newSavedGame, { status: 201 });
+  } catch (error) {
+    console.error('Error creating saved game: ', error);
+    return NextResponse.json({ error: 'Error creating saved game' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+    if (!id) {
+      return NextResponse.json({ error: 'Game ID is required' }, { status: 400 });
     }
-    case 'POST': {
-      try {
-        // Expecting userId and saved game data in the request body
-        const { userId, title } = req.body; // add other fields as needed
-        const newSavedGame = await prisma.savedGame.create({
-          data: {
-            title,
-            user: { connect: { id: Number(userId) } },
-          },
-        });
-        res.status(201).json(newSavedGame);
-      } catch (error) {
-        console.error('Error creating saved game: ', error);
-        res.status(500).json({ error: 'Error creating saved game' });
-      }
-      break;
-    }
-    case 'DELETE': {
-      try {
-        // Expecting a saved game id in the query string
-        const { id } = req.query;
-        const deletedSavedGame = await prisma.savedGame.delete({
-          where: { id: Number(id) },
-        });
-        res.status(200).json(deletedSavedGame);
-      } catch (error) {
-        console.error('Error deleting saved game: ', error);
-        res.status(500).json({ error: 'Error deleting saved game' });
-      }
-      break;
-    }
-    default:
-      res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
-      res.status(405).end(`Method ${method} Not Allowed`);
+    const deletedSavedGame = await prisma.savedGame.delete({
+      where: { id: Number(id) },
+    });
+    return NextResponse.json(deletedSavedGame);
+  } catch (error) {
+    console.error('Error deleting saved game: ', error);
+    return NextResponse.json({ error: 'Error deleting saved game' }, { status: 500 });
   }
 }
