@@ -1,6 +1,6 @@
 import { SessionProvider } from "next-auth/react";
 import type { AppProps } from "next/app";
-import "../styles/globals.css"; // Import global styles if you have them
+import "../app/globals.css"; // Corrected the path to match the actual location of globals.css
 
 export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   return (
