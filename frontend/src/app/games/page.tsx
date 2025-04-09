@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { fetchGames } from "@/utils/fetchGames";
-import { fetchGameDetails } from "@/utils/fetchGameDetails";
 import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
 
 // Helper function to chunk an array into smaller arrays of a given size.
@@ -17,42 +16,43 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
 
 // Define an interface for our game object.
 interface BasicGame {
-  id: string; // We assume a valid game always has an id (converted to string)
+  id: string;
   name: string;
   thumbnail: string;
   description?: string;
-  complexity?: string;
-  players?: string;
-  theme?: string;
 }
 
-// Helper to clean unwanted line break codes from descriptions.
+// Helper to clean unwanted line break codes and other HTML entities from descriptions.
 const cleanDescription = (desc?: string) =>
-  desc ? desc.replace(/&#10;/g, " ") : "";
+  desc
+    ? desc
+        .replace(/&#10;/g, " ") // Remove line breaks
+        .replace(/&amp;/g, "&") // Decode ampersands
+        .replace(/&quot;/g, '"') // Decode quotes
+        .replace(/&#39;/g, "'") // Decode single quotes
+    : "";
 
 export default function Games() {
   const [games, setGames] = useState<BasicGame[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [visibleCount, setVisibleCount] = useState(9);
 
   // Function to fetch games based on a query.
   const getGames = async (query: string) => {
     setLoading(true);
+    setError("");
     try {
       // 1. Fetch basic results.
-      let basicResults = (await fetchGames(query)) as any[];
-      console.log("Basic results:", basicResults);
-
-      // Filter out games without a valid ID and force the id to be a string.
+      const basicResults = (await fetchGames(query)) as any[];
       const basicGames: BasicGame[] = basicResults
         .filter((game) => game.id)
         .map((game) => ({
           id: String(game.id),
-          name: game.name,
-          thumbnail: game.thumbnail,
+          name: game.name || "Unknown Game",
+          thumbnail: game.thumbnail || "/default-game-thumbnail.jpg",
         }));
-      console.log("Mapped basic games:", basicGames);
 
       if (basicGames.length === 0) {
         setGames([]);
@@ -60,27 +60,23 @@ export default function Games() {
         return;
       }
 
-      // 2. Extract all IDs.
+      // 2. Fetch detailed data in chunks.
       const allIds = basicGames.map((game) => game.id);
-      // 3. Chunk IDs into groups of 20.
       const idChunks = chunkArray(allIds, 20);
       let detailedResults: BasicGame[] = [];
 
-      // 4. For each chunk, fetch detailed data.
       for (const chunk of idChunks) {
         const details = (await fetchDetailedGames(chunk)) as any[];
-        // Map details to our BasicGame interface.
         const mappedDetails: BasicGame[] = details.map((d) => ({
           id: String(d.id),
-          name: d.name,
-          thumbnail: d.thumbnail,
-          description: d.description,
+          name: d.name || "Unknown Game",
+          thumbnail: d.thumbnail || "/default-game-thumbnail.jpg",
+          description: cleanDescription(d.description),
         }));
         detailedResults = detailedResults.concat(mappedDetails);
       }
-      console.log("Detailed results:", detailedResults);
 
-      // 5. Merge detailed data into basic games.
+      // 3. Merge detailed data into basic games.
       for (const detail of detailedResults) {
         const idx = basicGames.findIndex((b) => b.id === detail.id);
         if (idx !== -1) {
@@ -88,10 +84,11 @@ export default function Games() {
           basicGames[idx].description = detail.description;
         }
       }
-      console.log("Merged games:", basicGames);
+
       setGames(basicGames);
     } catch (error) {
       console.error("Error fetching games:", error);
+      setError("Failed to load games. Please try again later.");
       setGames([]);
     }
     setLoading(false);
@@ -132,34 +129,25 @@ export default function Games() {
       </form>
       {loading ? (
         <p>Loading...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
       ) : (
         <>
-          {/* Scrollable container with a maximum height */}
           <div className="overflow-y-auto max-h-[70vh]">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {games.slice(0, visibleCount).map((game) => (
                 <Link key={game.id} href={`/game/${game.id}`} className="block">
                   <div className="p-4 bg-gray-400 dark:bg-gray-700 rounded shadow hover:shadow-lg transition">
-                    {game.thumbnail ? (
-                      <Image
-                        src={game.thumbnail}
-                        alt={`${game.name} thumbnail`}
-                        width={200}
-                        height={150}
-                        className="w-full h-[150px] object-cover rounded mb-2"
-                      />
-                    ) : (
-                      <Image
-                        src="/default-game-thumbnail.jpg"
-                        alt="Default game thumbnail"
-                        width={200}
-                        height={150}
-                        className="w-full h-[150px] object-cover rounded mb-2"
-                      />
-                    )}
+                    <Image
+                      src={game.thumbnail}
+                      alt={`${game.name} thumbnail`}
+                      width={200}
+                      height={150}
+                      className="w-full h-[150px] object-cover rounded mb-2"
+                    />
                     <h2 className="font-semibold text-lg mb-1">{game.name}</h2>
                     <p className="text-sm text-gray-600 dark:text-gray-300">
-                      {cleanDescription(game.description) ||
+                      {game.description ||
                         "A fun and engaging game that you'll enjoy with friends and family."}
                     </p>
                   </div>

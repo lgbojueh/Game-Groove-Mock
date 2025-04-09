@@ -3,17 +3,31 @@ import prisma from '@/lib/prisma';
 
 export async function POST(request: Request) {
   try {
-    const { userId } = await request.json();
+    const { userId: userIdString } = await request.json();
+    const userId = parseInt(userIdString, 10);
 
-    // Option 1: Delete the user (deactivates the account)
-    await prisma.user.delete({
+    if (!userIdString || isNaN(userId)) {
+      return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
+    }
+
+    // Check if the user exists
+    const user = await prisma.user.findUnique({
       where: { id: userId },
     });
 
-    // Option 2: Alternatively, you could update an `isActive` field:
-    // await prisma.user.update({
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Option 1: Soft delete (recommended)
+    await prisma.user.update({
+      where: { id: userId },
+      data: { isActive: false }, // Assuming you have an `isActive` field
+    });
+
+    // Option 2: Hard delete (if you want to permanently delete the user)
+    // await prisma.user.delete({
     //   where: { id: userId },
-    //   data: { isActive: false },
     // });
 
     return NextResponse.json({ message: 'Account deactivated successfully' });
