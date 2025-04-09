@@ -1,34 +1,75 @@
-// app/saved/page.tsx
 "use client";
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+
+interface SavedGame {
+  id: number;
+  title: string;
+  thumbnail?: string; // Optional thumbnail field
+}
 
 export default function SavedGamesPage() {
-  const defaultUserId = 1; // For demo purposes.
-  const [savedGames, setSavedGames] = useState<any[]>([]);
+  const { data: session, status } = useSession();
+  const [savedGames, setSavedGames] = useState<SavedGame[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    async function fetchSavedGames() {
-      try {
-        const res = await fetch(`/api/savedGames?userId=${defaultUserId}`);
-        const data = await res.json();
-        setSavedGames(data);
-      } catch (error) {
-        console.error("Error fetching saved games: ", error);
+    if (status === "authenticated" && session?.user?.id) {
+      async function fetchSavedGames() {
+        try {
+          setLoading(true);
+          setError("");
+
+          const userId = session?.user?.id;
+          const res = await fetch(`/api/auth/savedGames?userId=${userId}`);
+          if (!res.ok) {
+            throw new Error("Failed to fetch saved games");
+          }
+          const data = await res.json();
+          setSavedGames(data);
+        } catch (error: any) {
+          console.error("Error fetching saved games:", error);
+          setError(error.message || "An error occurred while fetching saved games.");
+        } finally {
+          setLoading(false);
+        }
       }
+
+      fetchSavedGames();
     }
-    fetchSavedGames();
-  }, []);
+  }, [status, session]);
 
   const removeSavedGame = async (id: number) => {
-    // Optionally call a DELETE API route.
-    const updated = savedGames.filter((game) => game.id !== id);
-    setSavedGames(updated);
+    try {
+      const res = await fetch(`/api/auth/savedGames/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        throw new Error("Failed to delete saved game");
+      }
+      setSavedGames((prev) => prev.filter((game) => game.id !== id));
+    } catch (error) {
+      console.error("Error deleting saved game:", error);
+    }
   };
+
+  if (status === "loading") {
+    return <p>Loading...</p>;
+  }
+
+  if (status === "unauthenticated") {
+    return <p>You need to log in to view your saved games.</p>;
+  }
 
   return (
     <main className="p-6 min-h-screen">
       <h1 className="text-4xl font-bold mb-6">Saved Games</h1>
-      {savedGames.length === 0 ? (
+      {loading ? (
+        <p>Loading...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
+      ) : savedGames.length === 0 ? (
         <p>You have no saved games.</p>
       ) : (
         <ul className="space-y-4">
@@ -36,7 +77,11 @@ export default function SavedGamesPage() {
             <li key={game.id} className="flex justify-between items-center p-4 rounded shadow">
               <div>
                 <h2 className="text-xl font-semibold">{game.title}</h2>
-                {/* Render other fields as needed */}
+                <img
+                  src={game.thumbnail || "/default-game-thumbnail.jpg"}
+                  alt={`${game.title} thumbnail`}
+                  className="w-32 h-auto rounded mt-2"
+                />
               </div>
               <button
                 onClick={() => removeSavedGame(game.id)}
