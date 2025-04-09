@@ -9,7 +9,7 @@ export default function FavoritesPage() {
   useEffect(() => {
     async function fetchFavorites() {
       try {
-        const res = await fetch(`/api/favoriteService?userId=${defaultUserId}`);
+        const res = await fetch(`/frontend/src/app/api/auth/favoriteService/route.ts?userId=${defaultUserId}`);
         if (!res.ok) {
           throw new Error("Failed to fetch favorites");
         }
@@ -25,7 +25,7 @@ export default function FavoritesPage() {
   const removeFavorite = async (id: number) => {
     try {
       // Call a DELETE endpoint (this route must be implemented on the server side)
-      const res = await fetch(`/api/favoriteService/${id}`, {
+      const res = await fetch(`/frontend/src/app/api/auth/favoriteService/route.ts${id}`, {
         method: "DELETE",
       });
       if (!res.ok) {
