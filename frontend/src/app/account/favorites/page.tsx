@@ -1,10 +1,15 @@
-// app/favorites/page.tsx
 "use client";
 import { useState, useEffect } from "react";
 
+interface Favorite {
+  id: number;
+  name: string;
+  thumbnail?: string; // Optional thumbnail field
+}
+
 export default function FavoritesPage() {
   const defaultUserId = 1; // For now we use a hard-coded user id.
-  const [favorites, setFavorites] = useState<any[]>([]);
+  const [favorites, setFavorites] = useState<Favorite[]>([]);
 
   useEffect(() => {
     async function fetchFavorites() {
@@ -24,14 +29,12 @@ export default function FavoritesPage() {
 
   const removeFavorite = async (id: number) => {
     try {
-      // Call a DELETE endpoint (this route must be implemented on the server side)
-      const res = await fetch(`/api/auth/favoriteService${id}`, {
+      const res = await fetch(`/api/auth/favoriteService?id=${id}`, {
         method: "DELETE",
       });
       if (!res.ok) {
         throw new Error("Failed to delete favorite");
       }
-      // If successful, update the local state:
       setFavorites((prev) => prev.filter((fav) => fav.id !== id));
     } catch (error) {
       console.error("Error deleting favorite: ", error);
@@ -49,7 +52,11 @@ export default function FavoritesPage() {
             <li key={fav.id} className="flex justify-between items-center p-4 rounded shadow">
               <div>
                 <h2 className="text-xl font-semibold">{fav.name}</h2>
-                {/* Add thumbnail or additional details if available */}
+                <img
+                  src={fav.thumbnail || '/default-game-thumbnail.jpg'}
+                  alt={`${fav.name} thumbnail`}
+                  className="w-32 h-auto rounded mt-2"
+                />
               </div>
               <button
                 onClick={() => removeFavorite(fav.id)}

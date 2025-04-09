@@ -1,15 +1,20 @@
-// app/savedGames/page.tsx
 "use client";
 import { useState, useEffect } from "react";
 
+interface SavedGame {
+  id: number;
+  title: string;
+  thumbnail?: string; // Optional thumbnail field
+}
+
 export default function SavedGamesPage() {
   const userId = 1; // Replace with the current user's ID (when available)
-  const [savedGames, setSavedGames] = useState<any[]>([]);
+  const [savedGames, setSavedGames] = useState<SavedGame[]>([]);
 
   useEffect(() => {
     async function fetchSavedGames() {
       try {
-        const res = await fetch(`/api/auth/savedGames/?userId=${userId}`);
+        const res = await fetch(`/api/auth/savedGames?userId=${userId}`);
         if (!res.ok) {
           throw new Error("Failed to fetch saved games");
         }
@@ -24,14 +29,12 @@ export default function SavedGamesPage() {
 
   const removeSavedGame = async (id: number) => {
     try {
-      // Call an API endpoint to remove the saved game
       const res = await fetch(`/api/auth/savedGames/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) {
         throw new Error("Failed to delete saved game");
       }
-      // Update the local state after deletion:
       setSavedGames((prev) => prev.filter((game) => game.id !== id));
     } catch (error) {
       console.error("Error removing saved game:", error);
@@ -52,13 +55,11 @@ export default function SavedGamesPage() {
             >
               <div>
                 <h2 className="text-xl font-semibold">{game.title}</h2>
-                {game.thumbnail && (
-                  <img
-                    src={game.thumbnail}
-                    alt={`${game.title} thumbnail`}
-                    className="w-32 h-auto rounded mt-2"
-                  />
-                )}
+                <img
+                  src={game.thumbnail || '/default-game-thumbnail.jpg'}
+                  alt={`${game.title} thumbnail`}
+                  className="w-32 h-auto rounded mt-2"
+                />
               </div>
               <button
                 onClick={() => removeSavedGame(game.id)}

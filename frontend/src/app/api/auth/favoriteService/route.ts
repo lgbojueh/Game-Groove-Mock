@@ -13,7 +13,11 @@ export async function GET(req: Request) {
     });
     return NextResponse.json(favorites);
   } catch (error) {
-    console.error('Error fetching favorites: ', error);
+    if (error instanceof Error) {
+      console.error('Error fetching favorites: ', error.message, error.stack);
+    } else {
+      console.error('Error fetching favorites: ', error);
+    }
     return NextResponse.json({ error: 'Error fetching favorites' }, { status: 500 });
   }
 }
@@ -33,7 +37,11 @@ export async function POST(req: Request) {
     });
     return NextResponse.json(newFavorite, { status: 201 });
   } catch (error) {
-    console.error('Error creating favorite: ', error);
+    if (error instanceof Error) {
+      console.error('Error creating favorite: ', error.message, error.stack);
+    } else {
+      console.error('Error creating favorite: ', error);
+    }
     return NextResponse.json({ error: 'Error creating favorite' }, { status: 500 });
   }
 }
@@ -42,15 +50,19 @@ export async function DELETE(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
-    if (!id) {
-      return NextResponse.json({ error: 'Favorite ID is required' }, { status: 400 });
+    if (!id || isNaN(Number(id))) {
+      return NextResponse.json({ error: 'Valid Favorite ID is required' }, { status: 400 });
     }
     const deletedFavorite = await prisma.favorite.delete({
       where: { id: Number(id) },
     });
     return NextResponse.json(deletedFavorite);
   } catch (error) {
-    console.error('Error deleting favorite: ', error);
+    if (error instanceof Error) {
+      console.error('Error deleting favorite: ', error.message, error.stack);
+    } else {
+      console.error('Error deleting favorite: ', error);
+    }
     return NextResponse.json({ error: 'Error deleting favorite' }, { status: 500 });
   }
 }
