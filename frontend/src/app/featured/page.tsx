@@ -31,6 +31,10 @@ const cleanDescription = (desc?: string) => {
   return desc ? he.decode(desc.replace(/&#10;/g, " ")) : "";
 }; 
 
+const shortenDescription = (desc?: string) => {
+  return desc?.substring(0,250) + "...";
+}
+
 export default function Featured() {
   const [popularGames, setPopularGames] = useState<BasicGame[]>([]);
   const [loading, setLoading] = useState(false);
@@ -95,7 +99,7 @@ export default function Featured() {
                     </div>
                   )}
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    {cleanDescription(game.description) || "A brief description of the game."}
+                    {shortenDescription(cleanDescription(game.description)) || "A brief description of the game."}
                   </p>
                 </Link>
               ))}
