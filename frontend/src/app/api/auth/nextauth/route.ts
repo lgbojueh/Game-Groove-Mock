@@ -1,9 +1,12 @@
-import NextAuth, { DefaultSession } from "next-auth";
+// app/api/auth/[...nextauth]/route.ts
+
+import NextAuth, { DefaultSession, NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import prisma from "@/lib/prisma";
-import bcrypt from "bcryptjs"; 
+import bcrypt from "bcryptjs";
 
+// Extend NextAuth types to include the user id in the session.
 declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
@@ -12,7 +15,7 @@ declare module "next-auth" {
   }
 }
 
-export default NextAuth({
+export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -26,7 +29,7 @@ export default NextAuth({
           throw new Error("Email and password are required");
         }
 
-        // Find the user in the database
+        // Find the user by email from your database.
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
@@ -35,7 +38,7 @@ export default NextAuth({
           throw new Error("No user found with this email");
         }
 
-        // Verify the password (assuming passwords are hashed)
+        // Verify the provided password with the stored hashed password.
         const isValidPassword = await bcrypt.compare(
           credentials.password,
           user.password
@@ -45,7 +48,7 @@ export default NextAuth({
           throw new Error("Invalid password");
         }
 
-        // Return the user object (this will be attached to the session)
+        // Return the user object (ID must be a string).
         return { id: user.id.toString(), name: user.username, email: user.email };
       },
     }),
@@ -55,19 +58,23 @@ export default NextAuth({
   },
   callbacks: {
     async session({ session, token }) {
-      if (token) {
-        if (session.user) {
-          session.user.id = token.sub ?? ""; // Attach user ID to the session, fallback to an empty string if undefined
-        }
+      // Attach the token's user ID to the session object.
+      if (token && session.user) {
+        session.user.id = token.sub ?? "";
       }
       return session;
     },
     async jwt({ token, user }) {
+      // If the user object is available (e.g., after the first sign-in), attach the id to the token.
       if (user) {
-        token.sub = user.id; // Attach user ID to the token
+        token.sub = user.id;
       }
       return token;
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
-});
+};
+
+const handler = NextAuth(authOptions);
+
+export { handler as GET, handler as POST };
