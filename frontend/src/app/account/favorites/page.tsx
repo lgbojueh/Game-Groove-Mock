@@ -21,7 +21,7 @@ export default function FavoritesPage() {
         try {
           setLoading(true);
           setError("");
-          const userId = session.user.id;
+          const userId = session?.user?.id;
           // Fetch the user's favorites using the provided userId
           const res = await fetch(`/api/auth/favoriteService?userId=${userId}`);
           if (!res.ok) {
