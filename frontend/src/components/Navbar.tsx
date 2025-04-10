@@ -90,7 +90,7 @@ export default function Navbar() {
          Home
        </Link>
        <Link href="/games" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">
-         Games
+         All Games
        </Link>
        <Link href="/featured" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">
          Featured

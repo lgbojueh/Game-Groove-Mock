@@ -192,22 +192,18 @@ export default function ResultsPage() {
                   <Link href={`/game/${game.id}`} className="block">
                     <h3 className="font-semibold mb-2">{game.name}</h3>
                     {game.thumbnail ? (
-                      <Image
-                        src={game.thumbnail}
-                        alt={`${game.name} thumbnail`}
-                        width={200}
-                        height={150}
-                        quality={100}
-                        priority
-                        placeholder="blur"
-                        blurDataURL="/placeholder.jpg"
-                        className="w-full h-auto object-contain rounded mb-2"
-                      />
-                    ) : (
-                      <div className="w-full h-[150px] bg-gray-300 flex items-center justify-center rounded mb-2">
-                        <span>No Image</span>
-                      </div>
-                    )}
+                    <img
+                      src={game.thumbnail}
+                      alt={`${game.name} thumbnail`}
+                      width={200}
+                      height={150}
+                      className="w-full h-[150px] object-cover rounded mb-2"
+                    />
+                  ) : (
+                    <div className="w-full h-[150px] bg-gray-300 flex items-center justify-center rounded mb-2">
+                      <span>No Image Available</span>
+                    </div>
+                  )}
                     {game.description && (
                       <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
                         {cleanDescription(game.description)}
