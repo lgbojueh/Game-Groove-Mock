@@ -27,7 +27,7 @@ export default function AccountPage() {
             throw new Error("User ID is not available");
           }
 
-          // Fetch saved games
+          // Fetch saved games – adjust endpoint if needed
           const savedRes = await fetch(`/api/auth/savedGames?userId=${userId}`);
           if (!savedRes.ok) {
             throw new Error("Failed to fetch saved games");
@@ -35,7 +35,7 @@ export default function AccountPage() {
           const savedData = await savedRes.json();
           setSavedGames(savedData);
 
-          // Fetch favorite games
+          // Fetch favorite games – adjust endpoint if needed
           const favoriteRes = await fetch(`/api/auth/favorites?userId=${userId}`);
           if (!favoriteRes.ok) {
             throw new Error("Failed to fetch favorite games");

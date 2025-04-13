@@ -22,7 +22,8 @@ export default function FavoritesPage() {
           setLoading(true);
           setError("");
           const userId = session?.user?.id;
-          // Fetch the user's favorites using the provided userId
+          // Fetch the user's favorites using the provided userId.
+          // Adjust the URL below if your backend endpoint differs.
           const res = await fetch(`/api/auth/favoriteService?userId=${userId}`);
           if (!res.ok) {
             throw new Error("Failed to fetch favorites");
@@ -36,13 +37,13 @@ export default function FavoritesPage() {
           setLoading(false);
         }
       }
-
       fetchFavorites();
     }
   }, [status, session]);
 
   const removeFavorite = async (id: number) => {
     try {
+      // Ensure that the endpoint URL below matches your backend route configuration.
       const res = await fetch(`/api/auth/favoriteService/${id}`, {
         method: "DELETE",
       });
@@ -52,7 +53,7 @@ export default function FavoritesPage() {
       setFavorites((prev) => prev.filter((fav) => fav.id !== id));
     } catch (error) {
       console.error("Error deleting favorite:", error);
-      // Optionally set an error state here
+      // Optionally, update the error state or show a notification
     }
   };
 
@@ -72,7 +73,10 @@ export default function FavoritesPage() {
       ) : (
         <ul className="space-y-4">
           {favorites.map((fav) => (
-            <li key={fav.id} className="flex justify-between items-center p-4 rounded shadow">
+            <li
+              key={fav.id}
+              className="flex justify-between items-center p-4 rounded shadow bg-gray-100 dark:bg-gray-700"
+            >
               <div>
                 <h2 className="text-xl font-semibold">{fav.name}</h2>
                 {fav.thumbnail && (

@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "../../styles/styles.module.css";
@@ -18,7 +19,7 @@ export default function Login() {
     setError("");
     setLoading(true);
 
-    // Validate that both fields are filled
+    // Validate that both fields are filled.
     if (!formData.identifier.trim()) {
       setError("Please enter your email or username.");
       setLoading(false);
@@ -34,9 +35,6 @@ export default function Login() {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // For this example we assume identifier is email.
-        // If you want to support both email and username,
-        // your backend needs to handle that accordingly.
         body: JSON.stringify({ email: formData.identifier, password: formData.password }),
       });
       const data = await response.json();
@@ -47,12 +45,11 @@ export default function Login() {
         return;
       }
 
-      // Optionally store the token in localStorage (or better, use an HTTP-only cookie)
+      // Optionally store the token in localStorage (or better yet, use HTTP-only cookies for security)
       localStorage.setItem("token", data.token);
-      // Optionally store the user data (without sensitive info)
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      // Redirect the user after a successful login
+      // Redirect to the account page after a successful login.
       router.push("/account");
     } catch (err) {
       console.error("Error in login:", err);
@@ -63,12 +60,12 @@ export default function Login() {
 
   return (
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen flex items-center justify-center">
-      <div className="max-w-md w-full bg-gray-400 dark:bg-gray-800 p-6 rounded shadow">
-        <h1 className={styles.SignUp}>Login</h1>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="max-w-md w-full bg-gray-100 dark:bg-gray-800 p-8 rounded-lg shadow-lg">
+        <h1 className={`${styles.SignUp} text-3xl font-bold text-center mb-6`}>Login</h1>
+        {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="login-identifier" className={styles.SigningupandLoggingIn}>
+            <label htmlFor="login-identifier" className={`${styles.SigningupandLoggingIn} block mb-1`}>
               Email / Username
             </label>
             <input
@@ -76,15 +73,13 @@ export default function Login() {
               type="text"
               placeholder="Enter your email or username"
               value={formData.identifier}
-              onChange={(e) =>
-                setFormData({ ...formData, identifier: e.target.value })
-              }
-              className="border p-2 w-full rounded"
+              onChange={(e) => setFormData({ ...formData, identifier: e.target.value })}
+              className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
           <div>
-            <label htmlFor="login-password" className={styles.SigningupandLoggingIn}>
+            <label htmlFor="login-password" className={`${styles.SigningupandLoggingIn} block mb-1`}>
               Password
             </label>
             <input
@@ -92,22 +87,22 @@ export default function Login() {
               type="password"
               placeholder="Enter your password"
               value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-              className="border p-2 w-full rounded"
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
             <div className="mt-1 text-right">
-              <Link href="/forgot-password" className="text-sm text-blue-500 hover:underline">
-                Forgot Password?
+              <Link href="/forgot-password">
+                <a className="text-sm text-blue-500 hover:underline">
+                  Forgot Password?
+                </a>
               </Link>
             </div>
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="bg-blue-500 text-white p-2 rounded w-full hover:bg-blue-600 transition disabled:opacity-50"
+            className="bg-blue-500 text-white p-2 w-full rounded hover:bg-blue-600 transition disabled:opacity-50"
           >
             {loading ? "Logging in..." : "Login"}
           </button>

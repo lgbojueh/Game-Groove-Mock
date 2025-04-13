@@ -7,6 +7,7 @@ const posts = [
     summary:
       "Discover the best board games that bring the family together for fun, laughter, and friendly competition. Perfect for all ages!",
     date: "January 15, 2025",
+    dateTime: "2025-01-15",
   },
   {
     id: "2",
@@ -14,6 +15,7 @@ const posts = [
     summary:
       "Learn practical tips and creative ideas for hosting a game night that your friends and family will never forget.",
     date: "February 10, 2025",
+    dateTime: "2025-02-10",
   },
   {
     id: "3",
@@ -21,31 +23,50 @@ const posts = [
     summary:
       "Stay up-to-date with the latest board game releases and find out which ones are making waves in the gaming community.",
     date: "March 5, 2025",
+    dateTime: "2025-03-05",
   },
 ];
 
 export default function Blog() {
   return (
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen">
-      <h1 className="text-4xl font-bold mb-6">Blog</h1>
-      <div className="space-y-6">
+      {/* Header for the blog page */}
+      <header className="mb-10">
+        <h1 className="text-4xl font-bold text-center">Blog</h1>
+      </header>
+
+      {/* Section for blog posts with a centered layout */}
+      <section className="max-w-4xl mx-auto space-y-8">
         {posts.map((post) => (
           <article
             key={post.id}
-            className="p-4 bg-gray-400 dark:bg-gray-700 rounded shadow hover:shadow-lg transition"
+            className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition"
           >
-            <Link href={`/blog/${post.id}`}>
-              <h2 className="text-2xl font-semibold mb-2 hover:underline">
-                {post.title}
-              </h2>
-            </Link>
-            <p className="mb-1">{post.summary}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-300">
-              {post.date}
+            {/* Post Header */}
+            <header>
+              <Link href={`/blog/${post.id}`}>
+                <a aria-label={`Read more about ${post.title}`}>
+                  <h2 className="text-2xl font-semibold mb-2 hover:underline">
+                    {post.title}
+                  </h2>
+                </a>
+              </Link>
+            </header>
+
+            {/* Post Summary */}
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              {post.summary}
             </p>
+
+            {/* Post Footer for date */}
+            <footer>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                <time dateTime={post.dateTime}>{post.date}</time>
+              </p>
+            </footer>
           </article>
         ))}
-      </div>
+      </section>
     </main>
   );
 }

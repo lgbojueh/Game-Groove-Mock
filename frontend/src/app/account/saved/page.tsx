@@ -14,6 +14,7 @@ export default function SavedGamesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Fetch saved games when the session is authenticated.
   useEffect(() => {
     if (status === "authenticated" && session?.user?.id) {
       async function fetchSavedGames() {
@@ -30,16 +31,18 @@ export default function SavedGamesPage() {
           setSavedGames(data);
         } catch (error: any) {
           console.error("Error fetching saved games:", error);
-          setError(error.message || "An error occurred while fetching saved games.");
+          setError(
+            error.message || "An error occurred while fetching saved games."
+          );
         } finally {
           setLoading(false);
         }
       }
-
       fetchSavedGames();
     }
   }, [status, session]);
 
+  // Function to remove a saved game by sending a DELETE request.
   const removeSavedGame = async (id: number) => {
     try {
       const res = await fetch(`/api/auth/savedGames/${id}`, {
@@ -48,19 +51,18 @@ export default function SavedGamesPage() {
       if (!res.ok) {
         throw new Error("Failed to delete saved game");
       }
+      // Update the savedGames state by removing the deleted game.
       setSavedGames((prev) => prev.filter((game) => game.id !== id));
     } catch (error) {
       console.error("Error deleting saved game:", error);
+      // Optionally, you could display an error message to the user here.
     }
   };
 
-  if (status === "loading") {
-    return <p>Loading...</p>;
-  }
-
-  if (status === "unauthenticated") {
+  // Display loading or unauthenticated state.
+  if (status === "loading") return <p>Loading...</p>;
+  if (status === "unauthenticated")
     return <p>You need to log in to view your saved games.</p>;
-  }
 
   return (
     <main className="p-6 min-h-screen">
@@ -74,7 +76,10 @@ export default function SavedGamesPage() {
       ) : (
         <ul className="space-y-4">
           {savedGames.map((game) => (
-            <li key={game.id} className="flex justify-between items-center p-4 rounded shadow">
+            <li
+              key={game.id}
+              className="flex justify-between items-center p-4 rounded shadow bg-gray-100 dark:bg-gray-700"
+            >
               <div>
                 <h2 className="text-xl font-semibold">{game.title}</h2>
                 <img
