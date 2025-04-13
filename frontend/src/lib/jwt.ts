@@ -1,7 +1,7 @@
 // src/lib/jwt.ts
 import jwt from 'jsonwebtoken';
 
-const SECRET_KEY = process.env.JWT_SECRET || 'your_default_secret'; // Set this in your .env.local
+const SECRET_KEY = process.env.JWT_SECRET || 'Str0ngS3cr3tK3y'; 
 
 export function signToken(payload: object, options?: jwt.SignOptions): string {
   // Default expiration of 1 hour; override in options if needed
