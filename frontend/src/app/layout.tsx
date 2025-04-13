@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import React from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Providers from "../components/Providers";
+import Providers from "../components/Providers"; // Ensure this file exists in the specified path or update the path
 
 export const metadata: Metadata = {
   title: "Game Groove",
