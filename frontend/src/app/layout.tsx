@@ -3,9 +3,7 @@ import type { Metadata } from "next";
 import React from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "next-themes";
-import { SessionProvider } from "next-auth/react";  // Import SessionProvider
-import ClientNavbar from "../components/ClientNavbar";
+import Providers from "../components/Providers";
 
 export const metadata: Metadata = {
   title: "Game Groove",
@@ -39,14 +37,11 @@ export default function RootLayout({
         />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="system">
-          <SessionProvider> {/* Wrap your components with the SessionProvider */}
-            <ClientNavbar />
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              {children}
-            </div>
-          </SessionProvider>
-        </ThemeProvider>
+        <Providers>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {children}
+          </div>
+        </Providers>
       </body>
     </html>
   );
