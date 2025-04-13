@@ -1,12 +1,22 @@
+// src/app/api/auth/reset-password/route.ts
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 
 export async function POST(request: Request) {
   try {
+    // Parse the JSON body to get the token and the new password.
     const { token, newPassword } = await request.json();
 
-    // Find the user with a valid reset token (and token not expired)
+    // Validate that token and newPassword exist and are of the expected type
+    if (!token || typeof token !== 'string' || !newPassword || typeof newPassword !== 'string') {
+      return NextResponse.json(
+        { error: 'A valid token and new password are required.' },
+        { status: 400 }
+      );
+    }
+
+    // Attempt to find a user where the resetToken matches and the expiry date is in the future.
     const user = await prisma.user.findFirst({
       where: {
         resetToken: token,
@@ -14,14 +24,15 @@ export async function POST(request: Request) {
       },
     });
 
+    // If no user is found, the token may be invalid or expired.
     if (!user) {
       return NextResponse.json({ error: 'Invalid or expired token' }, { status: 400 });
     }
 
-    // Hash the new password
+    // Hash the new password using bcrypt with 10 salt rounds.
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Update the user's password and clear reset token fields
+    // Update the user: set the new password and clear the reset token and its expiry.
     await prisma.user.update({
       where: { id: user.id },
       data: {
@@ -31,6 +42,7 @@ export async function POST(request: Request) {
       },
     });
 
+    // Return a successful JSON response.
     return NextResponse.json({ message: 'Password reset successful' });
   } catch (error) {
     console.error('Error in reset-password:', error);

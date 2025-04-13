@@ -1,3 +1,4 @@
+// src/app/api/auth/forgot-password/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import nodemailer from 'nodemailer';
@@ -9,17 +10,22 @@ export async function POST(request: Request) {
 
     // Validate input
     if (!email || typeof email !== 'string') {
-      return NextResponse.json({ error: 'A valid email is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'A valid email is required' },
+        { status: 400 }
+      );
     }
 
-    // Look up the user by email, only active accounts (deactivated = false)
+    // Look up the user by email, only active accounts (isActive = true)
     const user = await prisma.user.findFirst({
-      where: { email, isActive: false },
+      where: { email, isActive: true },
     });
 
     // Always return a generic success message to prevent email enumeration
     if (!user) {
-      return NextResponse.json({ message: 'If the email exists, a reset link will be sent.' });
+      return NextResponse.json({
+        message: 'If the email exists, a reset link will be sent.'
+      });
     }
 
     // Generate a secure reset token
@@ -32,17 +38,25 @@ export async function POST(request: Request) {
       data: { resetToken, resetTokenExpiry: tokenExpiry },
     });
 
-    // Validate environment variables
-    if (!process.env.SMTP_HOST || !process.env.SMTP_PORT || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    // Validate environment variables for SMTP configuration
+    if (
+      !process.env.SMTP_HOST ||
+      !process.env.SMTP_PORT ||
+      !process.env.SMTP_USER ||
+      !process.env.SMTP_PASS
+    ) {
       console.error('SMTP configuration is missing in environment variables');
-      return NextResponse.json({ error: 'Email service is not configured' }, { status: 500 });
+      return NextResponse.json(
+        { error: 'Email service is not configured' },
+        { status: 500 }
+      );
     }
 
     // Configure the transporter using environment variables
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
-      secure: Number(process.env.SMTP_PORT) === 465,
+      secure: Number(process.env.SMTP_PORT) === 465, // true for port 465, false for others
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
@@ -72,6 +86,9 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('Error in forgot-password:', error);
-    return NextResponse.json({ error: 'Error sending reset link. Please try again.' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Error sending reset link. Please try again.' },
+      { status: 500 }
+    );
   }
 }

@@ -15,9 +15,9 @@ export async function POST(request: Request) {
   try {
     const { username, email, password } = await request.json();
 
-    // Check if an active account already exists for this email
+    // Check if an active account already exists for this email using the correct "isActive" field.
     const emailCheck = await pool.query(
-      'SELECT * FROM users WHERE email = $1 AND deactivated = FALSE',
+      'SELECT * FROM users WHERE email = $1 AND "isActive" = TRUE',
       [email]
     );
     if (emailCheck.rowCount && emailCheck.rowCount > 0) {
@@ -27,9 +27,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if the username is already taken
+    // Check if the username is already taken (again using the "isActive" field).
     const usernameCheck = await pool.query(
-      'SELECT * FROM users WHERE username = $1 AND deactivated = FALSE',
+      'SELECT * FROM users WHERE username = $1 AND "isActive" = TRUE',
       [username]
     );
     if (usernameCheck.rowCount && usernameCheck.rowCount > 0) {
@@ -39,11 +39,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // Hash the password with bcrypt
+    // Hash the password with bcrypt.
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Insert the new user using the hashed password
+    // Insert the new user using the hashed password.
     const result = await pool.query(
       'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *',
       [username, email, hashedPassword]

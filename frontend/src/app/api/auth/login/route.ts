@@ -1,3 +1,4 @@
+// src/app/api/auth/login/route.ts
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
@@ -7,21 +8,23 @@ export async function POST(request: Request) {
   try {
     const { email, password } = await request.json();
 
-    // Validate environment variables
-    if (!process.env.JWT_SECRET) {
+    // Validate that the JWT secret is set
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
       throw new Error("JWT_SECRET is not set in the environment variables.");
     }
 
-    // Look up the user
+    // Look up the user by email
     const user = await prisma.user.findUnique({
       where: { email },
     });
 
+    // Return error if no user is found
     if (!user) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    // Compare passwords
+    // Compare the provided password with the stored hashed password
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
@@ -33,17 +36,12 @@ export async function POST(request: Request) {
       email: user.email,
     };
 
-    // Sign the token with your secret key
-    const secret: jwt.Secret = process.env.JWT_SECRET;
-    if (!secret) {
-      throw new Error("JWT_SECRET is not defined in the environment variables.");
-    }
-
+    // Sign the token with your secret key and set an expiration time (default 1 hour)
     const token = jwt.sign(payload, secret, {
-      expiresIn: process.env.JWT_EXPIRATION || '1h', // Default to 1 hour
+      expiresIn: process.env.JWT_EXPIRATION || '1h',
     } as jwt.SignOptions);
 
-    // Return the token along with user info (omit sensitive fields)
+    // Return the token along with non-sensitive user information
     return NextResponse.json({
       message: 'Login successful',
       user: {
