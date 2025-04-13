@@ -14,8 +14,9 @@ declare module "next-auth" {
   }
 }
 
+// Define authentication options.
 export const authOptions: NextAuthOptions = {
-  // Use the Prisma adapter to integrate with your Prisma client
+  // Use the Prisma adapter for database integration.
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -30,7 +31,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email and password are required");
         }
 
-        // Look up the user in your database by email.
+        // Find the user in your database by email.
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
@@ -48,7 +49,11 @@ export const authOptions: NextAuthOptions = {
         }
 
         // Return the user object. Note: the id must be a string.
-        return { id: user.id.toString(), name: user.username, email: user.email };
+        return {
+          id: user.id.toString(),
+          name: user.username,
+          email: user.email,
+        };
       },
     }),
   ],
@@ -57,7 +62,7 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   callbacks: {
-    // Customize the session callback so that the session object includes the user's id.
+    // Customize the session callback so that the session object includes the user id.
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.sub ?? "";
@@ -72,7 +77,7 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
   },
-  // Specify the secret for signing tokens
+  // Use the secret for signing tokens.
   secret: process.env.NEXTAUTH_SECRET,
 };
 
