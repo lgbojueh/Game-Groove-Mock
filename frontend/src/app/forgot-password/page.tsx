@@ -49,21 +49,23 @@ export default function ForgotPassword() {
 
   return (
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen flex items-center justify-center">
-      <div className="max-w-md w-full bg-gray-200 dark:bg-gray-800 p-6 rounded shadow">
-        <h1 className="text-3xl font-bold mb-4">Forgot Password</h1>
+      <div className="max-w-md w-full bg-gray-100 dark:bg-gray-800 p-8 rounded-lg shadow-lg">
+        <header className="mb-6">
+          <h1 className="text-3xl font-bold text-center">Forgot Password</h1>
+        </header>
         {error && (
-          <p className="text-red-500 mb-4" aria-live="assertive">
+          <p className="text-red-500 mb-4 text-center" aria-live="assertive">
             {error}
           </p>
         )}
         {message ? (
-          <p className="text-green-600 mb-4" aria-live="polite">
+          <p className="text-green-600 mb-4 text-center" aria-live="polite">
             {message}
           </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="forgot-email" className="block mb-1">
+              <label htmlFor="forgot-email" className="block mb-1 font-medium">
                 Email Address
               </label>
               <input
@@ -72,7 +74,7 @@ export default function ForgotPassword() {
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="border p-2 w-full rounded"
+                className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
                 disabled={loading}
               />
@@ -80,7 +82,7 @@ export default function ForgotPassword() {
             <button
               type="submit"
               disabled={loading}
-              className="bg-blue-500 text-white p-2 rounded w-full hover:bg-blue-600 transition disabled:opacity-50"
+              className="bg-blue-500 text-white p-2 w-full rounded hover:bg-blue-600 transition disabled:opacity-50"
             >
               {loading ? (
                 <span className="flex items-center justify-center">
@@ -97,12 +99,12 @@ export default function ForgotPassword() {
                       r="10"
                       stroke="currentColor"
                       strokeWidth="4"
-                    ></circle>
+                    />
                     <path
                       className="opacity-75"
                       fill="currentColor"
                       d="M4 12a8 8 0 018-8v8H4z"
-                    ></path>
+                    />
                   </svg>
                   Sending...
                 </span>
