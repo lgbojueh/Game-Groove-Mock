@@ -44,7 +44,7 @@ export default function Blog() {
           >
             {/* Post Header */}
             <header>
-              <Link href={`/blog/${post.id}`}> aria-label={`Read more about ${post.title}`}
+              <Link href={`/blog/${post.id}`}> {`Read more about ${post.title}`}
                   <h2 className="text-2xl font-semibold mb-2 hover:underline">
                     {post.title}
                   </h2>
