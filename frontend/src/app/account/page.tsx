@@ -36,7 +36,7 @@ export default function AccountPage() {
           setSavedGames(savedData);
 
           // Fetch favorite games – adjust endpoint if needed
-          const favoriteRes = await fetch(`/api/auth/favorites?userId=${userId}`);
+          const favoriteRes = await fetch(`/api/auth/favoritesService?userId=${userId}`);
           if (!favoriteRes.ok) {
             throw new Error("Failed to fetch favorite games");
           }
@@ -70,7 +70,7 @@ export default function AccountPage() {
 
   const removeFavoriteGame = async (id: number) => {
     try {
-      const res = await fetch(`/api/auth/favorites/${id}`, {
+      const res = await fetch(`/api/auth/favoritesService/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) {
@@ -83,7 +83,11 @@ export default function AccountPage() {
   };
 
   if (status === "loading") {
-    return <p>Loading...</p>;
+    return (
+      <div className="flex justify-center items-center">
+        <span>Loading...</span>
+      </div>
+    );
   }
 
   if (status === "unauthenticated") {
@@ -94,7 +98,9 @@ export default function AccountPage() {
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen overflow-y-auto">
       <h1 className="text-4xl font-bold mb-6">My Games</h1>
       {loading ? (
-        <p>Loading...</p>
+        <div className="flex justify-center items-center">
+          <span>Loading...</span>
+        </div>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : (
