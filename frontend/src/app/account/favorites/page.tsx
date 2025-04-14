@@ -32,7 +32,11 @@ export default function FavoritesPage() {
           setFavorites(data);
         } catch (error: any) {
           console.error("Error fetching favorites:", error);
-          setError(error.message || "An error occurred while fetching favorites.");
+          if (error instanceof Error) {
+            setError(error.message || "An error occurred while fetching favorites.");
+          } else {
+            setError("An unknown error occurred.");
+          }
         } finally {
           setLoading(false);
         }
@@ -54,6 +58,7 @@ export default function FavoritesPage() {
     } catch (error) {
       console.error("Error deleting favorite:", error);
       // Optionally, update the error state or show a notification
+      setError("An error occurred while removing the favorite.");
     }
   };
 
@@ -62,14 +67,14 @@ export default function FavoritesPage() {
     return <p>You need to log in to view your favorite games.</p>;
 
   return (
-    <main className="p-6 min-h-screen">
+    <main className="p-6 min-h-screen mt-4">
       <h1 className="text-4xl font-bold mb-6">Favorite Games</h1>
       {loading ? (
         <p>Loading...</p>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : favorites.length === 0 ? (
-        <p>You have no favorite games.</p>
+        <p>You currently have no favorite games. Add some from the game library!</p>
       ) : (
         <ul className="space-y-4">
           {favorites.map((fav) => (
@@ -90,6 +95,7 @@ export default function FavoritesPage() {
               <button
                 onClick={() => removeFavorite(fav.id)}
                 className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                aria-label={`Remove ${fav.name} from favorites`}
               >
                 Remove
               </button>

@@ -13,6 +13,7 @@ export default function SavedGamesPage() {
   const [savedGames, setSavedGames] = useState<SavedGame[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deletingId, setDeletingId] = useState<number | null>(null); // Track the game being removed
 
   // Fetch saved games when the session is authenticated.
   useEffect(() => {
@@ -31,9 +32,7 @@ export default function SavedGamesPage() {
           setSavedGames(data);
         } catch (error: any) {
           console.error("Error fetching saved games:", error);
-          setError(
-            error.message || "An error occurred while fetching saved games."
-          );
+          setError(error instanceof Error ? error.message : "An unknown error occurred while fetching saved games.");
         } finally {
           setLoading(false);
         }
@@ -44,6 +43,7 @@ export default function SavedGamesPage() {
 
   // Function to remove a saved game by sending a DELETE request.
   const removeSavedGame = async (id: number) => {
+    setDeletingId(id); // Set the game being deleted
     try {
       const res = await fetch(`/api/auth/savedGames/${id}`, {
         method: "DELETE",
@@ -56,6 +56,9 @@ export default function SavedGamesPage() {
     } catch (error) {
       console.error("Error deleting saved game:", error);
       // Optionally, you could display an error message to the user here.
+      setError("An error occurred while removing the saved game.");
+    } finally {
+      setDeletingId(null); // Reset deleting state
     }
   };
 
@@ -68,11 +71,11 @@ export default function SavedGamesPage() {
     <main className="p-6 min-h-screen">
       <h1 className="text-4xl font-bold mb-6">Saved Games</h1>
       {loading ? (
-        <p>Loading...</p>
+        <p>Loading saved games...</p>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : savedGames.length === 0 ? (
-        <p>You have no saved games.</p>
+        <p>You have no saved games. Explore new games to add!</p>
       ) : (
         <ul className="space-y-4">
           {savedGames.map((game) => (
@@ -90,9 +93,11 @@ export default function SavedGamesPage() {
               </div>
               <button
                 onClick={() => removeSavedGame(game.id)}
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                disabled={deletingId === game.id} // Disable the button while deleting
+                className={`bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 ${deletingId === game.id ? "opacity-50 cursor-not-allowed" : ""}`}
+                aria-label={`Remove ${game.title} from saved games`}
               >
-                Remove
+                {deletingId === game.id ? "Removing..." : "Remove"}
               </button>
             </li>
           ))}

@@ -5,7 +5,7 @@ import { useSession, signOut } from "next-auth/react";
 interface Game {
   id: number;
   title: string;
-  thumbnail?: string; // Optional thumbnail field
+  thumbnail?: string;
 }
 
 export default function AccountPage() {
@@ -27,20 +27,20 @@ export default function AccountPage() {
             throw new Error("User ID is not available");
           }
 
-          // Fetch saved games – adjust endpoint if needed
-          const savedRes = await fetch(`/api/auth/savedGames?userId=${userId}`);
-          if (!savedRes.ok) {
-            throw new Error("Failed to fetch saved games");
-          }
-          const savedData = await savedRes.json();
-          setSavedGames(savedData);
+          // Fetch saved and favorite games in parallel for better performance
+          const [savedRes, favoriteRes] = await Promise.all([
+            fetch(`/api/auth/savedGames?userId=${userId}`),
+            fetch(`/api/auth/favoritesService?userId=${userId}`)
+          ]);
 
-          // Fetch favorite games – adjust endpoint if needed
-          const favoriteRes = await fetch(`/api/auth/favoritesService?userId=${userId}`);
-          if (!favoriteRes.ok) {
-            throw new Error("Failed to fetch favorite games");
+          if (!savedRes.ok || !favoriteRes.ok) {
+            throw new Error("Failed to fetch game data");
           }
+
+          const savedData = await savedRes.json();
           const favoriteData = await favoriteRes.json();
+
+          setSavedGames(savedData);
           setFavoriteGames(favoriteData);
         } catch (error: any) {
           console.error("Error loading games:", error);
@@ -83,15 +83,11 @@ export default function AccountPage() {
   };
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: "/login" }); // Redirect to login page after logout
+    await signOut({ callbackUrl: "/login" });
   };
 
   if (status === "loading") {
-    return (
-      <div className="flex justify-center items-center">
-        <span>Loading...</span>
-      </div>
-    );
+    return <div>Loading...</div>;
   }
 
   if (status === "unauthenticated") {
@@ -99,7 +95,7 @@ export default function AccountPage() {
   }
 
   return (
-    <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen overflow-y-auto">
+    <main className="p-6 min-h-screen">
       <h1 className="text-4xl font-bold mb-6">My Games</h1>
       
       {/* Logout Button */}
@@ -111,38 +107,22 @@ export default function AccountPage() {
       </button>
 
       {loading ? (
-        <div className="flex justify-center items-center">
-          <span>Loading...</span>
-        </div>
+        <div>Loading...</div>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : (
         <>
-          <section className="mb-8">
+          <section>
             <h2 className="text-2xl font-semibold mb-4">Favorite Games</h2>
             {favoriteGames.length === 0 ? (
               <p>You have no favorite games.</p>
             ) : (
-              <ul className="space-y-4">
+              <ul>
                 {favoriteGames.map((game) => (
-                  <li
-                    key={game.id}
-                    className="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-4 rounded shadow"
-                  >
-                    <div>
-                      <h3 className="text-xl font-semibold">{game.title}</h3>
-                      <img
-                        src={game.thumbnail || "/default-game-thumbnail.jpg"}
-                        alt={`${game.title} thumbnail`}
-                        className="w-32 h-auto rounded mt-2"
-                      />
-                    </div>
-                    <button
-                      onClick={() => removeFavoriteGame(game.id)}
-                      className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                    >
-                      Remove
-                    </button>
+                  <li key={game.id}>
+                    <h3>{game.title}</h3>
+                    <img src={game.thumbnail || "/default-thumbnail.jpg"} alt={`${game.title} thumbnail`} />
+                    <button onClick={() => removeFavoriteGame(game.id)}>Remove</button>
                   </li>
                 ))}
               </ul>
@@ -154,26 +134,12 @@ export default function AccountPage() {
             {savedGames.length === 0 ? (
               <p>You have no saved games.</p>
             ) : (
-              <ul className="space-y-4">
+              <ul>
                 {savedGames.map((game) => (
-                  <li
-                    key={game.id}
-                    className="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-4 rounded shadow"
-                  >
-                    <div>
-                      <h3 className="text-xl font-semibold">{game.title}</h3>
-                      <img
-                        src={game.thumbnail || "/default-game-thumbnail.jpg"}
-                        alt={`${game.title} thumbnail`}
-                        className="w-32 h-auto rounded mt-2"
-                      />
-                    </div>
-                    <button
-                      onClick={() => removeSavedGame(game.id)}
-                      className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                    >
-                      Remove
-                    </button>
+                  <li key={game.id}>
+                    <h3>{game.title}</h3>
+                    <img src={game.thumbnail || "/default-thumbnail.jpg"} alt={`${game.title} thumbnail`} />
+                    <button onClick={() => removeSavedGame(game.id)}>Remove</button>
                   </li>
                 ))}
               </ul>

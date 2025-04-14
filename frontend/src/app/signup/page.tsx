@@ -76,6 +76,9 @@ export default function SignUp() {
 
       setSuccess("Signup successful! Redirecting...");
       setTimeout(() => {
+        // Reset form data after successful signup
+        setFormData({ username: "", email: "", password: "" });
+        setConfirmPassword("");
         router.push("/account");
       }, 2000);
     } catch (err) {
@@ -98,7 +101,10 @@ export default function SignUp() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="signup-username" className={`${styles.SigningupandLoggingIn} block mb-1`}>
+            <label
+              htmlFor="signup-username"
+              className={`${styles.SigningupandLoggingIn} block mb-1`}
+            >
               Username
             </label>
             <input
@@ -111,11 +117,15 @@ export default function SignUp() {
               }
               className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
+              autoFocus
             />
           </div>
 
           <div>
-            <label htmlFor="signup-email" className={`${styles.SigningupandLoggingIn} block mb-1`}>
+            <label
+              htmlFor="signup-email"
+              className={`${styles.SigningupandLoggingIn} block mb-1`}
+            >
               Email
             </label>
             <input
@@ -128,11 +138,15 @@ export default function SignUp() {
               }
               className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
+              aria-label="Email Address"
             />
           </div>
 
           <div>
-            <label htmlFor="signup-password" className={`${styles.SigningupandLoggingIn} block mb-1`}>
+            <label
+              htmlFor="signup-password"
+              className={`${styles.SigningupandLoggingIn} block mb-1`}
+            >
               Password
             </label>
             <input
@@ -145,6 +159,7 @@ export default function SignUp() {
               }
               className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
+              aria-label="Password"
             />
             <p className="text-xs text-gray-500 mt-1">
               Password must be at least 8 characters long, include at least one uppercase letter, one lowercase letter, and one number.
@@ -152,7 +167,10 @@ export default function SignUp() {
           </div>
 
           <div>
-            <label htmlFor="signup-confirm-password" className={`${styles.SigningupandLoggingIn} block mb-1`}>
+            <label
+              htmlFor="signup-confirm-password"
+              className={`${styles.SigningupandLoggingIn} block mb-1`}
+            >
               Confirm Password
             </label>
             <input
@@ -163,6 +181,7 @@ export default function SignUp() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
+              aria-label="Confirm Password"
             />
           </div>
 
