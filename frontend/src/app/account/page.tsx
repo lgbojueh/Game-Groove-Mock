@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 
 interface Game {
   id: number;
@@ -82,6 +82,10 @@ export default function AccountPage() {
     }
   };
 
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: "/login" }); // Redirect to login page after logout
+  };
+
   if (status === "loading") {
     return (
       <div className="flex justify-center items-center">
@@ -97,6 +101,15 @@ export default function AccountPage() {
   return (
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen overflow-y-auto">
       <h1 className="text-4xl font-bold mb-6">My Games</h1>
+      
+      {/* Logout Button */}
+      <button
+        onClick={handleLogout}
+        className="bg-red-500 text-white p-2 rounded mb-6"
+      >
+        Logout
+      </button>
+
       {loading ? (
         <div className="flex justify-center items-center">
           <span>Loading...</span>
