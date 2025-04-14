@@ -32,7 +32,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email and password are required");
+          return null; // Return null to prevent unnecessary errors
         }
 
         const user = await prisma.user.findUnique({
@@ -40,12 +40,12 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!user || !user.password) {
-          throw new Error("Invalid email or password");
+          return null; // Return null for invalid credentials
         }
 
         const isValid = await bcrypt.compare(credentials.password, user.password);
         if (!isValid) {
-          throw new Error("Invalid email or password");
+          return null; // Return null for invalid credentials
         }
 
         return {
@@ -61,26 +61,19 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
-      console.log("🔐 JWT CALLBACK");
-      console.log("Before:", token);
       if (user) {
         token.id = user.id;
         token.name = user.name;
         token.email = user.email;
       }
-      console.log("After:", token);
       return token;
     },
     async session({ session, token }) {
-      console.log("📦 SESSION CALLBACK");
-      console.log("Token:", token);
-      console.log("Before:", session);
       if (token && session.user) {
         session.user.id = token.id as string;
         session.user.name = token.name as string;
         session.user.email = token.email as string;
       }
-      console.log("After:", session);
       return session;
     },
   },

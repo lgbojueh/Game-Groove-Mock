@@ -32,6 +32,7 @@ export default function Login() {
       return;
     }
 
+    // Make the signIn request to the credentials provider
     const res = await signIn("credentials", {
       redirect: false,
       email: formData.identifier,
@@ -42,7 +43,7 @@ export default function Login() {
       setError("Invalid email or password.");
       setLoading(false);
     } else {
-      router.push("/account");
+      router.push("/account");  // Redirect to the account page after successful login
     }
   };
 
