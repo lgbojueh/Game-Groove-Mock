@@ -1,57 +1,69 @@
 // src/app/api/auth/signup/route.ts
 import { NextResponse } from 'next/server';
-import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
-
-// Log the DATABASE_URL for debugging (make sure this file is in your Next.js app root and that .env.local is present)
-console.log('DATABASE_URL:', process.env.DATABASE_URL);
-
-// Configure the PostgreSQL pool using the environment variable
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+import prisma from '@/lib/prisma';
 
 export async function POST(request: Request) {
   try {
     const { username, email, password } = await request.json();
 
-    // Check if an active account already exists for this email using the correct "isActive" field.
-    const emailCheck = await pool.query(
-      'SELECT * FROM users WHERE email = $1 AND "isActive" = TRUE',
-      [email]
-    );
-    if (emailCheck.rowCount && emailCheck.rowCount > 0) {
+    // Basic validation
+    if (typeof username !== 'string' || typeof email !== 'string' || typeof password !== 'string') {
+      return NextResponse.json({ error: 'Invalid input types' }, { status: 400 });
+    }
+
+    // Check if the email is already in use
+    const existingEmail = await prisma.user.findFirst({
+      where: {
+        email,
+        isActive: true,
+      },
+    });
+
+    if (existingEmail) {
       return NextResponse.json(
         { error: 'An account with this email already exists.' },
         { status: 409 }
       );
     }
 
-    // Check if the username is already taken (again using the "isActive" field).
-    const usernameCheck = await pool.query(
-      'SELECT * FROM users WHERE username = $1 AND "isActive" = TRUE',
-      [username]
-    );
-    if (usernameCheck.rowCount && usernameCheck.rowCount > 0) {
+    // Check if the username is already taken
+    const existingUsername = await prisma.user.findFirst({
+      where: {
+        username,
+        isActive: true,
+      },
+    });
+
+    if (existingUsername) {
       return NextResponse.json(
         { error: 'Username is taken. Please choose another one.' },
         { status: 409 }
       );
     }
 
-    // Hash the password with bcrypt.
+    // Hash the password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Insert the new user using the hashed password.
-    const result = await pool.query(
-      'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *',
-      [username, email, hashedPassword]
-    );
+    // Create the user in the database
+    const user = await prisma.user.create({
+      data: {
+        username,
+        email,
+        password: hashedPassword,
+        isActive: true, // Optional if handled by default
+      },
+    });
 
     return NextResponse.json({
       message: 'Signup successful',
-      user: result.rows[0],
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        created_at: user.created_at,
+      },
     });
   } catch (error) {
     console.error('Error in signup:', error);

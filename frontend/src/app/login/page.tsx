@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import styles from "../../styles/styles.module.css";
 import Link from "next/link";
@@ -19,42 +20,29 @@ export default function Login() {
     setError("");
     setLoading(true);
 
-    // Validate that both fields are filled.
     if (!formData.identifier.trim()) {
-      setError("Please enter your email or username.");
+      setError("Please enter your email.");
       setLoading(false);
       return;
     }
+
     if (!formData.password.trim()) {
       setError("Please enter your password.");
       setLoading(false);
       return;
     }
 
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.identifier, password: formData.password }),
-      });
-      const data = await response.json();
+    const res = await signIn("credentials", {
+      redirect: false,
+      email: formData.identifier,
+      password: formData.password,
+    });
 
-      if (!response.ok) {
-        setError(data.error || "Login failed");
-        setLoading(false);
-        return;
-      }
-
-      // Optionally store the token in localStorage (or better yet, use HTTP-only cookies for security)
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-      // Redirect to the account page after a successful login.
-      router.push("/account");
-    } catch (err) {
-      console.error("Error in login:", err);
-      setError("An unexpected error occurred.");
+    if (res?.error) {
+      setError("Invalid email or password.");
       setLoading(false);
+    } else {
+      router.push("/account");
     }
   };
 
@@ -66,12 +54,12 @@ export default function Login() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="login-identifier" className={`${styles.SigningupandLoggingIn} block mb-1`}>
-              Email / Username
+              Email
             </label>
             <input
               id="login-identifier"
               type="text"
-              placeholder="Enter your email or username"
+              placeholder="Enter your email"
               value={formData.identifier}
               onChange={(e) => setFormData({ ...formData, identifier: e.target.value })}
               className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -93,7 +81,7 @@ export default function Login() {
             />
             <div className="mt-1 text-right">
               <Link href="/forgot-password" className="text-sm text-blue-500 hover:underline">
-                  Forgot Password?
+                Forgot Password?
               </Link>
             </div>
           </div>

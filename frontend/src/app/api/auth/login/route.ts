@@ -6,42 +6,43 @@ import jwt from 'jsonwebtoken';
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json();
+    const body = await request.json();
+    const { email, password } = body;
 
-    // Validate that the JWT secret is set
+    if (typeof email !== 'string' || typeof password !== 'string') {
+      return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
+    }
+
     const secret = process.env.JWT_SECRET;
     if (!secret) {
       throw new Error("JWT_SECRET is not set in the environment variables.");
     }
 
-    // Look up the user by email
     const user = await prisma.user.findUnique({
       where: { email },
     });
 
-    // Return error if no user is found
     if (!user) {
+      // Delay response to reduce timing attacks
+      await new Promise((resolve) => setTimeout(resolve, 500));
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    // Compare the provided password with the stored hashed password
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    // Create a JWT payload
     const payload = {
       userId: user.id,
       email: user.email,
     };
 
-    // Sign the token with your secret key and set an expiration time (default 1 hour)
     const token = jwt.sign(payload, secret, {
-      expiresIn: process.env.JWT_EXPIRATION || '1h',
-    } as jwt.SignOptions);
+      expiresIn: process.env.JWT_EXPIRATION ? parseInt(process.env.JWT_EXPIRATION, 10) : '1h',
+    });
 
-    // Return the token along with non-sensitive user information
     return NextResponse.json({
       message: 'Login successful',
       user: {
