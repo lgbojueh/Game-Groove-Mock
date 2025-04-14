@@ -8,44 +8,51 @@ interface SmtpConfig {
   pass: string;
 }
 
+const getEnv = (key: string): string => {
+  const value = process.env[key];
+  if (!value) throw new Error(`Missing environment variable: ${key}`);
+  return value;
+};
+
 // Create a mapping of providers
 const providers: Record<string, SmtpConfig> = {
   gmail: {
-    host: process.env.SMTP_GMAIL_HOST as string,
-    port: Number(process.env.SMTP_GMAIL_PORT),
-    user: process.env.SMTP_GMAIL_USER as string,
-    pass: process.env.SMTP_GMAIL_PASS as string,
+    host: getEnv("SMTP_GMAIL_HOST"),
+    port: Number(getEnv("SMTP_GMAIL_PORT")),
+    user: getEnv("SMTP_GMAIL_USER"),
+    pass: getEnv("SMTP_GMAIL_PASS"),
   },
   outlook: {
-    host: process.env.SMTP_OUTLOOK_HOST as string,
-    port: Number(process.env.SMTP_OUTLOOK_PORT),
-    user: process.env.SMTP_OUTLOOK_USER as string,
-    pass: process.env.SMTP_OUTLOOK_PASS as string,
+    host: getEnv("SMTP_OUTLOOK_HOST"),
+    port: Number(getEnv("SMTP_OUTLOOK_PORT")),
+    user: getEnv("SMTP_OUTLOOK_USER"),
+    pass: getEnv("SMTP_OUTLOOK_PASS"),
   },
   yahoo: {
-    host: process.env.SMTP_YAHOO_HOST as string,
-    port: Number(process.env.SMTP_YAHOO_PORT),
-    user: process.env.SMTP_YAHOO_USER as string,
-    pass: process.env.SMTP_YAHOO_PASS as string,
+    host: getEnv("SMTP_YAHOO_HOST"),
+    port: Number(getEnv("SMTP_YAHOO_PORT")),
+    user: getEnv("SMTP_YAHOO_USER"),
+    pass: getEnv("SMTP_YAHOO_PASS"),
   },
   mail: {
-    host: process.env.SMTP_MAIL_HOST as string,
-    port: Number(process.env.SMTP_MAIL_PORT),
-    user: process.env.SMTP_MAIL_USER as string,
-    pass: process.env.SMTP_MAIL_PASS as string,
+    host: getEnv("SMTP_MAIL_HOST"),
+    port: Number(getEnv("SMTP_MAIL_PORT")),
+    user: getEnv("SMTP_MAIL_USER"),
+    pass: getEnv("SMTP_MAIL_PASS"),
   },
 };
 
-// Function to create a transporter based on the selected provider
-export const createEmailTransporter = (provider: string = "gmail") => {
+// Create transporter
+export const createEmailTransporter = (provider: keyof typeof providers = "gmail") => {
   const config = providers[provider];
   if (!config) {
     throw new Error(`SMTP configuration for provider '${provider}' not found.`);
   }
+
   return nodemailer.createTransport({
     host: config.host,
     port: config.port,
-    secure: config.port === 465, // true for SSL
+    secure: config.port === 465, // SSL/TLS only if port is 465
     auth: {
       user: config.user,
       pass: config.pass,

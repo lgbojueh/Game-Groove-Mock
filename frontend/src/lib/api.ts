@@ -1,17 +1,18 @@
 // src/lib/api.ts
 
 export async function fetchProtectedData(token: string) {
-            const response = await fetch('/api/protected/some-endpoint', {
-              method: 'GET',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-              },
-            });
-          
-            if (!response.ok) {
-              throw new Error('Failed to fetch protected data');
-            }
-          
-            return response.json();
-          }
-          
+  const response = await fetch('/api/protected/some-endpoint', {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to fetch protected data');
+  }
+
+  return response.json();
+}

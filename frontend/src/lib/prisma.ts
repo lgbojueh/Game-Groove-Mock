@@ -1,16 +1,16 @@
 // src/lib/prisma.ts
 import { PrismaClient } from '@prisma/client';
 
-console.log('DATABASE_URL:', process.env.DATABASE_URL); // Add this line to verify
-
 declare global {
+  // Prevent TypeScript error on globalThis
   var prisma: PrismaClient | undefined;
 }
 
-const prisma = global.prisma || new PrismaClient();
+const prisma = globalThis.prisma ?? new PrismaClient();
 
 if (process.env.NODE_ENV !== 'production') {
-  global.prisma = prisma;
+  globalThis.prisma = prisma;
+  console.log('DATABASE_URL:', process.env.DATABASE_URL);
 }
 
 export default prisma;
