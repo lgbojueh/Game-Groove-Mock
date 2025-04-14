@@ -1,4 +1,3 @@
-// src/app/api/auth/[...nextauth]/route.ts
 import NextAuth, { NextAuthOptions, DefaultSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
@@ -62,25 +61,31 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
-      // When user logs in
+      console.log("🔐 JWT CALLBACK");
+      console.log("Before:", token);
       if (user) {
         token.id = user.id;
         token.name = user.name;
         token.email = user.email;
       }
+      console.log("After:", token);
       return token;
     },
     async session({ session, token }) {
+      console.log("📦 SESSION CALLBACK");
+      console.log("Token:", token);
+      console.log("Before:", session);
       if (token && session.user) {
         session.user.id = token.id as string;
         session.user.name = token.name as string;
         session.user.email = token.email as string;
       }
+      console.log("After:", session);
       return session;
     },
   },
   pages: {
-    signIn: "/login", // Customize if needed
+    signIn: "/login",
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
