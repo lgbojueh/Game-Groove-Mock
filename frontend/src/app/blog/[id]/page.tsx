@@ -17,7 +17,7 @@ const posts: Record<string, BlogPostType> = {
     date: "January 15, 2025",
     dateTime: "2025-01-15",
     fullContent: `Family game nights are a cherished tradition, and choosing the right board games can make them even more memorable.
-    
+
 Here are our top 5 recommendations:
 1. Game A – A classic that never disappoints.
 2. Game B – Engaging and fun for all ages.
@@ -33,7 +33,7 @@ These games have been carefully selected for their replayability and ability to 
     date: "February 10, 2025",
     dateTime: "2025-02-10",
     fullContent: `Hosting a game night can be both exciting and challenging. Here are some tips to ensure your game night is unforgettable:
-    
+
 - **Plan Ahead:** Choose a mix of games that suit different interests.
 - **Set the Mood:** Create a comfortable environment with good lighting and snacks.
 - **Mix it Up:** Include both competitive and cooperative games.
@@ -48,7 +48,7 @@ Follow these steps and you'll be well on your way to hosting a game night that y
     date: "March 5, 2025",
     dateTime: "2025-03-05",
     fullContent: `The board game world is constantly evolving, and 2025 is no exception. Here are some of the hottest new releases this year:
-    
+
 - **Game X:** A groundbreaking strategy game that challenges your planning skills.
 - **Game Y:** An innovative party game that has everyone laughing.
 - **Game Z:** A beautifully designed game that combines art with engaging mechanics.
@@ -66,7 +66,25 @@ export default function BlogPostPage() {
     return (
       <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen">
         <p>Post not found. Please check the URL or go back to the homepage.</p>
-            </main>
-          );
-        }
-      }
+      </main>
+    );
+  }
+
+  return (
+    <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen">
+      <article className="max-w-3xl mx-auto">
+        <header className="mb-6">
+          <h1 className="text-3xl font-bold mb-2">{post.title}</h1>
+          <time dateTime={post.dateTime} className="text-sm text-gray-500">
+            {post.date}
+          </time>
+        </header>
+        <section className="prose prose-invert">
+          {post.fullContent.split("\n").map((para, index) => (
+            <p key={index}>{para}</p>
+          ))}
+        </section>
+      </article>
+    </main>
+  );
+}
