@@ -29,7 +29,8 @@ export default function AccountPage() {
 
           const [savedRes, favoriteRes] = await Promise.all([
             fetch(`/api/auth/savedGames?userId=${userId}`),
-            fetch(`/api/favoriteService?userId=${userId}`)  // ✅ Correct route
+            fetch(`/api/auth/favoriteService?userId=${userId}`)
+  // ✅ Correct route
           ]);
 
           if (!savedRes.ok) {
@@ -75,7 +76,7 @@ export default function AccountPage() {
 
   const removeFavoriteGame = async (id: number) => {
     try {
-      const res = await fetch(`/api/favoriteService/${id}`, {
+      const res = await fetch(`/api/auth/favoriteService/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) {
