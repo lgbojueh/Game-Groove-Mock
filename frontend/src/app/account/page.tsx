@@ -24,17 +24,22 @@ export default function AccountPage() {
 
           const userId = session?.user?.id;
           if (!userId) {
-            throw new Error("User ID is not available");
+            throw new Error("User ID is not available.");
           }
 
-          // Fetch saved and favorite games in parallel for better performance
           const [savedRes, favoriteRes] = await Promise.all([
             fetch(`/api/auth/savedGames?userId=${userId}`),
-            fetch(`/api/auth/favoritesService?userId=${userId}`)
+            fetch(`/api/favoriteService?userId=${userId}`)  // ✅ Correct route
           ]);
 
-          if (!savedRes.ok || !favoriteRes.ok) {
-            throw new Error("Failed to fetch game data");
+          if (!savedRes.ok) {
+            const text = await savedRes.text();
+            throw new Error(`Saved games error: ${text}`);
+          }
+
+          if (!favoriteRes.ok) {
+            const text = await favoriteRes.text();
+            throw new Error(`Favorite games error: ${text}`);
           }
 
           const savedData = await savedRes.json();
@@ -70,7 +75,7 @@ export default function AccountPage() {
 
   const removeFavoriteGame = async (id: number) => {
     try {
-      const res = await fetch(`/api/auth/favoritesService/${id}`, {
+      const res = await fetch(`/api/favoriteService/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) {
@@ -86,9 +91,7 @@ export default function AccountPage() {
     await signOut({ callbackUrl: "/login" });
   };
 
-  if (status === "loading") {
-    return <div>Loading...</div>;
-  }
+  if (status === "loading") return <div>Loading...</div>;
 
   if (status === "unauthenticated") {
     return <p>You need to log in to view your games.</p>;
@@ -97,8 +100,7 @@ export default function AccountPage() {
   return (
     <main className="p-6 min-h-screen">
       <h1 className="text-4xl font-bold mb-6">My Games</h1>
-      
-      {/* Logout Button */}
+
       <button
         onClick={handleLogout}
         className="bg-red-500 text-white p-2 rounded mb-6"
@@ -117,29 +119,47 @@ export default function AccountPage() {
             {favoriteGames.length === 0 ? (
               <p>You have no favorite games.</p>
             ) : (
-              <ul>
+              <ul className="space-y-4">
                 {favoriteGames.map((game) => (
-                  <li key={game.id}>
-                    <h3>{game.title}</h3>
-                    <img src={game.thumbnail || "/default-thumbnail.jpg"} alt={`${game.title} thumbnail`} />
-                    <button onClick={() => removeFavoriteGame(game.id)}>Remove</button>
+                  <li key={game.id} className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow">
+                    <h3 className="text-xl font-semibold">{game.title}</h3>
+                    <img
+                      src={game.thumbnail || "/default-thumbnail.jpg"}
+                      alt={`${game.title} thumbnail`}
+                      className="w-32 h-auto mt-2 rounded"
+                    />
+                    <button
+                      onClick={() => removeFavoriteGame(game.id)}
+                      className="bg-red-500 text-white px-4 py-2 mt-2 rounded hover:bg-red-600"
+                    >
+                      Remove
+                    </button>
                   </li>
                 ))}
               </ul>
             )}
           </section>
 
-          <section>
+          <section className="mt-10">
             <h2 className="text-2xl font-semibold mb-4">Saved Games</h2>
             {savedGames.length === 0 ? (
               <p>You have no saved games.</p>
             ) : (
-              <ul>
+              <ul className="space-y-4">
                 {savedGames.map((game) => (
-                  <li key={game.id}>
-                    <h3>{game.title}</h3>
-                    <img src={game.thumbnail || "/default-thumbnail.jpg"} alt={`${game.title} thumbnail`} />
-                    <button onClick={() => removeSavedGame(game.id)}>Remove</button>
+                  <li key={game.id} className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow">
+                    <h3 className="text-xl font-semibold">{game.title}</h3>
+                    <img
+                      src={game.thumbnail || "/default-thumbnail.jpg"}
+                      alt={`${game.title} thumbnail`}
+                      className="w-32 h-auto mt-2 rounded"
+                    />
+                    <button
+                      onClick={() => removeSavedGame(game.id)}
+                      className="bg-red-500 text-white px-4 py-2 mt-2 rounded hover:bg-red-600"
+                    >
+                      Remove
+                    </button>
                   </li>
                 ))}
               </ul>

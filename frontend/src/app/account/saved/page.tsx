@@ -1,11 +1,12 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 
 interface SavedGame {
   id: number;
   title: string;
-  thumbnail?: string; // Optional thumbnail field
+  thumbnail?: string;
 }
 
 export default function SavedGamesPage() {
@@ -13,69 +14,54 @@ export default function SavedGamesPage() {
   const [savedGames, setSavedGames] = useState<SavedGame[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [deletingId, setDeletingId] = useState<number | null>(null); // Track the game being removed
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  // Fetch saved games when the session is authenticated.
   useEffect(() => {
     if (status === "authenticated" && session?.user?.id) {
-      async function fetchSavedGames() {
+      const fetchSavedGames = async () => {
         try {
           setLoading(true);
-          setError("");
-
-          const userId = session?.user?.id;
-          const res = await fetch(`/api/auth/savedGames?userId=${userId}`);
-          if (!res.ok) {
-            throw new Error("Failed to fetch saved games");
-          }
+          const res = await fetch(`/api/auth/savedGames?userId=${session.user.id}`);
+          if (!res.ok) throw new Error("Failed to fetch saved games");
           const data = await res.json();
           setSavedGames(data);
-        } catch (error: any) {
-          console.error("Error fetching saved games:", error);
-          setError(error instanceof Error ? error.message : "An unknown error occurred while fetching saved games.");
+        } catch (err: any) {
+          console.error("Error fetching saved games:", err);
+          setError(err.message || "An error occurred.");
         } finally {
           setLoading(false);
         }
-      }
+      };
       fetchSavedGames();
     }
   }, [status, session]);
 
-  // Function to remove a saved game by sending a DELETE request.
   const removeSavedGame = async (id: number) => {
-    setDeletingId(id); // Set the game being deleted
+    setDeletingId(id);
     try {
-      const res = await fetch(`/api/auth/savedGames/${id}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) {
-        throw new Error("Failed to delete saved game");
-      }
-      // Update the savedGames state by removing the deleted game.
+      const res = await fetch(`/api/auth/savedGames/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete saved game");
       setSavedGames((prev) => prev.filter((game) => game.id !== id));
-    } catch (error) {
-      console.error("Error deleting saved game:", error);
-      // Optionally, you could display an error message to the user here.
-      setError("An error occurred while removing the saved game.");
+    } catch (err) {
+      console.error("Error deleting saved game:", err);
+      setError("Failed to remove saved game.");
     } finally {
-      setDeletingId(null); // Reset deleting state
+      setDeletingId(null);
     }
   };
 
-  // Display loading or unauthenticated state.
-  if (status === "loading") return <p>Loading...</p>;
-  if (status === "unauthenticated")
-    return <p>You need to log in to view your saved games.</p>;
+  if (status === "loading") return <p>Loading session...</p>;
+  if (status === "unauthenticated") return <p>You must log in to view saved games.</p>;
 
   return (
-    <main className="p-6 min-h-screen">
+    <main className="p-6 min-h-screen mt-4">
       <h1 className="text-4xl font-bold mb-6">Saved Games</h1>
       {loading ? (
         <p>Loading saved games...</p>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : savedGames.length === 0 ? (
-        <p>You have no saved games. Explore new games to add!</p>
+        <p>You haven’t saved any games yet.</p>
       ) : (
         <ul className="space-y-4">
           {savedGames.map((game) => (
@@ -93,9 +79,11 @@ export default function SavedGamesPage() {
               </div>
               <button
                 onClick={() => removeSavedGame(game.id)}
-                disabled={deletingId === game.id} // Disable the button while deleting
-                className={`bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 ${deletingId === game.id ? "opacity-50 cursor-not-allowed" : ""}`}
-                aria-label={`Remove ${game.title} from saved games`}
+                disabled={deletingId === game.id}
+                className={`bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 ${
+                  deletingId === game.id ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+                aria-label={`Remove ${game.title}`}
               >
                 {deletingId === game.id ? "Removing..." : "Remove"}
               </button>
