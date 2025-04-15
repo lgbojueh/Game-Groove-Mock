@@ -1,4 +1,4 @@
-// src/app/api/savedGames/route.ts
+// src/app/api/auth/savedGames/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
@@ -20,11 +20,7 @@ export async function GET(req: Request) {
     });
     return NextResponse.json(savedGames);
   } catch (error) {
-    if (error instanceof Error) {
-      console.error('Error fetching saved games:', error.message, error.stack);
-    } else {
-      console.error('Error fetching saved games:', error);
-    }
+    console.error('Error fetching saved games:', error);
     return NextResponse.json({ error: 'Error fetching saved games' }, { status: 500 });
   }
 }
@@ -32,30 +28,27 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { userId: userIdParam, title } = body;
-    
+    const { userId: userIdParam, title, thumbnail } = body;
+
     if (userIdParam == null || !title) {
       return NextResponse.json({ error: 'User ID and title are required' }, { status: 400 });
     }
-    
+
     const userId = Number(userIdParam);
     if (isNaN(userId)) {
       return NextResponse.json({ error: 'Invalid User ID' }, { status: 400 });
     }
-    
+
     const newSavedGame = await prisma.savedGame.create({
       data: {
         title,
+        thumbnail,
         user: { connect: { id: userId } },
       },
     });
     return NextResponse.json(newSavedGame, { status: 201 });
   } catch (error) {
-    if (error instanceof Error) {
-      console.error('Error creating saved game:', error.message, error.stack);
-    } else {
-      console.error('Error creating saved game:', error);
-    }
+    console.error('Error creating saved game:', error);
     return NextResponse.json({ error: 'Error creating saved game' }, { status: 500 });
   }
 }
@@ -78,11 +71,7 @@ export async function DELETE(req: Request) {
     });
     return NextResponse.json(deletedSavedGame);
   } catch (error) {
-    if (error instanceof Error) {
-      console.error('Error deleting saved game:', error.message, error.stack);
-    } else {
-      console.error('Error deleting saved game:', error);
-    }
+    console.error('Error deleting saved game:', error);
     return NextResponse.json({ error: 'Error deleting saved game' }, { status: 500 });
   }
 }

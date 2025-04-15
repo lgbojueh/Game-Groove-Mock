@@ -13,8 +13,8 @@ model User {
   email            String       @unique
   password         String
   created_at       DateTime     @default(now())
-  isActive         Boolean      @default(true) // Field to track active/deactivated status
-  resetToken       String? 
+  isActive         Boolean      @default(true)
+  resetToken       String?
   resetTokenExpiry DateTime?
 
   favorites        Favorite[]
@@ -26,6 +26,7 @@ model User {
 model Favorite {
   id        Int      @id @default(autoincrement())
   name      String
+  thumbnail String?  // ✅ Optional thumbnail
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -36,6 +37,7 @@ model Favorite {
 model SavedGame {
   id        Int      @id @default(autoincrement())
   title     String
+  thumbnail String?  // ✅ Optional thumbnail
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

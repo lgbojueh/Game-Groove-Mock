@@ -20,11 +20,7 @@ export async function GET(req: Request) {
     });
     return NextResponse.json(favorites);
   } catch (error) {
-    if (error instanceof Error) {
-      console.error('Error fetching favorites:', error.message, error.stack);
-    } else {
-      console.error('Error fetching favorites:', error);
-    }
+    console.error('Error fetching favorites:', error);
     return NextResponse.json({ error: 'Error fetching favorites' }, { status: 500 });
   }
 }
@@ -32,8 +28,8 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { userId: userIdParam, name } = body;
-    if (userIdParam == null || !name) {
+    const { userId: userIdParam, name, thumbnail } = body;
+    if (!userIdParam || !name) {
       return NextResponse.json({ error: 'User ID and name are required' }, { status: 400 });
     }
 
@@ -45,16 +41,13 @@ export async function POST(req: Request) {
     const newFavorite = await prisma.favorite.create({
       data: {
         name,
+        thumbnail: thumbnail || null,
         user: { connect: { id: userId } },
       },
     });
     return NextResponse.json(newFavorite, { status: 201 });
   } catch (error) {
-    if (error instanceof Error) {
-      console.error('Error creating favorite:', error.message, error.stack);
-    } else {
-      console.error('Error creating favorite:', error);
-    }
+    console.error('Error creating favorite:', error);
     return NextResponse.json({ error: 'Error creating favorite' }, { status: 500 });
   }
 }
@@ -77,11 +70,7 @@ export async function DELETE(req: Request) {
     });
     return NextResponse.json(deletedFavorite);
   } catch (error) {
-    if (error instanceof Error) {
-      console.error('Error deleting favorite:', error.message, error.stack);
-    } else {
-      console.error('Error deleting favorite:', error);
-    }
+    console.error('Error deleting favorite:', error);
     return NextResponse.json({ error: 'Error deleting favorite' }, { status: 500 });
   }
 }

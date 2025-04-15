@@ -30,7 +30,6 @@ export default function AccountPage() {
           const [savedRes, favoriteRes] = await Promise.all([
             fetch(`/api/auth/savedGames?userId=${userId}`),
             fetch(`/api/auth/favoriteService?userId=${userId}`)
-  // ✅ Correct route
           ]);
 
           if (!savedRes.ok) {
@@ -65,9 +64,8 @@ export default function AccountPage() {
       const res = await fetch(`/api/auth/savedGames/${id}`, {
         method: "DELETE",
       });
-      if (!res.ok) {
-        throw new Error("Failed to delete saved game");
-      }
+      if (!res.ok) throw new Error("Failed to delete saved game");
+
       setSavedGames((prev) => prev.filter((game) => game.id !== id));
     } catch (error) {
       console.error("Error removing saved game:", error);
@@ -79,9 +77,8 @@ export default function AccountPage() {
       const res = await fetch(`/api/auth/favoriteService/${id}`, {
         method: "DELETE",
       });
-      if (!res.ok) {
-        throw new Error("Failed to delete favorite game");
-      }
+      if (!res.ok) throw new Error("Failed to delete favorite game");
+
       setFavoriteGames((prev) => prev.filter((game) => game.id !== id));
     } catch (error) {
       console.error("Error removing favorite game:", error);
@@ -93,14 +90,13 @@ export default function AccountPage() {
   };
 
   if (status === "loading") return <div>Loading...</div>;
-
-  if (status === "unauthenticated") {
-    return <p>You need to log in to view your games.</p>;
-  }
+  if (status === "unauthenticated") return <p>You need to log in to view your games.</p>;
 
   return (
     <main className="p-6 min-h-screen">
-      <h1 className="text-4xl font-bold mb-6">My Games</h1>
+      <h1 className="text-4xl font-bold mb-6">
+        Welcome, {session?.user?.name || "User"}!
+      </h1>
 
       <button
         onClick={handleLogout}
