@@ -65,7 +65,7 @@ export async function POST(request: Request) {
     });
 
     // Create a reset URL (adjust the domain as needed)
-    const resetUrl = `https://yourdomain.com/reset-password?token=${resetToken}`;
+    const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${resetToken}`;
 
     // Email message options
     const message = {
