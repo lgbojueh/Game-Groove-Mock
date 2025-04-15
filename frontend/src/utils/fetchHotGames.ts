@@ -1,3 +1,4 @@
+// src/utils/fetchHotGames.ts
 export const fetchHotGames = async () => {
   try {
     console.log("Fetching hot games...");
@@ -5,22 +6,18 @@ export const fetchHotGames = async () => {
     if (!response.ok) {
       throw new Error("Failed to fetch hot games");
     }
+
     const xmlText = await response.text();
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlText, "text/xml");
     const items = Array.from(xmlDoc.getElementsByTagName("item"));
 
     const games = items.map((item) => {
-      const id = item.getAttribute("id");
-      const nameNodes = item.getElementsByTagName("name");
-      let name = "Unknown Game";
-      for (const node of nameNodes) {
-        if (node.getAttribute("type") === "primary") {
-          name = node.getAttribute("value") || name;
-          break;
-        }
-      }
-      const thumbnail = item.getElementsByTagName("thumbnail")[0]?.textContent || "";
+      const id = item.getAttribute("id") ?? "";
+      const nameElement = item.getElementsByTagName("name")[0];
+      const name = nameElement?.getAttribute("value") ?? "Unknown Game";
+      const thumbnail = item.getElementsByTagName("thumbnail")[0]?.textContent ?? "";
+
       return { id, name, thumbnail };
     });
 
