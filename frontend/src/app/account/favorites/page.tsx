@@ -1,3 +1,4 @@
+// src/app/account/favorites/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -17,54 +18,61 @@ export default function FavoritesPage() {
 
   useEffect(() => {
     if (status === "authenticated" && session?.user?.id) {
-      const fetchFavorites = async () => {
+      async function fetchFavorites() {
         try {
           setLoading(true);
-          const res = await fetch(`/api/favoriteService?userId=${session.user.id}`);
-          if (!res.ok) throw new Error("Failed to fetch favorites");
+          setError("");
+          const userId = session?.user?.id;
+          if (!userId) {
+            throw new Error("User ID is not available.");
+          }
+          const res = await fetch(`/api/auth/favoriteService?userId=${userId}`);
+          if (!res.ok) {
+            const text = await res.text();
+            throw new Error(`Favorite games error: ${text}`);
+          }
           const data = await res.json();
           setFavorites(data);
-        } catch (err: any) {
-          console.error("Error fetching favorites:", err);
-          setError(err.message || "An error occurred.");
+        } catch (error: any) {
+          console.error("Error fetching favorites:", error);
+          setError(error.message || "An error occurred while fetching favorites.");
         } finally {
           setLoading(false);
         }
-      };
+      }
       fetchFavorites();
     }
   }, [status, session]);
 
   const removeFavorite = async (id: number) => {
     try {
-      const res = await fetch(`/api/favoriteService/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/auth/favoriteService?id=${id}`, {
+        method: "DELETE",
+      });
       if (!res.ok) throw new Error("Failed to delete favorite");
       setFavorites((prev) => prev.filter((fav) => fav.id !== id));
-    } catch (err) {
-      console.error("Error deleting favorite:", err);
-      setError("Failed to remove favorite.");
+    } catch (error) {
+      console.error("Error deleting favorite:", error);
+      setError("An error occurred while removing the favorite.");
     }
   };
 
-  if (status === "loading") return <p>Loading session...</p>;
-  if (status === "unauthenticated") return <p>You must log in to view favorites.</p>;
+  if (status === "loading") return <p>Loading...</p>;
+  if (status === "unauthenticated") return <p>You need to log in to view your favorite games.</p>;
 
   return (
-    <main className="p-6 min-h-screen mt-4">
+    <main className="p-6 min-h-screen">
       <h1 className="text-4xl font-bold mb-6">Favorite Games</h1>
       {loading ? (
-        <p>Loading favorites...</p>
+        <p>Loading...</p>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : favorites.length === 0 ? (
-        <p>You have no favorite games yet.</p>
+        <p>You have no favorite games.</p>
       ) : (
         <ul className="space-y-4">
           {favorites.map((fav) => (
-            <li
-              key={fav.id}
-              className="flex justify-between items-center p-4 rounded shadow bg-gray-100 dark:bg-gray-700"
-            >
+            <li key={fav.id} className="flex justify-between items-center p-4 rounded shadow bg-gray-100 dark:bg-gray-700">
               <div>
                 <h2 className="text-xl font-semibold">{fav.name}</h2>
                 {fav.thumbnail && (
@@ -78,7 +86,6 @@ export default function FavoritesPage() {
               <button
                 onClick={() => removeFavorite(fav.id)}
                 className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                aria-label={`Remove ${fav.name}`}
               >
                 Remove
               </button>

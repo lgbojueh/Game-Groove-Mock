@@ -1,3 +1,4 @@
+// src/app/account/saved/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -18,20 +19,25 @@ export default function SavedGamesPage() {
 
   useEffect(() => {
     if (status === "authenticated" && session?.user?.id) {
-      const fetchSavedGames = async () => {
+      async function fetchSavedGames() {
         try {
           setLoading(true);
-          const res = await fetch(`/api/auth/savedGames?userId=${session.user.id}`);
-          if (!res.ok) throw new Error("Failed to fetch saved games");
+          setError("");
+          const userId = session?.user?.id;
+          const res = await fetch(`/api/auth/savedGames?userId=${userId}`);
+          if (!res.ok) {
+            const text = await res.text();
+            throw new Error(`Saved games error: ${text}`);
+          }
           const data = await res.json();
           setSavedGames(data);
-        } catch (err: any) {
-          console.error("Error fetching saved games:", err);
-          setError(err.message || "An error occurred.");
+        } catch (error: any) {
+          console.error("Error fetching saved games:", error);
+          setError(error.message || "An error occurred while fetching saved games.");
         } finally {
           setLoading(false);
         }
-      };
+      }
       fetchSavedGames();
     }
   }, [status, session]);
@@ -39,36 +45,35 @@ export default function SavedGamesPage() {
   const removeSavedGame = async (id: number) => {
     setDeletingId(id);
     try {
-      const res = await fetch(`/api/auth/savedGames/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/auth/savedGames?id=${id}`, {
+        method: "DELETE",
+      });
       if (!res.ok) throw new Error("Failed to delete saved game");
       setSavedGames((prev) => prev.filter((game) => game.id !== id));
-    } catch (err) {
-      console.error("Error deleting saved game:", err);
-      setError("Failed to remove saved game.");
+    } catch (error) {
+      console.error("Error deleting saved game:", error);
+      setError("An error occurred while removing the saved game.");
     } finally {
       setDeletingId(null);
     }
   };
 
-  if (status === "loading") return <p>Loading session...</p>;
-  if (status === "unauthenticated") return <p>You must log in to view saved games.</p>;
+  if (status === "loading") return <p>Loading...</p>;
+  if (status === "unauthenticated") return <p>You need to log in to view your saved games.</p>;
 
   return (
-    <main className="p-6 min-h-screen mt-4">
+    <main className="p-6 min-h-screen">
       <h1 className="text-4xl font-bold mb-6">Saved Games</h1>
       {loading ? (
         <p>Loading saved games...</p>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : savedGames.length === 0 ? (
-        <p>You haven’t saved any games yet.</p>
+        <p>You have no saved games.</p>
       ) : (
         <ul className="space-y-4">
           {savedGames.map((game) => (
-            <li
-              key={game.id}
-              className="flex justify-between items-center p-4 rounded shadow bg-gray-100 dark:bg-gray-700"
-            >
+            <li key={game.id} className="flex justify-between items-center p-4 rounded shadow bg-gray-100 dark:bg-gray-700">
               <div>
                 <h2 className="text-xl font-semibold">{game.title}</h2>
                 <img
@@ -80,10 +85,7 @@ export default function SavedGamesPage() {
               <button
                 onClick={() => removeSavedGame(game.id)}
                 disabled={deletingId === game.id}
-                className={`bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 ${
-                  deletingId === game.id ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-                aria-label={`Remove ${game.title}`}
+                className={`bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 ${deletingId === game.id ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 {deletingId === game.id ? "Removing..." : "Remove"}
               </button>
