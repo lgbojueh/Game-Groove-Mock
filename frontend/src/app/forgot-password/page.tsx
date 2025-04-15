@@ -35,13 +35,17 @@ export default function ForgotPassword() {
       }
 
       setMessage("A password reset link has been sent to your email.");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error sending reset link:", err);
-      setError(
-        err.message === "Failed to fetch"
-          ? "Network error. Please check your connection and try again."
-          : "Error sending reset link. Please try again."
-      );
+      if (err instanceof Error) {
+        setError(
+          err.message === "Failed to fetch"
+            ? "Network error. Please check your connection and try again."
+            : err.message
+        );
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

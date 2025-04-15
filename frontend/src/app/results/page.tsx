@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
+// Helper to clean unwanted line break codes from descriptions.
 const cleanDescription = (desc?: string) =>
   desc ? desc.replace(/&#10;/g, " ") : "";
 
@@ -32,13 +33,13 @@ export default function ResultsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const query = searchParams.get("query") || "";
   const players = searchParams.get("players") || "any";
   const complexity = searchParams.get("complexity") || "any";
   const playtime = searchParams.get("playtime") || "any";
   const genre = searchParams.get("genre") || "any";
   const age = searchParams.get("age") || "any";
   const theme = searchParams.get("theme") || "any";
+
   const yearMin = searchParams.get("yearMin");
   const yearMax = searchParams.get("yearMax");
   const minAge = searchParams.get("minAge");

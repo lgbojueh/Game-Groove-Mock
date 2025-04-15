@@ -1,6 +1,8 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
+import Image from "next/image";
 
 interface Game {
   id: number;
@@ -13,7 +15,7 @@ export default function AccountPage() {
   const [savedGames, setSavedGames] = useState<Game[]>([]);
   const [favoriteGames, setFavoriteGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
     if (status === "authenticated" && session?.user?.id) {
@@ -23,13 +25,9 @@ export default function AccountPage() {
           setError("");
 
           const userId = session?.user?.id;
-          if (!userId) {
-            throw new Error("User ID is not available.");
-          }
-
           const [savedRes, favoriteRes] = await Promise.all([
             fetch(`/api/auth/savedGames?userId=${userId}`),
-            fetch(`/api/auth/favoriteService?userId=${userId}`)
+            fetch(`/api/auth/favoriteService?userId=${userId}`),
           ]);
 
           if (!savedRes.ok) {
@@ -47,9 +45,13 @@ export default function AccountPage() {
 
           setSavedGames(savedData);
           setFavoriteGames(favoriteData);
-        } catch (error: any) {
-          console.error("Error loading games:", error);
-          setError(error.message || "An error occurred while loading games.");
+        } catch (err) {
+          console.error("Error loading games:", err);
+          setError(
+            err instanceof Error
+              ? err.message
+              : "An error occurred while loading games."
+          );
         } finally {
           setLoading(false);
         }
@@ -61,27 +63,25 @@ export default function AccountPage() {
 
   const removeSavedGame = async (id: number) => {
     try {
-      const res = await fetch(`/api/auth/savedGames/${id}`, {
+      const res = await fetch(`/api/auth/savedGames?id=${id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete saved game");
-
       setSavedGames((prev) => prev.filter((game) => game.id !== id));
-    } catch (error) {
-      console.error("Error removing saved game:", error);
+    } catch (err) {
+      console.error("Error removing saved game:", err);
     }
   };
 
   const removeFavoriteGame = async (id: number) => {
     try {
-      const res = await fetch(`/api/auth/favoriteService/${id}`, {
+      const res = await fetch(`/api/auth/favoriteService?id=${id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete favorite game");
-
       setFavoriteGames((prev) => prev.filter((game) => game.id !== id));
-    } catch (error) {
-      console.error("Error removing favorite game:", error);
+    } catch (err) {
+      console.error("Error removing favorite game:", err);
     }
   };
 
@@ -90,7 +90,10 @@ export default function AccountPage() {
   };
 
   if (status === "loading") return <div>Loading...</div>;
-  if (status === "unauthenticated") return <p>You need to log in to view your games.</p>;
+
+  if (status === "unauthenticated") {
+    return <p>You need to log in to view your games.</p>;
+  }
 
   return (
     <main className="p-6 min-h-screen">
@@ -118,12 +121,17 @@ export default function AccountPage() {
             ) : (
               <ul className="space-y-4">
                 {favoriteGames.map((game) => (
-                  <li key={game.id} className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow">
+                  <li
+                    key={game.id}
+                    className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow"
+                  >
                     <h3 className="text-xl font-semibold">{game.title}</h3>
-                    <img
+                    <Image
                       src={game.thumbnail || "/default-thumbnail.jpg"}
                       alt={`${game.title} thumbnail`}
-                      className="w-32 h-auto mt-2 rounded"
+                      width={128}
+                      height={96}
+                      className="mt-2 rounded"
                     />
                     <button
                       onClick={() => removeFavoriteGame(game.id)}
@@ -144,12 +152,17 @@ export default function AccountPage() {
             ) : (
               <ul className="space-y-4">
                 {savedGames.map((game) => (
-                  <li key={game.id} className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow">
+                  <li
+                    key={game.id}
+                    className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow"
+                  >
                     <h3 className="text-xl font-semibold">{game.title}</h3>
-                    <img
+                    <Image
                       src={game.thumbnail || "/default-thumbnail.jpg"}
                       alt={`${game.title} thumbnail`}
-                      className="w-32 h-auto mt-2 rounded"
+                      width={128}
+                      height={96}
+                      className="mt-2 rounded"
                     />
                     <button
                       onClick={() => removeSavedGame(game.id)}

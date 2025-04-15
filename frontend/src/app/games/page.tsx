@@ -1,10 +1,12 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { fetchGames } from "@/utils/fetchGames";
 import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
 
+// Helper function to chunk an array into smaller arrays of a given size.
 function chunkArray<T>(arr: T[], size: number): T[][] {
   const results: T[][] = [];
   for (let i = 0; i < arr.length; i += size) {
@@ -13,6 +15,7 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
   return results;
 }
 
+// Define an interface for our game object.
 interface BasicGame {
   id: string;
   name: string;
@@ -20,6 +23,7 @@ interface BasicGame {
   description?: string;
 }
 
+// Helper to clean unwanted line break codes and other HTML entities from descriptions.
 const cleanDescription = (desc?: string) =>
   desc
     ? desc
@@ -36,12 +40,12 @@ export default function Games() {
   const [error, setError] = useState("");
   const [visibleCount, setVisibleCount] = useState(9);
 
+  // Function to fetch games based on a query.
   const getGames = async (query: string) => {
     setLoading(true);
     setError("");
     try {
-      const basicResults = (await fetchGames(query)) as any[];
-      const basicGames: BasicGame[] = basicResults
+      const basicResults: BasicGame[] = (await fetchGames(query))
         .filter((game) => game.id)
         .map((game) => ({
           id: String(game.id),
@@ -49,36 +53,35 @@ export default function Games() {
           thumbnail: game.thumbnail || "/default-game-thumbnail.jpg",
         }));
 
-      if (basicGames.length === 0) {
+      if (basicResults.length === 0) {
         setGames([]);
         setLoading(false);
         return;
       }
 
-      const allIds = basicGames.map((game) => game.id);
+      const allIds = basicResults.map((game) => game.id);
       const idChunks = chunkArray(allIds, 20);
       let detailedResults: BasicGame[] = [];
 
       for (const chunk of idChunks) {
-        const details = (await fetchDetailedGames(chunk)) as any[];
-        const mappedDetails: BasicGame[] = details.map((d) => ({
+        const details: BasicGame[] = (await fetchDetailedGames(chunk)).map((d) => ({
           id: String(d.id),
           name: d.name || "Unknown Game",
           thumbnail: d.thumbnail || "/default-game-thumbnail.jpg",
           description: cleanDescription(d.description),
         }));
-        detailedResults = detailedResults.concat(mappedDetails);
+        detailedResults = detailedResults.concat(details);
       }
 
       for (const detail of detailedResults) {
-        const idx = basicGames.findIndex((b) => b.id === detail.id);
+        const idx = basicResults.findIndex((b) => b.id === detail.id);
         if (idx !== -1) {
-          basicGames[idx].thumbnail = detail.thumbnail;
-          basicGames[idx].description = detail.description;
+          basicResults[idx].thumbnail = detail.thumbnail;
+          basicResults[idx].description = detail.description;
         }
       }
 
-      setGames(basicGames);
+      setGames(basicResults);
     } catch (error) {
       console.error("Error fetching games:", error);
       setError("Failed to load games. Please try again later.");
