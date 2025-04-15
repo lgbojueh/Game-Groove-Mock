@@ -4,7 +4,7 @@
 import React from "react";
 import { ThemeProvider } from "next-themes";
 import { SessionProvider } from "next-auth/react";
-import ClientNavbar from "./ClientNavbar";
+import Navbar from "./Navbar"; // ✅ use correct filename and export
 
 type ProvidersProps = {
   children: React.ReactNode;
@@ -14,7 +14,7 @@ export default function Providers({ children }: ProvidersProps) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system">
       <SessionProvider>
-        <ClientNavbar />
+        <Navbar />
         {children}
       </SessionProvider>
     </ThemeProvider>
