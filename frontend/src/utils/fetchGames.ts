@@ -1,4 +1,5 @@
 // src/utils/fetchGames.ts
+
 export const fetchGames = async (query: string) => {
   try {
     console.log("📡 Fetching games for query:", query);
@@ -8,30 +9,38 @@ export const fetchGames = async (query: string) => {
     if (!response.ok) {
       throw new Error(`API request failed: ${response.statusText}`);
     }
-    const xmlText = await response.text();
-    console.log("📜 API Response XML:", xmlText);
 
+    const xmlText = await response.text();
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlText, "text/xml");
     const items = Array.from(xmlDoc.getElementsByTagName("item"));
 
+    // Dummy filter value pools
+    const playersOptions = ["2", "3-4", "5+"];
+    const complexityOptions = ["easy", "medium", "hard"];
+    const playtimeOptions = ["short", "medium", "long"];
+    const genreOptions = ["strategy", "party", "family", "abstract"];
+    const ageOptions = ["kids", "teen", "adult"];
+    const themeOptions = ["historical", "fantasy", "sci-fi", "horror", "adventure"];
+    const getRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+
     const games = items.map((item) => {
       const id = item.getAttribute("id");
-      const name =
+      const title =
         item.getElementsByTagName("name")[0]?.getAttribute("value") ||
         "Unknown Game";
-      const thumbnail =
-        item.getElementsByTagName("thumbnail")[0]?.textContent || "";
-      
-      // Dummy/default filter values (adjust these as needed)
-      const complexity = "medium";  // Options: "easy", "medium", "hard"
-      const players = "3-4";          // Options: "2", "3-4", "5+"
-      const theme = "adventure";      // Options: "adventure", "fantasy", etc.
-      const playtime = "medium";      // Options: "short", "medium", "long"
-      const genre = "strategy";       // Options: "strategy", "party", "family", etc.
-      const age = "teen";             // Options: "kids", "teen", "adult"
-      
-      return { id, name, thumbnail, complexity, players, theme, playtime, genre, age };
+
+      return {
+        id,
+        title, // aligned with schema
+        thumbnail: "/default-game-thumbnail.jpg", // will be updated with detailed fetch
+        complexity: getRandom(complexityOptions),
+        players: getRandom(playersOptions),
+        playtime: getRandom(playtimeOptions),
+        genre: getRandom(genreOptions),
+        age: getRandom(ageOptions),
+        theme: getRandom(themeOptions),
+      };
     });
 
     console.log("✅ Parsed Games:", games);

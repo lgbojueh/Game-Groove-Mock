@@ -10,11 +10,13 @@ interface SmtpConfig {
 
 const getEnv = (key: string): string => {
   const value = process.env[key];
-  if (!value) throw new Error(`Missing environment variable: ${key}`);
+  if (!value) {
+    throw new Error(`Missing environment variable: ${key}`);
+  }
   return value;
 };
 
-// Create a mapping of providers
+// Provider config mapping
 const providers: Record<string, SmtpConfig> = {
   gmail: {
     host: getEnv("SMTP_GMAIL_HOST"),
@@ -42,8 +44,10 @@ const providers: Record<string, SmtpConfig> = {
   },
 };
 
-// Create transporter
-export const createEmailTransporter = (provider: keyof typeof providers = "gmail") => {
+// Main export: creates a transporter for a given provider
+export const createEmailTransporter = (
+  provider: keyof typeof providers = "gmail"
+) => {
   const config = providers[provider];
   if (!config) {
     throw new Error(`SMTP configuration for provider '${provider}' not found.`);
@@ -52,7 +56,7 @@ export const createEmailTransporter = (provider: keyof typeof providers = "gmail
   return nodemailer.createTransport({
     host: config.host,
     port: config.port,
-    secure: config.port === 465, // SSL/TLS only if port is 465
+    secure: config.port === 465, // Use SSL/TLS if port 465
     auth: {
       user: config.user,
       pass: config.pass,

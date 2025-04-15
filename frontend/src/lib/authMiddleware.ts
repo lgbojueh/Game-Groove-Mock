@@ -1,23 +1,18 @@
 // lib/authMiddleware.ts
 import { NextRequest } from 'next/server';
-import jwt from 'jsonwebtoken';
+import { getToken } from 'next-auth/jwt';
 
-export function authenticateToken(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader) {
-    return { error: new Response(JSON.stringify({ error: 'Authorization header missing' }), { status: 401 }) };
+export async function authenticateToken(request: NextRequest) {
+  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+
+  if (!token) {
+    return {
+      error: new Response(
+        JSON.stringify({ error: 'Unauthorized: Invalid or missing token' }),
+        { status: 401 }
+      ),
+    };
   }
 
-  const parts = authHeader.split(' ');
-  if (parts.length !== 2 || parts[0] !== 'Bearer') {
-    return { error: new Response(JSON.stringify({ error: 'Invalid authorization header format' }), { status: 401 }) };
-  }
-
-  const token = parts[1];
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
-    return { decoded };
-  } catch (error) {
-    return { error: new Response(JSON.stringify({ error: 'Invalid or expired token' }), { status: 401 }) };
-  }
+  return { decoded: token };
 }
