@@ -1,9 +1,11 @@
 "use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { fetchGames } from "@/utils/fetchGames";
 import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
 
+// Helper to split an array into chunks
 function chunkArray(arr: any[], size: number) {
   const results = [];
   for (let i = 0; i < arr.length; i += size) {
@@ -15,24 +17,18 @@ function chunkArray(arr: any[], size: number) {
 export default function SearchForm() {
   const router = useRouter();
 
-  // Filters state
   const [players, setPlayers] = useState("any");
   const [complexity, setComplexity] = useState("any");
   const [playtime, setPlaytime] = useState("any");
   const [genre, setGenre] = useState("any");
   const [age, setAge] = useState("any");
   const [theme, setTheme] = useState("any");
-
-  // Search query state
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const effectiveQuery = searchQuery.trim() || "board game";
 
-    // Use a default search term if the query is empty.
-    const effectiveQuery = searchQuery.trim() ? searchQuery.trim() : "board game";
-
-    // Build URL query parameters for filters.
     const params = new URLSearchParams();
     params.set("query", effectiveQuery);
     params.set("players", players);
@@ -42,27 +38,25 @@ export default function SearchForm() {
     params.set("age", age);
     params.set("theme", theme);
 
-    // 1. Fetch basic results (IDs and minimal info)
-    const basicResults = await fetchGames(effectiveQuery);
-    console.log("Basic search results:", basicResults);
-    // Extract IDs from basic results
-    const allIds = basicResults.map((game) => game.id);
+    try {
+      const basicResults = await fetchGames(effectiveQuery);
+      const allIds = basicResults.map((game: any) => game.id).filter(Boolean);
+      const idChunks = chunkArray(allIds, 20);
 
-    // 2. Chunk IDs into groups of 20
-    const idChunks = chunkArray(allIds, 20);
+      let detailedResults: any[] = [];
+      for (const chunk of idChunks) {
+        const details = await fetchDetailedGames(chunk);
+        detailedResults = detailedResults.concat(details);
+      }
 
-    let detailedResults: any[] = [];
-    // 3. For each chunk, fetch detailed game info
-    for (const chunk of idChunks) {
-      const details = await fetchDetailedGames(chunk);
-      detailedResults = detailedResults.concat(details);
+      // Optional: clean up data or apply transformations here
+
+      localStorage.setItem("searchResults", JSON.stringify(detailedResults));
+      router.push(`/results?${params.toString()}`);
+    } catch (err) {
+      console.error("Search error:", err);
+      alert("Failed to perform search. Please try again.");
     }
-
-    // Store detailed results in localStorage
-    localStorage.setItem("searchResults", JSON.stringify(detailedResults));
-
-    // Navigate to the results page with query parameters.
-    router.push(`/results?${params.toString()}`);
   };
 
   return (
@@ -75,118 +69,14 @@ export default function SearchForm() {
         className="w-full max-w-3xl bg-red-600 dark:bg-red-400 p-6 rounded-lg shadow-md"
       >
         <div className="grid grid-rows-1 md:grid-rows-2 gap-4">
-          {/* Number of Players */}
-          <div>
-            <label htmlFor="players" className="block font-semibold mb-1">
-              Number of Players
-            </label>
-            <select
-              id="players"
-              value={players}
-              onChange={(e) => setPlayers(e.target.value)}
-              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white"
-            >
-              <option value="any">Any</option>
-              <option value="2">2 Players</option>
-              <option value="3-4">3-4 Players</option>
-              <option value="5+">5+ Players</option>
-            </select>
-          </div>
-
-          {/* Complexity */}
-          <div>
-            <label htmlFor="complexity" className="block font-semibold mb-1">
-              Complexity
-            </label>
-            <select
-              id="complexity"
-              value={complexity}
-              onChange={(e) => setComplexity(e.target.value)}
-              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white"
-            >
-              <option value="any">Any</option>
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
-            </select>
-          </div>
-
-          {/* Play Time */}
-          <div>
-            <label htmlFor="playtime" className="block font-semibold mb-1">
-              Play Time
-            </label>
-            <select
-              id="playtime"
-              value={playtime}
-              onChange={(e) => setPlaytime(e.target.value)}
-              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white"
-            >
-              <option value="any">Any</option>
-              <option value="short">Short (30 min or less)</option>
-              <option value="medium">Medium (30-60 min)</option>
-              <option value="long">Long (60+ min)</option>
-            </select>
-          </div>
-
-          {/* Genre */}
-          <div>
-            <label htmlFor="genre" className="block font-semibold mb-1">
-              Genre
-            </label>
-            <select
-              id="genre"
-              value={genre}
-              onChange={(e) => setGenre(e.target.value)}
-              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white"
-            >
-              <option value="any">Any</option>
-              <option value="strategy">Strategy</option>
-              <option value="party">Party</option>
-              <option value="family">Family</option>
-              <option value="adventure">Adventure</option>
-            </select>
-          </div>
-
-          {/* Age Rating */}
-          <div>
-            <label htmlFor="age" className="block font-semibold mb-1">
-              Age Rating
-            </label>
-            <select
-              id="age"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white"
-            >
-              <option value="any">Any</option>
-              <option value="kids">Kids (5+)</option>
-              <option value="teen">Teen (13+)</option>
-              <option value="adult">Adult (18+)</option>
-            </select>
-          </div>
-
-          {/* Theme */}
-          <div>
-            <label htmlFor="theme" className="block font-semibold mb-1">
-              Theme
-            </label>
-            <select
-              id="theme"
-              value={theme}
-              onChange={(e) => setTheme(e.target.value)}
-              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white"
-            >
-              <option value="any">Any</option>
-              <option value="fantasy">Fantasy</option>
-              <option value="sci-fi">Sci-Fi</option>
-              <option value="horror">Horror</option>
-              <option value="historical">Historical</option>
-            </select>
-          </div>
+          <SelectField id="players" label="Number of Players" value={players} setValue={setPlayers} options={["any", "2", "3-4", "5+"]} />
+          <SelectField id="complexity" label="Complexity" value={complexity} setValue={setComplexity} options={["any", "easy", "medium", "hard"]} />
+          <SelectField id="playtime" label="Play Time" value={playtime} setValue={setPlaytime} options={["any", "short", "medium", "long"]} />
+          <SelectField id="genre" label="Genre" value={genre} setValue={setGenre} options={["any", "strategy", "party", "family", "adventure"]} />
+          <SelectField id="age" label="Age Rating" value={age} setValue={setAge} options={["any", "kids", "teen", "adult"]} />
+          <SelectField id="theme" label="Theme" value={theme} setValue={setTheme} options={["any", "fantasy", "sci-fi", "horror", "historical"]} />
         </div>
 
-        {/* Search Bar */}
         <div className="w-full max-w-md mt-6">
           <input
             type="text"
@@ -198,7 +88,6 @@ export default function SearchForm() {
           />
         </div>
 
-        {/* Search Button */}
         <button
           type="submit"
           className="mt-4 px-6 py-3 text-lg font-semibold rounded-lg transition bg-blue-400 hover:bg-gray-500 dark:bg-blue-700 dark:hover:bg-blue-600 text-[var(--foreground)]"
@@ -207,5 +96,39 @@ export default function SearchForm() {
         </button>
       </form>
     </main>
+  );
+}
+
+function SelectField({
+  id,
+  label,
+  value,
+  setValue,
+  options,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  setValue: (val: string) => void;
+  options: string[];
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className="block font-semibold mb-1">
+        {label}
+      </label>
+      <select
+        id={id}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white"
+      >
+        {options.map((opt) => (
+          <option key={opt} value={opt}>
+            {opt[0].toUpperCase() + opt.slice(1)}
+          </option>
+        ))}
+      </select>
+    </div>
   );
 }

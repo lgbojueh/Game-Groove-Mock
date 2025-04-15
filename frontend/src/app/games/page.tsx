@@ -5,7 +5,6 @@ import Image from "next/image";
 import { fetchGames } from "@/utils/fetchGames";
 import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
 
-// Helper function to chunk an array into smaller arrays of a given size.
 function chunkArray<T>(arr: T[], size: number): T[][] {
   const results: T[][] = [];
   for (let i = 0; i < arr.length; i += size) {
@@ -14,7 +13,6 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
   return results;
 }
 
-// Define an interface for our game object.
 interface BasicGame {
   id: string;
   name: string;
@@ -22,14 +20,13 @@ interface BasicGame {
   description?: string;
 }
 
-// Helper to clean unwanted line break codes and other HTML entities from descriptions.
 const cleanDescription = (desc?: string) =>
   desc
     ? desc
-        .replace(/&#10;/g, " ") // Remove line breaks
-        .replace(/&amp;/g, "&") // Decode ampersands
-        .replace(/&quot;/g, '"') // Decode quotes
-        .replace(/&#39;/g, "'") // Decode single quotes
+        .replace(/&#10;/g, " ")
+        .replace(/&amp;/g, "&")
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
     : "";
 
 export default function Games() {
@@ -39,12 +36,10 @@ export default function Games() {
   const [error, setError] = useState("");
   const [visibleCount, setVisibleCount] = useState(9);
 
-  // Function to fetch games based on a query.
   const getGames = async (query: string) => {
     setLoading(true);
     setError("");
     try {
-      // 1. Fetch basic results.
       const basicResults = (await fetchGames(query)) as any[];
       const basicGames: BasicGame[] = basicResults
         .filter((game) => game.id)
@@ -60,7 +55,6 @@ export default function Games() {
         return;
       }
 
-      // 2. Fetch detailed data in chunks.
       const allIds = basicGames.map((game) => game.id);
       const idChunks = chunkArray(allIds, 20);
       let detailedResults: BasicGame[] = [];
@@ -76,7 +70,6 @@ export default function Games() {
         detailedResults = detailedResults.concat(mappedDetails);
       }
 
-      // 3. Merge detailed data into basic games.
       for (const detail of detailedResults) {
         const idx = basicGames.findIndex((b) => b.id === detail.id);
         if (idx !== -1) {
@@ -94,20 +87,17 @@ export default function Games() {
     setLoading(false);
   };
 
-  // On mount, fetch default games.
   useEffect(() => {
     getGames("board game");
     setVisibleCount(9);
   }, []);
 
-  // Handle search submission.
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     await getGames(searchQuery.trim() === "" ? "board game" : searchQuery);
     setVisibleCount(9);
   };
 
-  // Load more games.
   const loadMore = () => {
     setVisibleCount((prev) => prev + 9);
   };

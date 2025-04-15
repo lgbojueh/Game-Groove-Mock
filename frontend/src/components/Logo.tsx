@@ -12,10 +12,9 @@ export default function Logo() {
     setMounted(true);
   }, []);
 
-  // Avoid rendering theme-dependent content until mounted
+  // Prevent mismatch between SSR and client
   if (!mounted) return null;
 
-  // Determine the current theme: use the resolvedTheme if available.
   const currentTheme = theme === "system" ? resolvedTheme : theme;
   const logoSrc =
     currentTheme === "dark"
@@ -29,6 +28,7 @@ export default function Logo() {
       width={30}
       height={30}
       priority
+      className="object-contain"
     />
   );
 }

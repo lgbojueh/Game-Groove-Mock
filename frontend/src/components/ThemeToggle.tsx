@@ -7,20 +7,23 @@ export default function ThemeToggle() {
   const { theme, setTheme, systemTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
+  // Ensure component is mounted before accessing theme to prevent hydration issues
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  if (!mounted) return null; // Prevent hydration mismatch error
+  if (!mounted) return null;
 
   const currentTheme = theme === "system" ? systemTheme : theme;
+  const isDark = currentTheme === "dark";
 
   return (
     <button
-      className="p-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700 transition"
-      onClick={() => setTheme(currentTheme === "dark" ? "light" : "dark")}
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      className="p-2 rounded-lg text-sm font-medium bg-gray-200 dark:bg-gray-800 text-black dark:text-white hover:bg-gray-300 dark:hover:bg-gray-700 transition"
+      aria-label="Toggle Theme"
     >
-      {currentTheme === "dark" ? "🌙 Dark Mode" : "☀️ Light Mode"}
+      {isDark ? "🌙 Dark Mode" : "☀️ Light Mode"}
     </button>
   );
 }

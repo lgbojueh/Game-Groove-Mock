@@ -1,22 +1,20 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { fetchGameDetails } from "@/utils/fetchGameDetails";
-import ThemeToggle from "@/components/ThemeToggle";
 
-// Helper to remove unwanted line-break entities from a description.
 const cleanDescription = (desc?: string) =>
   desc ? desc.replace(/&#10;&#10;/g, " ") : "";
 
 export default function GameDetailsPage() {
   const { id } = useParams();
+  const { data: session } = useSession();
   const [game, setGame] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isFavorite, setIsFavorite] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
-
-
 
   useEffect(() => {
     async function getGameDetails() {
@@ -33,49 +31,59 @@ export default function GameDetailsPage() {
     getGameDetails();
   }, [id]);
 
-  useEffect(() => {
-    if (game) {
-      const storedFavorites = localStorage.getItem("favorites");
-      let favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
-      setIsFavorite(favorites.some((fav: any) => fav.id === game.id));
+  const userId = session?.user?.id;
 
-      const storedSaved = localStorage.getItem("savedGames");
-      let savedGames = storedSaved ? JSON.parse(storedSaved) : [];
-      setIsSaved(savedGames.some((saved: any) => saved.id === game.id));
-    }
-  }, [game]);
+  const toggleFavorite = async () => {
+    if (!userId || !game) return alert("You must be logged in.");
 
-  const toggleFavorite = () => {
-    const storedFavorites = localStorage.getItem("favorites");
-    let favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
-    if (favorites.some((fav: any) => fav.id === game.id)) {
-      favorites = favorites.filter((fav: any) => fav.id !== game.id);
-      localStorage.setItem("favorites", JSON.stringify(favorites));
-      setIsFavorite(false);
-      alert("Removed from favorites!");
-    } else {
-      favorites.push(game);
-      localStorage.setItem("favorites", JSON.stringify(favorites));
-      setIsFavorite(true);
-      alert("Added to favorites!");
+    try {
+      const res = await fetch(`/api/auth/favoriteService`, {
+        method: isFavorite ? "DELETE" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          isFavorite
+            ? { id: game.id }
+            : {
+                userId,
+                name: game.name,
+                thumbnail: game.thumbnail,
+              }
+        ),
+      });
+
+      if (!res.ok) throw new Error("Favorite request failed");
+      setIsFavorite(!isFavorite);
+      alert(isFavorite ? "Removed from favorites!" : "Added to favorites!");
+    } catch (err) {
+      console.error(err);
+      alert("Error updating favorites.");
     }
   };
 
+  const toggleSaved = async () => {
+    if (!userId || !game) return alert("You must be logged in.");
 
+    try {
+      const res = await fetch(`/api/auth/savedGames`, {
+        method: isSaved ? "DELETE" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          isSaved
+            ? { id: game.id }
+            : {
+                userId,
+                title: game.name,
+                thumbnail: game.thumbnail,
+              }
+        ),
+      });
 
-  const toggleSaved = () => {
-    const storedSaved = localStorage.getItem("savedGames");
-    let savedGames = storedSaved ? JSON.parse(storedSaved) : [];
-    if (savedGames.some((saved: any) => saved.id === game.id)) {
-      savedGames = savedGames.filter((saved: any) => saved.id !== game.id);
-      localStorage.setItem("savedGames", JSON.stringify(savedGames));
-      setIsSaved(false);
-      alert("Game unsaved!");
-    } else {
-      savedGames.push(game);
-      localStorage.setItem("savedGames", JSON.stringify(savedGames));
-      setIsSaved(true);
-      alert("Game saved!");
+      if (!res.ok) throw new Error("Save request failed");
+      setIsSaved(!isSaved);
+      alert(isSaved ? "Game unsaved!" : "Game saved!");
+    } catch (err) {
+      console.error(err);
+      alert("Error updating saved games.");
     }
   };
 
@@ -107,13 +115,13 @@ export default function GameDetailsPage() {
         <div className="flex space-x-4 mb-8">
           <button
             onClick={toggleFavorite}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
           >
             {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
           </button>
           <button
             onClick={toggleSaved}
-            className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+            className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition"
           >
             {isSaved ? "Unsave Game" : "Save Game"}
           </button>

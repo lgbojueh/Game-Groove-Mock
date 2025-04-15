@@ -5,11 +5,9 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
-// Helper to clean unwanted line break codes from descriptions.
 const cleanDescription = (desc?: string) =>
   desc ? desc.replace(/&#10;/g, " ") : "";
 
-// Define an interface for your detailed game objects.
 interface BasicGame {
   id: string | null;
   name: string;
@@ -34,7 +32,6 @@ export default function ResultsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Read filter query parameters.
   const query = searchParams.get("query") || "";
   const players = searchParams.get("players") || "any";
   const complexity = searchParams.get("complexity") || "any";
@@ -42,8 +39,6 @@ export default function ResultsPage() {
   const genre = searchParams.get("genre") || "any";
   const age = searchParams.get("age") || "any";
   const theme = searchParams.get("theme") || "any";
-
-  // Additional filters (if you add these in your UI)
   const yearMin = searchParams.get("yearMin");
   const yearMax = searchParams.get("yearMax");
   const minAge = searchParams.get("minAge");
@@ -56,28 +51,9 @@ export default function ResultsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Retrieve detailed game objects from localStorage.
     const stored = localStorage.getItem("searchResults");
     let results: BasicGame[] = stored ? JSON.parse(stored) : [];
 
-    console.log("Stored searchResults:", results);
-    console.log("Current filters:", {
-      players,
-      complexity,
-      playtime,
-      genre,
-      age,
-      theme,
-      yearMin,
-      yearMax,
-      minAge,
-      ratingMin,
-      ratingMax,
-      weightMin,
-      weightMax,
-    });
-
-    // Apply additional filters if provided.
     if (yearMin) {
       results = results.filter(
         (game) =>
@@ -127,7 +103,6 @@ export default function ResultsPage() {
       );
     }
 
-    // Apply the original filters.
     if (players !== "any") {
       results = results.filter((game) => game.players === players);
     }
@@ -147,7 +122,6 @@ export default function ResultsPage() {
       results = results.filter((game) => game.theme === theme);
     }
 
-    console.log("Filtered results:", results);
     setGames(Array.isArray(results) ? results : []);
     setLoading(false);
   }, [
