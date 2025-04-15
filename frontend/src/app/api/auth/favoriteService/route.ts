@@ -1,4 +1,4 @@
-// src/app/api/favoriteService/route.ts
+// src/app/api/auth/favoriteService/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
@@ -36,12 +36,12 @@ export async function POST(req: Request) {
     if (userIdParam == null || !name) {
       return NextResponse.json({ error: 'User ID and name are required' }, { status: 400 });
     }
-    
+
     const userId = Number(userIdParam);
     if (isNaN(userId)) {
       return NextResponse.json({ error: 'Invalid User ID' }, { status: 400 });
     }
-    
+
     const newFavorite = await prisma.favorite.create({
       data: {
         name,
