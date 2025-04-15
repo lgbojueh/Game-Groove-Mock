@@ -12,7 +12,6 @@ export const fetchDetailedGames = async (ids: string[]) => {
     const xmlDoc = parser.parseFromString(xmlText, "text/xml");
     const items = Array.from(xmlDoc.getElementsByTagName("item"));
 
-    // Define arrays of possible values for random assignment.
     const playersOptions = ["2", "3-4", "5+"];
     const complexityOptions = ["easy", "medium", "hard"];
     const playtimeOptions = ["short", "medium", "long"];
@@ -22,16 +21,12 @@ export const fetchDetailedGames = async (ids: string[]) => {
 
     const games = items.map((item) => {
       const id = item.getAttribute("id") || "";
-      const name =
-        item.getElementsByTagName("name")[0]?.getAttribute("value") ||
-        "Unknown Game";
-      const thumbnail =
-        item.getElementsByTagName("thumbnail")[0]?.textContent || "";
-      const description =
-        item.getElementsByTagName("description")[0]?.textContent ||
-        "No description available.";
+      const name = Array.from(item.getElementsByTagName("name"))
+        .find((n) => n.getAttribute("type") === "primary")
+        ?.getAttribute("value") || "Unknown Game";
+      const thumbnail = item.getElementsByTagName("thumbnail")[0]?.textContent || "";
+      const description = item.getElementsByTagName("description")[0]?.textContent || "No description available.";
 
-      // Randomly assign values so that not all games have the same dummy filters.
       const players = playersOptions[Math.floor(Math.random() * playersOptions.length)];
       const complexity = complexityOptions[Math.floor(Math.random() * complexityOptions.length)];
       const playtime = playtimeOptions[Math.floor(Math.random() * playtimeOptions.length)];
