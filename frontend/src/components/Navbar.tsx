@@ -90,16 +90,30 @@ export default function Navbar() {
          Home
        </Link>
        <Link href="/games" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">
-         Games
+         All Games
        </Link>
        <Link href="/featured" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">
          Featured
        </Link>
-       <Link href="/blog" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">
+       {/* <Link href="/blog" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">
          Blog
        </Link>
        <Link href="/about" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">
          About
+       </Link> */}
+       <Link href="/search" className="text-lg font-semibold text-[var(--foreground)] hover:text-gray-400">
+       {/* <input
+            type="text"
+            placeholder="Search for a game..."
+            className="w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-700 text-black dark:text-white border border-gray-300 dark:border-gray-600"
+            aria-label="Search Games"
+          /> */}
+         {
+          <><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=search" /><span className="material-symbols-outlined">
+             search
+           </span></>
+         }
+         
        </Link>
      </div>
 

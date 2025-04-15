@@ -16,6 +16,11 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
   return results;
 }
 
+const shortenDescription = (desc?: string) => {
+  return desc?.substring(0,250) + "...";
+}
+
+
 // Define an interface for our game object.
 interface BasicGame {
   id: string; // We assume a valid game always has an id (converted to string)
@@ -162,7 +167,7 @@ export default function Games() {
                     )}
                     <h2 className="font-semibold text-lg mb-1">{game.name}</h2>
                     <p className="text-sm text-gray-600 dark:text-gray-300">
-                      {cleanDescription(game.description) ||
+                      {shortenDescription(cleanDescription(game.description)) ||
                         "A fun and engaging game that you'll enjoy with friends and family."}
                     </p>
                   </div>
