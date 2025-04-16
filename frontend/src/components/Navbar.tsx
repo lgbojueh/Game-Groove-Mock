@@ -155,12 +155,6 @@ export default function Navbar() {
                    Saved Games
                  </button>
                  <button
-                    onClick={() => router.push("/account/wishlist")}
-                    className={styles.AccountInfo}
-                  >
-                    Wishlist
-                 </button>
-                 <button
                    onClick={handleLogout}
                    className={styles.Logout}
                  >

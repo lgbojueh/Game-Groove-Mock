@@ -15,7 +15,6 @@ export default function GameDetailsPage() {
   const [error, setError] = useState("");
   const [isFavorite, setIsFavorite] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
-  const [isWishlist, setIsWishlist] = useState(false);
 
 
 
@@ -43,10 +42,6 @@ export default function GameDetailsPage() {
       const storedSaved = localStorage.getItem("savedGames");
       let savedGames = storedSaved ? JSON.parse(storedSaved) : [];
       setIsSaved(savedGames.some((saved: any) => saved.id === game.id));
-
-      const storedWishlist = localStorage.getItem("wishlistGames");
-      let wishlistGames = storedWishlist ? JSON.parse(storedWishlist) : [];
-      setIsWishlist(wishlistGames.some((wishlistGame: any) => wishlistGame.id === game.id));
     }
   }, [game]);
 
@@ -81,22 +76,6 @@ export default function GameDetailsPage() {
       localStorage.setItem("savedGames", JSON.stringify(savedGames));
       setIsSaved(true);
       alert("Game saved!");
-    }
-  };
-
-  const toggleWishlist = () => {
-    const storedWishlist  = localStorage.getItem("wishlistGames");
-    let wishlistGames = storedWishlist ? JSON.parse(storedWishlist) : [];
-    if (wishlistGames.some((wishlistGame: any) => wishlistGame.id === game.id)) {
-      wishlistGames = wishlistGames.filter((wishlistGame: any) => wishlistGame.id !== game.id);
-      localStorage.setItem("wishlistGames", JSON.stringify(wishlistGames));
-      setIsWishlist(false);
-      alert("Game removed from wishlist!");
-    } else {
-      wishlistGames.push(game);
-      localStorage.setItem("wishlistGames", JSON.stringify(wishlistGames));
-      setIsWishlist(true);
-      alert("Game added to wishlist!");
     }
   };
 
@@ -137,12 +116,6 @@ export default function GameDetailsPage() {
             className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition"
           >
             {isSaved ? "Unsave Game" : "Save Game"}
-          </button>
-          <button
-            onClick={toggleWishlist}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
-            >
-            {isWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
           </button>
         </div>
       </main>
