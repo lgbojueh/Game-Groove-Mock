@@ -1,11 +1,12 @@
+// src/app/featured/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { fetchHotGames } from "@/utils/fetchHotGames";
 import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
+import { cleanDescription, shortenDescription } from "@/utils/cleanup";
 import Link from "next/link";
 import Image from "next/image";
-import he from "he";
 
 // Helper to chunk an array into groups of a given size.
 function chunkArray<T>(arr: T[], size: number): T[][] {
@@ -18,7 +19,7 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
 
 // Interface for a basic game object.
 interface BasicGame {
-  id: string;
+  id: string | null;
   name: string;
   thumbnail: string;
   description?: string;
@@ -27,26 +28,16 @@ interface BasicGame {
   theme?: string;
 }
 
-// Clean up encoded characters and line breaks.
-const cleanDescription = (desc?: string) => {
-  return desc ? he.decode(desc.replace(/&#10;/g, " ")) : "";
-};
-
-// Shorten to 250 characters
-const shortenDescription = (desc?: string) => {
-  if (!desc) return "";
-  return desc.length > 250 ? desc.substring(0, 250) + "..." : desc;
-};
-
 export default function Featured() {
   const [popularGames, setPopularGames] = useState<BasicGame[]>([]);
   const [loading, setLoading] = useState(false);
 
   const getPopularGames = async () => {
     setLoading(true);
-    const basicGames = await fetchHotGames();
-    const filteredGames = basicGames.filter((game): game is BasicGame => !!game.id);
-    const allIds = filteredGames.map((game) => game.id);
+    const basicGames = (await fetchHotGames()) as BasicGame[];
+    const basicGamesTyped = basicGames.filter((game) => game.id !== null);
+
+    const allIds = basicGamesTyped.map((game) => game.id!);
     const idChunks = chunkArray(allIds, 20);
 
     let detailedResults: BasicGame[] = [];
@@ -56,17 +47,14 @@ export default function Featured() {
     }
 
     for (const detail of detailedResults) {
-      const index = filteredGames.findIndex((g) => g.id === detail.id);
-      if (index !== -1) {
-        filteredGames[index] = {
-          ...filteredGames[index],
-          thumbnail: detail.thumbnail,
-          description: detail.description,
-        };
+      const idx = basicGamesTyped.findIndex((b) => b.id === detail.id);
+      if (idx !== -1) {
+        basicGamesTyped[idx].thumbnail = detail.thumbnail;
+        basicGamesTyped[idx].description = detail.description;
       }
     }
 
-    setPopularGames(filteredGames);
+    setPopularGames(basicGamesTyped);
     setLoading(false);
   };
 
@@ -86,7 +74,7 @@ export default function Featured() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {popularGames.map((game) => (
                 <Link
-                  key={game.id}
+                  key={game.id ?? ""}
                   href={`/game/${game.id}`}
                   className="block p-4 bg-gray-400 dark:bg-gray-700 rounded shadow hover:shadow-xl transition"
                 >

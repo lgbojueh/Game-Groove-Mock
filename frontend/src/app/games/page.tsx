@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { fetchGames } from "@/utils/fetchGames";
 import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
-import he from "he"; // ✅ HTML decoder
+import { cleanDescription, shortenDescription } from "@/utils/cleanup";
 
 // Helper function to chunk an array into smaller arrays of a given size.
 function chunkArray<T>(arr: T[], size: number): T[][] {
@@ -24,16 +24,6 @@ interface BasicGame {
   description?: string;
 }
 
-// ✅ Helper to decode and clean up game descriptions
-const cleanDescription = (desc?: string) => {
-  return desc ? he.decode(desc.replace(/&#10;/g, " ")) : "";
-};
-
-// ✅ Shorten long descriptions
-const shortenDescription = (desc?: string) => {
-  return desc ? desc.substring(0, 250) + "..." : "";
-};
-
 export default function Games() {
   const [games, setGames] = useState<BasicGame[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -41,6 +31,7 @@ export default function Games() {
   const [error, setError] = useState("");
   const [visibleCount, setVisibleCount] = useState(9);
 
+  // Function to fetch games based on a query.
   const getGames = async (query: string) => {
     setLoading(true);
     setError("");
@@ -140,8 +131,7 @@ export default function Games() {
                     />
                     <h2 className="font-semibold text-lg mb-1">{game.name}</h2>
                     <p className="text-sm text-gray-600 dark:text-gray-300">
-                      {shortenDescription(game.description) ||
-                        "A fun and engaging game that you'll enjoy with friends and family."}
+                      {shortenDescription(game.description)}
                     </p>
                   </div>
                 </Link>
