@@ -1,89 +1,52 @@
-/* Typography & Global Settings */
-body {
-    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
-    line-height: 1.6;
-    color: #1a1a1a;
-    background-color: #f9f9f9;
-  }
-  
-  /* About Page */
-  .about-title-text {
-    font-size: 2.5rem;
-    font-weight: 700;
-    text-decoration: underline;
-    color: #333;
-    margin-bottom: 1rem;
-  }
-  
-  .about-text {
-    font-size: 1.125rem;
-    color: #444;
-    max-width: 800px;
-    margin: auto;
-  }
-  
-  /* Search Section */
-  .search-for-board-games {
-    background-color: #dc143c; /* Crimson */
-    color: #fff;
-    padding: 1rem 2rem;
-    border-radius: 8px;
+.about-text {
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    color: crimson;
+    font-size: large;
+}
+
+.search-for-board-games {
+    background-color: crimson;
+    block-size: 0;
+    font-style: oblique;
+}
+
+.signingup-and-logging-in {
+    color: blue;
+    font-weight: bolder;
+    font-feature-settings: "salt";
+}
+
+.sign-up {
+    color: blue;
+    font-size: 2rem; 
     font-style: italic;
-    text-align: center;
-    font-size: 1.25rem;
-  }
-  
-  /* Authentication Areas */
-  .signingup-and-logging-in {
-    color: #1e90ff;
+    text-decoration-color: blue;
+}
+
+.about-title-text {
+    font-size: 3rem;
     font-weight: bold;
-    font-variant: small-caps;
-    letter-spacing: 0.5px;
-  }
-  
-  .sign-up {
-    color: #1e90ff;
-    font-size: 1.75rem;
-    font-style: italic;
     text-decoration: underline;
-    text-align: center;
-    margin-bottom: 1rem;
-  }
-  
-  /* Navigation Bar */
-  .navi {
-    background-color: #4b0082; /* Indigo/Violet */
-    padding: 1rem;
-    color: #fff;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: 600;
-    word-spacing: 0.5rem;
-  }
-  
-  /* Account Dropdown Menu */
-  .account-info {
-    color: #1e40af; /* Indigo */
+}
+
+.navi {
+    background-color: darkviolet;
+    white-space: inherit;
+    text-indent: 0;
+    word-spacing: 8px;
+}
+
+.account-info {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    color: blue;
     text-align: left;
-    padding: 0.5rem 1rem;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .account-info:hover {
-    background-color: #dbeafe; /* Light blue hover */
-  }
-  
-  /* Login/Signup Buttons */
-  .authentication-commands {
+}
+
+.authentication-commands {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    color: hotpink;
+    text-align: left;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    font-size: 1rem;
-    font-weight: 500;
-    color: #ff1493; /* Hot pink */
-    align-items: flex-start;
-  }
-  
+    gap: 9px;
+}
