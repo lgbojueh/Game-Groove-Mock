@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { fetchGameDetails } from "@/utils/fetchGameDetails";
+import { cleanDescription, shortenDescription } from "@/utils/cleanup";
 import Image from "next/image";
 
-// Game type interface
 interface Game {
   id: string;
   name: string;
@@ -18,10 +18,6 @@ interface Game {
   age: string;
   theme: string;
 }
-
-// Helper to clean unwanted line-break entities from a description.
-const cleanDescription = (desc?: string) =>
-  desc ? desc.replace(/&#10;&#10;/g, " ") : "";
 
 export default function GameDetailsPage() {
   const { id } = useParams();
@@ -123,7 +119,10 @@ export default function GameDetailsPage() {
           </div>
         )}
         <div className="mb-4">
-          <p>{cleanDescription(game.description) || "No description available."}</p>
+          <p>
+            {shortenDescription(cleanDescription(game.description)) ||
+              "No description available."}
+          </p>
         </div>
         <div className="flex space-x-4 mb-8">
           <button

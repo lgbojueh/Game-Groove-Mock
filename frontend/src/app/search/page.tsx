@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { fetchGames } from "@/utils/fetchGames";
 import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
+import { cleanDescription, shortenDescription } from "@/utils/cleanup";
 
 function chunkArray<T>(arr: T[], size: number): T[][] {
   const results: T[][] = [];
@@ -17,13 +18,13 @@ interface BasicGame {
   id: string;
   name: string;
   thumbnail: string;
-  // Include filters to match the rest of your system
   players: string;
   complexity: string;
   playtime: string;
   genre: string;
   age: string;
   theme: string;
+  description?: string;
 }
 
 export default function SearchForm() {
@@ -61,7 +62,11 @@ export default function SearchForm() {
     let detailedResults: BasicGame[] = [];
     for (const chunk of idChunks) {
       const details = await fetchDetailedGames(chunk);
-      detailedResults = detailedResults.concat(details);
+      const cleaned = details.map((game) => ({
+        ...game,
+        description: shortenDescription(cleanDescription(game.description)),
+      }));
+      detailedResults = detailedResults.concat(cleaned);
     }
 
     localStorage.setItem("searchResults", JSON.stringify(detailedResults));

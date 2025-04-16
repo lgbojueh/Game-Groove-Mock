@@ -1,13 +1,11 @@
+// src/app/results/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-
-// Helper to clean unwanted line break codes from descriptions.
-const cleanDescription = (desc?: string) =>
-  desc ? desc.replace(/&#10;/g, " ") : "";
+import { cleanDescription, shortenDescription } from "@/utils/cleanup";
 
 interface BasicGame {
   id: string | null;
@@ -123,7 +121,12 @@ export default function ResultsPage() {
       results = results.filter((game) => game.theme === theme);
     }
 
-    setGames(Array.isArray(results) ? results : []);
+    const cleanedResults = results.map((game) => ({
+      ...game,
+      description: shortenDescription(cleanDescription(game.description)),
+    }));
+
+    setGames(cleanedResults);
     setLoading(false);
   }, [
     players,
@@ -179,7 +182,7 @@ export default function ResultsPage() {
                     )}
                     {game.description && (
                       <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
-                        {cleanDescription(game.description)}
+                        {game.description}
                       </p>
                     )}
                   </Link>
