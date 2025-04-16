@@ -1,10 +1,11 @@
-
 "use client";
+
 import { useState, useEffect } from "react";
 import { fetchHotGames } from "@/utils/fetchHotGames";
 import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
 import Link from "next/link";
 import Image from "next/image";
+import he from "he";
 
 // Helper to chunk an array into groups of a given size.
 function chunkArray<T>(arr: T[], size: number): T[][] {
@@ -17,7 +18,7 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
 
 // Interface for a basic game object.
 interface BasicGame {
-  id: string | null;
+  id: string;
   name: string;
   thumbnail: string;
   description?: string;
@@ -26,9 +27,16 @@ interface BasicGame {
   theme?: string;
 }
 
-// Helper to clean unwanted line break codes from descriptions.
-const cleanDescription = (desc?: string) =>
-  desc ? desc.replace(/&#10;/g, " ") : "";
+// Clean up encoded characters and line breaks.
+const cleanDescription = (desc?: string) => {
+  return desc ? he.decode(desc.replace(/&#10;/g, " ")) : "";
+};
+
+// Shorten to 250 characters
+const shortenDescription = (desc?: string) => {
+  if (!desc) return "";
+  return desc.length > 250 ? desc.substring(0, 250) + "..." : desc;
+};
 
 export default function Featured() {
   const [popularGames, setPopularGames] = useState<BasicGame[]>([]);
@@ -36,30 +44,29 @@ export default function Featured() {
 
   const getPopularGames = async () => {
     setLoading(true);
-    // 1. Fetch the basic list of hot games.
-    const basicGames = (await fetchHotGames()) as BasicGame[];
-    const basicGamesTyped = basicGames.filter((game) => game.id !== null);
-
-    // 2. Extract IDs and chunk them.
-    const allIds = basicGamesTyped.map((game) => game.id!);
+    const basicGames = await fetchHotGames();
+    const filteredGames = basicGames.filter((game): game is BasicGame => !!game.id);
+    const allIds = filteredGames.map((game) => game.id);
     const idChunks = chunkArray(allIds, 20);
 
     let detailedResults: BasicGame[] = [];
-    // 3. For each chunk, fetch detailed data.
     for (const chunk of idChunks) {
       const details = await fetchDetailedGames(chunk);
       detailedResults = detailedResults.concat(details);
     }
 
-    // 4. Merge detailed data into basic game objects.
     for (const detail of detailedResults) {
-      const idx = basicGamesTyped.findIndex((b) => b.id === detail.id);
-      if (idx !== -1) {
-        basicGamesTyped[idx].thumbnail = detail.thumbnail;
-        basicGamesTyped[idx].description = detail.description;
+      const index = filteredGames.findIndex((g) => g.id === detail.id);
+      if (index !== -1) {
+        filteredGames[index] = {
+          ...filteredGames[index],
+          thumbnail: detail.thumbnail,
+          description: detail.description,
+        };
       }
     }
-    setPopularGames(basicGamesTyped);
+
+    setPopularGames(filteredGames);
     setLoading(false);
   };
 
@@ -78,7 +85,11 @@ export default function Featured() {
           <div className="overflow-y-auto max-h-[70vh]">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {popularGames.map((game) => (
-                <Link key={game.id ?? ""} href={`/game/${game.id}`} className="block p-4 bg-gray-400 dark:bg-gray-700 rounded shadow hover:shadow-xl transition">
+                <Link
+                  key={game.id}
+                  href={`/game/${game.id}`}
+                  className="block p-4 bg-gray-400 dark:bg-gray-700 rounded shadow hover:shadow-xl transition"
+                >
                   <h3 className="font-semibold mb-2">{game.name}</h3>
                   {game.thumbnail ? (
                     <Image
@@ -87,7 +98,6 @@ export default function Featured() {
                       width={200}
                       height={150}
                       className="w-full h-[150px] object-cover rounded mb-2"
-                      unoptimized={!!game.thumbnail?.startsWith("http")}
                     />
                   ) : (
                     <div className="w-full h-[150px] bg-gray-300 flex items-center justify-center rounded mb-2">
@@ -95,7 +105,8 @@ export default function Featured() {
                     </div>
                   )}
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    {cleanDescription(game.description) || "A brief description of the game."}
+                    {shortenDescription(cleanDescription(game.description)) ||
+                      "A brief description of the game."}
                   </p>
                 </Link>
               ))}
