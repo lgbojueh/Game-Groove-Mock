@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { fetchHotGames } from "@/utils/fetchHotGames";
 import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
 import Link from "next/link";
+import Image from "next/image";
 
 // Helper to chunk an array into groups of a given size.
 function chunkArray<T>(arr: T[], size: number): T[][] {
@@ -80,12 +81,13 @@ export default function Featured() {
                 <Link key={game.id ?? ""} href={`/game/${game.id}`} className="block p-4 bg-gray-400 dark:bg-gray-700 rounded shadow hover:shadow-xl transition">
                   <h3 className="font-semibold mb-2">{game.name}</h3>
                   {game.thumbnail ? (
-                    <img
+                    <Image
                       src={game.thumbnail}
                       alt={`${game.name} thumbnail`}
                       width={200}
                       height={150}
                       className="w-full h-[150px] object-cover rounded mb-2"
+                      unoptimized={!!game.thumbnail?.startsWith("http")}
                     />
                   ) : (
                     <div className="w-full h-[150px] bg-gray-300 flex items-center justify-center rounded mb-2">
