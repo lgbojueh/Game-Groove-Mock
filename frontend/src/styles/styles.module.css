@@ -1,69 +1,89 @@
-/* styles.module.css */
-
-/* About Page Styles */
-.about-title-text {
+/* Typography & Global Settings */
+body {
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+    line-height: 1.6;
+    color: #1a1a1a;
+    background-color: #f9f9f9;
+  }
+  
+  /* About Page */
+  .about-title-text {
     font-size: 2.5rem;
-    font-weight: bold;
+    font-weight: 700;
     text-decoration: underline;
-    margin-bottom: 1rem;
     color: #333;
+    margin-bottom: 1rem;
   }
   
   .about-text {
-    font-family: 'Segoe UI', sans-serif;
-    color: #333;
-    font-size: 1.1rem;
-    line-height: 1.7;
+    font-size: 1.125rem;
+    color: #444;
+    max-width: 800px;
+    margin: auto;
   }
   
-  /* Search Page Filters */
+  /* Search Section */
   .search-for-board-games {
-    background-color: #dc143c;
-    padding: 1rem;
+    background-color: #dc143c; /* Crimson */
+    color: #fff;
+    padding: 1rem 2rem;
+    border-radius: 8px;
     font-style: italic;
-    border-radius: 0.5rem;
+    text-align: center;
+    font-size: 1.25rem;
   }
   
-  /* Signup/Login Headings */
+  /* Authentication Areas */
   .signingup-and-logging-in {
-    color: #1e3a8a;
-    font-weight: 600;
+    color: #1e90ff;
+    font-weight: bold;
+    font-variant: small-caps;
+    letter-spacing: 0.5px;
   }
   
   .sign-up {
-    color: #1e3a8a;
-    font-size: 1.5rem;
+    color: #1e90ff;
+    font-size: 1.75rem;
     font-style: italic;
+    text-decoration: underline;
+    text-align: center;
+    margin-bottom: 1rem;
   }
   
-  /* Navbar and Navigation */
+  /* Navigation Bar */
   .navi {
-    background-color: #5a189a;
+    background-color: #4b0082; /* Indigo/Violet */
     padding: 1rem;
-    word-spacing: 6px;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    word-spacing: 0.5rem;
   }
   
-  /* Account Dropdown Styles */
+  /* Account Dropdown Menu */
   .account-info {
-    font-family: 'Lucida Sans', sans-serif;
-    color: #1d4ed8;
+    color: #1e40af; /* Indigo */
     text-align: left;
     padding: 0.5rem 1rem;
-    display: block;
-    width: 100%;
-    text-decoration: none;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
   }
   
   .account-info:hover {
-    background-color: #e0e0e0;
+    background-color: #dbeafe; /* Light blue hover */
   }
   
-  /* Auth Buttons */
+  /* Login/Signup Buttons */
   .authentication-commands {
-    font-family: 'Gill Sans', sans-serif;
-    color: #e6007e;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #ff1493; /* Hot pink */
+    align-items: flex-start;
   }
   
