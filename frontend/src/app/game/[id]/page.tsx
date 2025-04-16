@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { fetchGameDetails } from "@/utils/fetchGameDetails";
-import { cleanDescription, shortenDescription } from "@/utils/cleanup";
+import { cleanDescription } from "@/utils/cleanup";
 import Image from "next/image";
 
 interface Game {
@@ -118,10 +118,9 @@ export default function GameDetailsPage() {
             <span>No Image Available</span>
           </div>
         )}
-        <div className="mb-4">
+        <div className="mb-4 whitespace-pre-line">
           <p>
-            {shortenDescription(cleanDescription(game.description)) ||
-              "No description available."}
+            {cleanDescription(game.description) || "No description available."}
           </p>
         </div>
         <div className="flex space-x-4 mb-8">
