@@ -1,76 +1,72 @@
 // src/app/api/auth/favoriteService/route.ts
-import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { NextResponse, type NextRequest } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+import prisma from "@/lib/prisma";
 
-export async function GET(req: Request) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const userIdParam = searchParams.get('userId');
-    if (!userIdParam) {
-      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
-    }
-
-    const userId = Number(userIdParam);
-    if (isNaN(userId)) {
-      return NextResponse.json({ error: 'Invalid User ID' }, { status: 400 });
-    }
-
-    const favorites = await prisma.favorite.findMany({
-      where: { userId },
-    });
-    return NextResponse.json(favorites);
-  } catch (error) {
-    console.error('Error fetching favorites:', error);
-    return NextResponse.json({ error: 'Error fetching favorites' }, { status: 500 });
+export async function GET() {
+  // 1) Check NextAuth session
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  // 2) Fetch only this user's favorites
+  const userId = Number(session.user.id);
+  const favorites = await prisma.favorite.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return NextResponse.json(favorites);
 }
 
-export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const { userId: userIdParam, name, thumbnail } = body;
-    if (!userIdParam || !name) {
-      return NextResponse.json({ error: 'User ID and name are required' }, { status: 400 });
-    }
-
-    const userId = Number(userIdParam);
-    if (isNaN(userId)) {
-      return NextResponse.json({ error: 'Invalid User ID' }, { status: 400 });
-    }
-
-    const newFavorite = await prisma.favorite.create({
-      data: {
-        name,
-        thumbnail: thumbnail || null,
-        user: { connect: { id: userId } },
-      },
-    });
-    return NextResponse.json(newFavorite, { status: 201 });
-  } catch (error) {
-    console.error('Error creating favorite:', error);
-    return NextResponse.json({ error: 'Error creating favorite' }, { status: 500 });
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const body = await req.json();
+  const { name, thumbnail } = body as { name?: string; thumbnail?: string };
+
+  if (!name || typeof name !== "string") {
+    return NextResponse.json(
+      { error: "Name is required" },
+      { status: 400 }
+    );
+  }
+
+  const userId = Number(session.user.id);
+
+  const newFav = await prisma.favorite.create({
+    data: {
+      name,
+      thumbnail: thumbnail ?? null,
+      user: { connect: { id: userId } },
+    },
+  });
+
+  return NextResponse.json(newFav, { status: 201 });
 }
 
-export async function DELETE(req: Request) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const idParam = searchParams.get('id');
-    if (!idParam) {
-      return NextResponse.json({ error: 'Favorite ID is required' }, { status: 400 });
-    }
-
-    const id = Number(idParam);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: 'Valid Favorite ID is required' }, { status: 400 });
-    }
-
-    const deletedFavorite = await prisma.favorite.delete({
-      where: { id },
-    });
-    return NextResponse.json(deletedFavorite);
-  } catch (error) {
-    console.error('Error deleting favorite:', error);
-    return NextResponse.json({ error: 'Error deleting favorite' }, { status: 500 });
+export async function DELETE(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const idParam = req.nextUrl.searchParams.get("id");
+  if (!idParam) {
+    return NextResponse.json(
+      { error: "Favorite ID is required" },
+      { status: 400 }
+    );
+  }
+
+  const deleted = await prisma.favorite.delete({
+    where: { id: Number(idParam) },
+  });
+
+  return NextResponse.json(deleted);
 }
