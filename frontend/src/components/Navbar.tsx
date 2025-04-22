@@ -21,21 +21,18 @@ export default function Navbar() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // close account dropdown when clicking outside
+  // Close dropdown when clicking outside
   useEffect(() => {
-    function onClick(e: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
+    function onClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setDropdownOpen(false);
       }
     }
-    document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
-  // handle search form submission
+  // Handle search submit
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
@@ -63,7 +60,7 @@ export default function Navbar() {
         </Link>
       </div>
 
-      {/* Center: Nav Links + Search */}
+      {/* Center: Links + Search */}
       <div className="flex items-center space-x-6 relative">
         <Link href="/" className="text-white hover:text-gray-200">
           Home
@@ -78,7 +75,6 @@ export default function Navbar() {
           Blog
         </Link>
 
-        {/* Search icon / form */}
         {!searchOpen ? (
           <button
             type="button"
