@@ -50,12 +50,10 @@ export default function Login() {
     setLoading(false);
 
     if (res?.error) {
-      // Map the default error code to something user‑friendly
-      if (res.error === "CredentialsSignin") {
-        setError("Incorrect email or password.");
-      } else {
-        setError(res.error);
-      }
+      setError(res.error === "CredentialsSignin"
+        ? "Incorrect email or password."
+        : res.error
+      );
     } else {
       router.push("/account");
     }
@@ -100,8 +98,8 @@ export default function Login() {
             />
           </div>
 
-          {/* Password w/ Show/Hide */}
-          <div className="relative">
+          {/* Password */}
+          <div>
             <label
               htmlFor="login-password"
               className={`${styles.SigningupandLoggingIn} block mb-1`}
@@ -116,14 +114,13 @@ export default function Login() {
               onChange={(e) =>
                 setFormData({ ...formData, password: e.target.value })
               }
-              className="border border-gray-300 p-2 w-full rounded pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
             <button
               type="button"
               onClick={toggleShowPassword}
-              className="absolute inset-y-0 right-0 px-3 flex items-center text-sm text-gray-600 hover:text-gray-800"
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              className="mt-2 text-sm text-blue-500 hover:underline"
             >
               {showPassword ? "Hide Password" : "Show Password"}
             </button>
