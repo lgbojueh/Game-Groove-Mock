@@ -28,7 +28,7 @@ interface FavoriteRecord {
   thumbnail: string | null;
 }
 
-// (If you implement a savedService, it could be identical)
+// (If you implement a savedGames, it could be identical)
 interface SavedRecord {
   id: number;
   title: string;
@@ -81,8 +81,8 @@ export default function GameDetailsPage() {
       })
       .catch(console.error);
 
-    // saved games (you’ll need to create savedService similarly)
-    fetch("/api/auth/savedService")
+    // saved games (you’ll need to create savedGames similarly)
+    fetch("/api/auth/savedGames")
       .then((res) => res.json() as Promise<SavedRecord[]>)
       .then((list) => {
         const found = list.find((s) => s.title === game.name);
@@ -138,7 +138,7 @@ export default function GameDetailsPage() {
 
     if (savedId) {
       // DELETE
-      const res = await fetch(`/api/auth/savedService?id=${savedId}`, {
+      const res = await fetch(`/api/auth/savedGames?id=${savedId}`, {
         method: "DELETE",
       });
       if (res.ok) {
@@ -149,7 +149,7 @@ export default function GameDetailsPage() {
       }
     } else {
       // POST
-      const res = await fetch("/api/auth/savedService", {
+      const res = await fetch("/api/auth/savedGames", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

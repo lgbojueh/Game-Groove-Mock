@@ -23,7 +23,7 @@ export default function About() {
           </p>
           <ul className={styles.AboutText}>
             <li>
-              <strong>Number of Players:</strong> Whether it's 2, 3, 4, or up to 6 players.
+              <strong>Number of Players:</strong> Whether it&apos;s 2, 3, 4, or up to 6 players.
             </li>
             <li>
               <strong>Difficulty Level:</strong> Choose games from Easy, Medium, or Hard difficulty levels.
@@ -35,7 +35,7 @@ export default function About() {
               <strong>Game Type/Genre:</strong> From Strategy and Party to Family and more, we cover a wide range of genres.
             </li>
             <li>
-              <strong>Other Filters:</strong> Discover games that are cooperative or competitive, tailored to your group's style.
+              <strong>Other Filters:</strong> Discover games that are cooperative or competitive, tailored to your group&apos;s style.
             </li>
           </ul>
         </section>
