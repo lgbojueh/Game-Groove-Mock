@@ -215,28 +215,18 @@ export default function ResultsPage() {
                       </p>
                     )}
                   </Link>
-                  <div className="mt-3 flex flex-col space-y-2">
-  {/* Search on Amazon */}
+                   {/* 🔎 Smart Buy Button */}
   <a
-    href={`https://www.amazon.com/s?k=${encodeURIComponent(game.name)}+board+game`}
+    href={`https://www.google.com/search?q=${encodeURIComponent(
+      `${game.name} board game buy site:amazon.com OR site:boardgamegeek.com OR site:ebay.com`
+    )}`}
     target="_blank"
     rel="noopener noreferrer"
-    className="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition text-center"
+    className="inline-block mt-3 px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition text-center w-full"
   >
-    Search on Amazon
+    Search Where to Buy
   </a>
-
-  {/* Search on eBay */}
-  <a
-    href={`https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(game.name)}+board+game`}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="px-4 py-2 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700 transition text-center"
-  >
-    Search on eBay
-  </a>
-</div>
-                </li>
+</li>
               ))}
             </ul>
           </div>
