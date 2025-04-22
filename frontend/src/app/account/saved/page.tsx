@@ -91,56 +91,6 @@ export default function SavedGamesPage() {
               >
                 Remove
               </button>
-              <div className="relative flex items-center space-x-2">
-              <div
-                className="flex items-center bg-blue-500 text-white px-5 py-2 rounded hover:bg-blue-600"
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-                onClick={handleToggle}
-              >
-                Purchase Game
-                <svg
-                  xmlns = "http://www.w3.org/2000/svg"
-                  className="h-5 w-5 text-[var(--foreground)]"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/>
-                </svg>
-              </div>
-              {
-                dropdownOpen && (
-                  <div
-                    ref={dropdownRef}
-                    className="absolute top-full right-0 mt-2 w-48 bg-gray-300 dark:bg-gray-200 rounded shadow-lg z-50"
-                    onMouseEnter={handleMouseEnter}
-                    onMouseLeave={handleMouseLeave}
-                    >
-                      <div className="py-1">
-                        <button
-                          onClick={() => router.push("https://www.amazon.com/")}
-                          className="bg-orange-400 text-white px-4 py-2 rounded hover:bg-orange-500"
-                        >
-                          Shop on Amazon
-                        </button>
-                        <button
-                          onClick={() => router.push("https://www.ebay.com/")}
-                          className="bg-blue-400 text-white px-5 py-2 rounded hover:bg-blue-500"
-                        >
-                          Shop on Ebay  
-                        </button>
-                        <button
-                          onClick={() => router.push("https://boardgamegeek.com/")}
-                          className="bg-purple-400 text-white px-6 py-2 rounded hover:bg-purple-500"
-                        >
-                          Shop on BoardGameGeek
-                        </button>
-                      </div>
-                  </div>
-                )
-              }
-              </div>
             </li>
           ))}
         </ul>
