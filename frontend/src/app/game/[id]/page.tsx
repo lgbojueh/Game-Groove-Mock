@@ -1,7 +1,9 @@
+// src/app/game/[id]/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { fetchGameDetails } from "@/utils/fetchGameDetails";
 import { cleanDescription } from "@/utils/cleanup";
 import Image from "next/image";
@@ -19,16 +21,35 @@ interface Game {
   theme: string;
 }
 
+// shape returned by your favoriteService
+interface FavoriteRecord {
+  id: number;
+  name: string;
+  thumbnail: string | null;
+}
+
+// (If you implement a savedService, it could be identical)
+interface SavedRecord {
+  id: number;
+  title: string;
+  thumbnail: string | null;
+}
+
 export default function GameDetailsPage() {
   const { id } = useParams();
+  const { status } = useSession();
+
   const [game, setGame] = useState<Game | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
 
+  // track the record-IDs so we can DELETE later
+  const [favoriteId, setFavoriteId] = useState<number | null>(null);
+  const [savedId, setSavedId]       = useState<number | null>(null);
+
+  // 1) load the game itself
   useEffect(() => {
-    async function getGameDetails() {
+    async function load() {
       try {
         const data = await fetchGameDetails(id as string);
         if (data && data.id) {
@@ -37,66 +58,118 @@ export default function GameDetailsPage() {
           setError("Invalid game data.");
         }
       } catch (err) {
-        console.error("Error fetching game details:", err);
+        console.error(err);
         setError("Failed to load game details.");
       } finally {
         setLoading(false);
       }
     }
-    getGameDetails();
+    load();
   }, [id]);
 
+  // 2) once we know the user is authenticated *and* the game is loaded,
+  //    fetch their existing favorites & savedGames to seed the button state
   useEffect(() => {
-    if (game) {
-      const storedFavorites = localStorage.getItem("favorites");
-      const favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
-      setIsFavorite(favorites.some((fav: Game) => fav.id === game.id));
+    if (status !== "authenticated" || !game) return;
 
-      const storedSaved = localStorage.getItem("savedGames");
-      const savedGames = storedSaved ? JSON.parse(storedSaved) : [];
-      setIsSaved(savedGames.some((saved: Game) => saved.id === game.id));
+    // favorites
+    fetch("/api/auth/favoriteService")
+      .then((res) => res.json() as Promise<FavoriteRecord[]>)
+      .then((list) => {
+        const found = list.find((f) => f.name === game.name);
+        setFavoriteId(found ? found.id : null);
+      })
+      .catch(console.error);
+
+    // saved games (you’ll need to create savedService similarly)
+    fetch("/api/auth/savedService")
+      .then((res) => res.json() as Promise<SavedRecord[]>)
+      .then((list) => {
+        const found = list.find((s) => s.title === game.name);
+        setSavedId(found ? found.id : null);
+      })
+      .catch(console.error);
+  }, [status, game]);
+
+  const toggleFavorite = async () => {
+    if (status !== "authenticated") {
+      alert("You must be logged in to favorite a game");
+      return;
     }
-  }, [game]);
-
-  const toggleFavorite = () => {
     if (!game) return;
-    const storedFavorites = localStorage.getItem("favorites");
-    let favorites: Game[] = storedFavorites ? JSON.parse(storedFavorites) : [];
 
-    if (favorites.some((fav) => fav.id === game.id)) {
-      favorites = favorites.filter((fav) => fav.id !== game.id);
-      setIsFavorite(false);
-      alert("Removed from favorites!");
+    if (favoriteId) {
+      // DELETE
+      const res = await fetch(`/api/auth/favoriteService?id=${favoriteId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setFavoriteId(null);
+        alert("Removed from favorites");
+      } else {
+        alert("Failed to remove favorite");
+      }
     } else {
-      favorites.push(game);
-      setIsFavorite(true);
-      alert("Added to favorites!");
+      // POST
+      const res = await fetch("/api/auth/favoriteService", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: game.name,
+          thumbnail: game.thumbnail,
+        }),
+      });
+      if (res.ok) {
+        const created = (await res.json()) as FavoriteRecord;
+        setFavoriteId(created.id);
+        alert("Added to favorites");
+      } else {
+        alert("Failed to add favorite");
+      }
     }
-
-    localStorage.setItem("favorites", JSON.stringify(favorites));
   };
 
-  const toggleSaved = () => {
-    if (!game) return;
-    const storedSaved = localStorage.getItem("savedGames");
-    let savedGames: Game[] = storedSaved ? JSON.parse(storedSaved) : [];
-
-    if (savedGames.some((saved) => saved.id === game.id)) {
-      savedGames = savedGames.filter((saved) => saved.id !== game.id);
-      setIsSaved(false);
-      alert("Game unsaved!");
-    } else {
-      savedGames.push(game);
-      setIsSaved(true);
-      alert("Game saved!");
+  const toggleSaved = async () => {
+    if (status !== "authenticated") {
+      alert("You must be logged in to save a game");
+      return;
     }
+    if (!game) return;
 
-    localStorage.setItem("savedGames", JSON.stringify(savedGames));
+    if (savedId) {
+      // DELETE
+      const res = await fetch(`/api/auth/savedService?id=${savedId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setSavedId(null);
+        alert("Removed from saved games");
+      } else {
+        alert("Failed to remove saved game");
+      }
+    } else {
+      // POST
+      const res = await fetch("/api/auth/savedService", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: game.name,
+          thumbnail: game.thumbnail,
+        }),
+      });
+      if (res.ok) {
+        const created = (await res.json()) as SavedRecord;
+        setSavedId(created.id);
+        alert("Added to saved games");
+      } else {
+        alert("Failed to save game");
+      }
+    }
   };
 
-  if (loading) return <p className="p-6">Loading...</p>;
-  if (error) return <p className="p-6">{error}</p>;
-  if (!game) return <p className="p-6">No game found.</p>;
+  if (loading) return <p className="p-6">Loading…</p>;
+  if (error)   return <p className="p-6 text-red-500">{error}</p>;
+  if (!game)   return <p className="p-6">No game found.</p>;
 
   return (
     <div className="flex flex-col h-screen">
@@ -119,22 +192,29 @@ export default function GameDetailsPage() {
           </div>
         )}
         <div className="mb-4 whitespace-pre-line">
-          <p>
-            {cleanDescription(game.description) || "No description available."}
-          </p>
+          <p>{cleanDescription(game.description)}</p>
         </div>
         <div className="flex space-x-4 mb-8">
           <button
             onClick={toggleFavorite}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+            className={`px-4 py-2 rounded ${
+              favoriteId
+                ? "bg-red-600 text-white hover:bg-red-700"
+                : "bg-gray-200 text-black hover:bg-gray-300"
+            }`}
           >
-            {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
+            {favoriteId ? "Remove from Favorites" : "Add to Favorites"}
           </button>
+
           <button
             onClick={toggleSaved}
-            className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+            className={`px-4 py-2 rounded ${
+              savedId
+                ? "bg-purple-600 text-white hover:bg-purple-700"
+                : "bg-gray-200 text-black hover:bg-gray-300"
+            }`}
           >
-            {isSaved ? "Unsave Game" : "Save Game"}
+            {savedId ? "Unsave Game" : "Save Game"}
           </button>
         </div>
       </main>

@@ -7,7 +7,7 @@ import { fetchGames } from "@/utils/fetchGames";
 import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
 import { cleanDescription, shortenDescription } from "@/utils/cleanup";
 
-// Helper function to chunk an array into smaller arrays of a given size.
+// Helper to split an array into chunks
 function chunkArray<T>(arr: T[], size: number): T[][] {
   const results: T[][] = [];
   for (let i = 0; i < arr.length; i += size) {
@@ -16,7 +16,6 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
   return results;
 }
 
-// Define an interface for our game object.
 interface BasicGame {
   id: string;
   name: string;
@@ -31,86 +30,99 @@ export default function Games() {
   const [error, setError] = useState("");
   const [visibleCount, setVisibleCount] = useState(9);
 
-  // Function to fetch games based on a query.
+  // Fetch & hydrate games
   const getGames = async (query: string) => {
     setLoading(true);
     setError("");
+
     try {
-      const basicResults: BasicGame[] = (await fetchGames(query))
-        .filter((game) => game.id)
-        .map((game) => ({
-          id: String(game.id),
-          name: game.name || "Unknown Game",
-          thumbnail: game.thumbnail || "/default-game-thumbnail.jpg",
+      // 1) Basic search
+      const basic: BasicGame[] = (await fetchGames(query))
+        .filter((g) => g.id)
+        .map((g) => ({
+          id: String(g.id),
+          name: g.name || "Unknown Game",
+          thumbnail: g.thumbnail || "/default-game-thumbnail.jpg",
         }));
 
-      if (basicResults.length === 0) {
+      if (!basic.length) {
         setGames([]);
         setLoading(false);
         return;
       }
 
-      const allIds = basicResults.map((game) => game.id);
-      const idChunks = chunkArray(allIds, 20);
-      let detailedResults: BasicGame[] = [];
+      // 2) Fetch details in chunks
+      const allIds = basic.map((g) => g.id);
+      const chunks = chunkArray(allIds, 20);
+      let detailsAcc: BasicGame[] = [];
 
-      for (const chunk of idChunks) {
-        const details: BasicGame[] = (await fetchDetailedGames(chunk)).map((d) => ({
-          id: String(d.id),
-          name: d.name || "Unknown Game",
-          thumbnail: d.thumbnail || "/default-game-thumbnail.jpg",
-          description: cleanDescription(d.description),
-        }));
-        detailedResults = detailedResults.concat(details);
+      for (const chunk of chunks) {
+        const dets = await fetchDetailedGames(chunk);
+        detailsAcc = detailsAcc.concat(
+          dets.map((d) => ({
+            id: String(d.id),
+            name: d.name || "Unknown Game",
+            thumbnail: d.thumbnail || "/default-game-thumbnail.jpg",
+            description: cleanDescription(d.description),
+          }))
+        );
       }
 
-      for (const detail of detailedResults) {
-        const idx = basicResults.findIndex((b) => b.id === detail.id);
-        if (idx !== -1) {
-          basicResults[idx].thumbnail = detail.thumbnail;
-          basicResults[idx].description = detail.description;
+      // 3) Merge back
+      for (const det of detailsAcc) {
+        const idx = basic.findIndex((b) => b.id === det.id);
+        if (idx > -1) {
+          basic[idx].thumbnail = det.thumbnail;
+          basic[idx].description = det.description;
         }
       }
 
-      setGames(basicResults);
-    } catch (error) {
-      console.error("Error fetching games:", error);
+      setGames(basic);
+    } catch (err) {
+      console.error("Error fetching games:", err);
       setError("Failed to load games. Please try again later.");
       setGames([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
+  // Initial load
   useEffect(() => {
     getGames("board game");
     setVisibleCount(9);
   }, []);
 
+  // Search form handler
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    await getGames(searchQuery.trim() === "" ? "board game" : searchQuery);
+    const q = searchQuery.trim() || "board game";
+    await getGames(q);
     setVisibleCount(9);
   };
 
-  const loadMore = () => {
-    setVisibleCount((prev) => prev + 9);
-  };
+  // "Load more" button
+  const loadMore = () => setVisibleCount((prev) => prev + 9);
 
   return (
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen">
       <h1 className="text-4xl font-bold mb-4">All Games</h1>
+
+      {/* Search */}
       <form onSubmit={handleSearch} className="mb-4 flex">
         <input
           type="text"
           placeholder="Search games..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="border border-gray-400 p-2 rounded flex-grow mr-2"
+          className="flex-grow border border-gray-400 p-2 rounded mr-2"
         />
         <button type="submit" className="bg-blue-500 text-white p-2 rounded">
           Search
         </button>
       </form>
+
+      {/* Content */}
       {loading ? (
         <p>Loading...</p>
       ) : error ? (
@@ -121,7 +133,7 @@ export default function Games() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {games.slice(0, visibleCount).map((game) => (
                 <Link key={game.id} href={`/game/${game.id}`} className="block">
-                  <div className="p-4 bg-gray-400 dark:bg-gray-700 rounded shadow hover:shadow-lg transition">
+                  <div className="p-4 bg-gray-200 dark:bg-gray-700 rounded shadow hover:shadow-lg transition">
                     <Image
                       src={game.thumbnail}
                       alt={`${game.name} thumbnail`}
@@ -130,14 +142,16 @@ export default function Games() {
                       className="w-full h-[150px] object-cover rounded mb-2"
                     />
                     <h2 className="font-semibold text-lg mb-1">{game.name}</h2>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      {shortenDescription(game.description)}
+                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
+                      {shortenDescription(game.description) ||
+                        "No description available."}
                     </p>
                   </div>
                 </Link>
               ))}
             </div>
           </div>
+
           {visibleCount < games.length && (
             <div className="mt-4 text-center">
               <button

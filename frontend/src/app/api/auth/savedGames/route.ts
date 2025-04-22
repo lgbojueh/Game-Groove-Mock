@@ -1,77 +1,72 @@
 // src/app/api/auth/savedGames/route.ts
-import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { NextResponse, NextRequest } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+import prisma from "@/lib/prisma";
 
-export async function GET(req: Request) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const userIdParam = searchParams.get('userId');
-    if (!userIdParam) {
-      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
-    }
-
-    const userId = Number(userIdParam);
-    if (isNaN(userId)) {
-      return NextResponse.json({ error: 'Invalid User ID' }, { status: 400 });
-    }
-
-    const savedGames = await prisma.savedGame.findMany({
-      where: { userId },
-    });
-    return NextResponse.json(savedGames);
-  } catch (error) {
-    console.error('Error fetching saved games:', error);
-    return NextResponse.json({ error: 'Error fetching saved games' }, { status: 500 });
+// GET /api/auth/savedGames
+export async function GET() {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const userId = Number(session.user.id);
+  const savedGames = await prisma.savedGame.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return NextResponse.json(savedGames);
 }
 
-export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const { userId: userIdParam, title, thumbnail } = body;
-
-    if (userIdParam == null || !title) {
-      return NextResponse.json({ error: 'User ID and title are required' }, { status: 400 });
-    }
-
-    const userId = Number(userIdParam);
-    if (isNaN(userId)) {
-      return NextResponse.json({ error: 'Invalid User ID' }, { status: 400 });
-    }
-
-    const newSavedGame = await prisma.savedGame.create({
-      data: {
-        title,
-        thumbnail,
-        user: { connect: { id: userId } },
-      },
-    });
-    return NextResponse.json(newSavedGame, { status: 201 });
-  } catch (error) {
-    console.error('Error creating saved game:', error);
-    return NextResponse.json({ error: 'Error creating saved game' }, { status: 500 });
+// POST /api/auth/savedGames
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const { title, thumbnail } = (await req.json()) as {
+    title?: string;
+    thumbnail?: string;
+  };
+
+  if (!title || typeof title !== "string") {
+    return NextResponse.json(
+      { error: "Title is required" },
+      { status: 400 }
+    );
+  }
+
+  const userId = Number(session.user.id);
+  const newSaved = await prisma.savedGame.create({
+    data: {
+      title,
+      thumbnail: thumbnail ?? null,
+      user: { connect: { id: userId } },
+    },
+  });
+
+  return NextResponse.json(newSaved, { status: 201 });
 }
 
-export async function DELETE(req: Request) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const idParam = searchParams.get('id');
-    if (!idParam) {
-      return NextResponse.json({ error: 'Game ID is required' }, { status: 400 });
-    }
-
-    const id = Number(idParam);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: 'Valid Game ID is required' }, { status: 400 });
-    }
-
-    const deletedSavedGame = await prisma.savedGame.delete({
-      where: { id },
-    });
-    return NextResponse.json(deletedSavedGame);
-  } catch (error) {
-    console.error('Error deleting saved game:', error);
-    return NextResponse.json({ error: 'Error deleting saved game' }, { status: 500 });
+// DELETE /api/auth/savedGames?id=123
+export async function DELETE(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const idParam = req.nextUrl.searchParams.get("id");
+  const id = idParam ? parseInt(idParam, 10) : NaN;
+  if (!idParam || isNaN(id)) {
+    return NextResponse.json(
+      { error: "Valid saved‑game ID is required" },
+      { status: 400 }
+    );
+  }
+
+  const deleted = await prisma.savedGame.delete({ where: { id } });
+  return NextResponse.json(deleted);
 }
