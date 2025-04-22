@@ -15,13 +15,15 @@ export default function Navbar() {
   const user = session?.user;
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Close dropdown when clicking outside
+  // close account dropdown when clicking outside
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
+    function onClick(e: MouseEvent) {
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(e.target as Node)
@@ -29,9 +31,19 @@ export default function Navbar() {
         setDropdownOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
   }, []);
+
+  // handle search form submission
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      router.push(`/results?query=${encodeURIComponent(searchTerm.trim())}`);
+      setSearchTerm("");
+      setSearchOpen(false);
+    }
+  };
 
   return (
     <nav className="w-full flex justify-between items-center p-5 bg-red-500">
@@ -47,17 +59,17 @@ export default function Navbar() {
           />
         </Link>
         <Link href="/" className="text-xl font-bold text-white">
-          Game Groove
+          Game Groove
         </Link>
       </div>
 
       {/* Center: Nav Links + Search */}
-      <div className="flex items-center space-x-6">
+      <div className="flex items-center space-x-6 relative">
         <Link href="/" className="text-white hover:text-gray-200">
           Home
         </Link>
         <Link href="/games" className="text-white hover:text-gray-200">
-          All Games
+          All Games
         </Link>
         <Link href="/featured" className="text-white hover:text-gray-200">
           Featured
@@ -65,14 +77,38 @@ export default function Navbar() {
         <Link href="/blog" className="text-white hover:text-gray-200">
           Blog
         </Link>
-        {/* SEARCH ICON */}
-        <Link
-          href="/search"
-          className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
-          aria-label="Search games"
-        >
-          <SearchIcon className="text-white" />
-        </Link>
+
+        {/* Search icon / form */}
+        {!searchOpen ? (
+          <button
+            type="button"
+            onClick={() => setSearchOpen(true)}
+            className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+            aria-label="Open search"
+          >
+            <SearchIcon className="text-white" />
+          </button>
+        ) : (
+          <form
+            onSubmit={handleSearch}
+            className="absolute top-full right-0 mt-2 flex bg-white dark:bg-gray-800 rounded shadow"
+          >
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="px-3 py-1 w-48 rounded-l bg-gray-100 dark:bg-gray-700 focus:outline-none"
+              placeholder="Search games…"
+              autoFocus
+            />
+            <button
+              type="submit"
+              className="px-3 py-1 bg-red-500 text-white rounded-r hover:bg-red-600"
+            >
+              Go
+            </button>
+          </form>
+        )}
       </div>
 
       {/* Right: Theme + Auth */}
@@ -131,7 +167,7 @@ export default function Navbar() {
               Login
             </Link>
             <Link href="/signup" className="text-white hover:text-gray-200">
-              Sign Up
+              Sign Up
             </Link>
           </>
         )}
