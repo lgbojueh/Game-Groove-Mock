@@ -1,4 +1,4 @@
-// src/app/api/auth/savedService/route.ts
+// src/app/api/auth/savedGames/route.ts
 import { NextResponse, type NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";

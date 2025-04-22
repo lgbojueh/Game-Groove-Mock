@@ -22,7 +22,7 @@ export default function SavedGamesPage() {
       (async () => {
         try {
           setLoading(true);
-          const res = await fetch("/api/auth/savedService");
+          const res = await fetch("/api/auth/savedGames");
           if (!res.ok) throw new Error(await res.text());
           setSavedGames(await res.json());
         } catch (err: unknown) {
@@ -39,7 +39,7 @@ export default function SavedGamesPage() {
   }, [status]);
 
   const removeSaved = async (id: number) => {
-    await fetch(`/api/auth/savedService?id=${id}`, { method: "DELETE" });
+    await fetch(`/api/auth/savedGames?id=${id}`, { method: "DELETE" });
     setSavedGames((g) => g.filter((x) => x.id !== id));
   };
 
