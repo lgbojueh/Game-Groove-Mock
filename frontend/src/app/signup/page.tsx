@@ -65,7 +65,7 @@ export default function SignUpPage() {
         // 3️⃣ Auto‑login via NextAuth Credentials provider
         const signin = await signIn("credentials", {
           redirect: false,
-          identifier: formData.email,
+          email: formData.email,
           password: formData.password,
         });
 
