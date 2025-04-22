@@ -6,20 +6,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "../../styles/styles.module.css";
 
-interface FormData {
-  identifier: string;
-  password: string;
-}
-
-export default function Login() {
+export default function LoginPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState<FormData>({
-    identifier: "",
-    password: "",
-  });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
   const toggleShowPassword = () => setShowPassword((v) => !v);
 
@@ -27,50 +20,59 @@ export default function Login() {
     e.preventDefault();
     setError("");
 
-    // Basic validation
-    if (!formData.identifier.trim()) {
+    // 1️⃣ Basic validation
+    if (!email.trim()) {
       setError("Please enter your email.");
       return;
     }
-    if (!/\S+@\S+\.\S+/.test(formData.identifier)) {
-      setError("Please enter a valid email.");
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setError("Please enter a valid email address.");
       return;
     }
-    if (!formData.password.trim()) {
+    if (!password) {
       setError("Please enter your password.");
       return;
     }
 
     setLoading(true);
+
+    // 2️⃣ Call NextAuth with `email` (not `identifier`)
     const res = await signIn("credentials", {
       redirect: false,
-      identifier: formData.identifier,
-      password: formData.password,
+      email,
+      password,
     });
+
     setLoading(false);
 
+    // 3️⃣ Map the default NextAuth error code to a friendly message
     if (res?.error) {
-      setError(res.error === "CredentialsSignin"
-        ? "Incorrect email or password."
-        : res.error
+      setError(
+        res.error === "CredentialsSignin"
+          ? "Incorrect email or password."
+          : res.error
       );
-    } else {
-      router.push("/account");
+      return;
     }
+
+    // 4️⃣ Success → go to account
+    router.push("/account");
   };
 
   return (
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen flex items-center justify-center">
       <div className="max-w-md w-full bg-gray-100 dark:bg-gray-800 p-8 rounded-lg shadow-lg">
-        <h1 className={`${styles.SignUp} text-3xl font-bold text-center mb-6`}>
+        <h1
+          className={`${styles.SignUp} text-3xl font-bold text-center mb-6`}
+        >
           Login
         </h1>
 
         {error && (
           <p
             role="alert"
-            className="text-red-500 mb-4 text-center"
             aria-live="assertive"
+            className="text-red-500 mb-4 text-center"
           >
             {error}
           </p>
@@ -80,19 +82,17 @@ export default function Login() {
           {/* Email */}
           <div>
             <label
-              htmlFor="login-identifier"
+              htmlFor="login-email"
               className={`${styles.SigningupandLoggingIn} block mb-1`}
             >
               Email
             </label>
             <input
-              id="login-identifier"
+              id="login-email"
               type="email"
-              placeholder="Enter your email"
-              value={formData.identifier}
-              onChange={(e) =>
-                setFormData({ ...formData, identifier: e.target.value })
-              }
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
@@ -110,10 +110,8 @@ export default function Login() {
               id="login-password"
               type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
