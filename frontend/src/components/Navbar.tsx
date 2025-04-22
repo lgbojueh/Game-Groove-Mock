@@ -21,18 +21,21 @@ export default function Navbar() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Close dropdown when clicking outside
+  // close account dropdown when clicking outside
   useEffect(() => {
-    function onClickOutside(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+    function onClick(e: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setDropdownOpen(false);
       }
     }
-    document.addEventListener("mousedown", onClickOutside);
-    return () => document.removeEventListener("mousedown", onClickOutside);
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
-  // Handle search submit
+  // handle search form submission
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
@@ -56,17 +59,17 @@ export default function Navbar() {
           />
         </Link>
         <Link href="/" className="text-xl font-bold text-white">
-          Game Groove
+          Game Groove
         </Link>
       </div>
 
-      {/* Center: Links + Search */}
+      {/* Center: Nav Links + Search */}
       <div className="flex items-center space-x-6 relative">
         <Link href="/" className="text-white hover:text-gray-200">
           Home
         </Link>
         <Link href="/games" className="text-white hover:text-gray-200">
-          All Games
+          All Games
         </Link>
         <Link href="/featured" className="text-white hover:text-gray-200">
           Featured
@@ -74,7 +77,11 @@ export default function Navbar() {
         <Link href="/blog" className="text-white hover:text-gray-200">
           Blog
         </Link>
+        <Link href="/about" className="text-white hover:text-gray-200">
+          About
+        </Link>
 
+        {/* Search icon / form */}
         {!searchOpen ? (
           <button
             type="button"
@@ -163,7 +170,7 @@ export default function Navbar() {
               Login
             </Link>
             <Link href="/signup" className="text-white hover:text-gray-200">
-              Sign Up
+              Sign Up
             </Link>
           </>
         )}
