@@ -1,7 +1,9 @@
+// src/app/account/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 interface Game {
@@ -12,130 +14,156 @@ interface Game {
 
 export default function AccountPage() {
   const { data: session, status } = useSession();
+  const router = useRouter();
+
   const [savedGames, setSavedGames] = useState<Game[]>([]);
   const [favoriteGames, setFavoriteGames] = useState<Game[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>("");
+  const [loadingGames, setLoadingGames] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  const [deactivating, setDeactivating] = useState(false);
+  const [deactivateError, setDeactivateError] = useState<string | null>(null);
+
+  // Fetch saved & favorite games
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.id) {
-      async function fetchGames() {
-        try {
-          setLoading(true);
-          setError("");
+    if (status !== "authenticated" || !session?.user?.id) return;
 
-          const userId = session?.user?.id;
-          const [savedRes, favoriteRes] = await Promise.all([
-            fetch(`/api/auth/savedGames?userId=${userId}`),
-            fetch(`/api/auth/favoriteService?userId=${userId}`),
-          ]);
+    const userId = session.user.id;
 
-          if (!savedRes.ok) {
-            const text = await savedRes.text();
-            throw new Error(`Saved games error: ${text}`);
-          }
+    (async () => {
+      try {
+        setLoadingGames(true);
+        setError(null);
 
-          if (!favoriteRes.ok) {
-            const text = await favoriteRes.text();
-            throw new Error(`Favorite games error: ${text}`);
-          }
+        const [savedRes, favRes] = await Promise.all([
+          fetch(`/api/auth/savedGames?userId=${userId}`),
+          fetch(`/api/auth/favoriteService?userId=${userId}`),
+        ]);
 
-          const savedData = await savedRes.json();
-          const favoriteData = await favoriteRes.json();
-
-          setSavedGames(savedData);
-          setFavoriteGames(favoriteData);
-        } catch (err) {
-          console.error("Error loading games:", err);
-          setError(
-            err instanceof Error
-              ? err.message
-              : "An error occurred while loading games."
-          );
-        } finally {
-          setLoading(false);
+        if (!savedRes.ok) {
+          throw new Error(await savedRes.text());
         }
-      }
+        if (!favRes.ok) {
+          throw new Error(await favRes.text());
+        }
 
-      fetchGames();
-    }
+        setSavedGames(await savedRes.json());
+        setFavoriteGames(await favRes.json());
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setDeactivateError(err.message || "Error deactivating");
+        } else {
+          setDeactivateError("An unknown error occurred.");
+        }
+        setError(err instanceof Error ? err.message : "Failed to load games.");
+      } finally {
+        setLoadingGames(false);
+      }
+    })();
   }, [status, session]);
 
+  // Remove handlers
   const removeSavedGame = async (id: number) => {
-    try {
-      const res = await fetch(`/api/auth/savedGames?id=${id}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) throw new Error("Failed to delete saved game");
-      setSavedGames((prev) => prev.filter((game) => game.id !== id));
-    } catch (err) {
-      console.error("Error removing saved game:", err);
-    }
+    await fetch(`/api/auth/savedGames?id=${id}`, { method: "DELETE" });
+    setSavedGames((g) => g.filter((x) => x.id !== id));
   };
-
   const removeFavoriteGame = async (id: number) => {
+    await fetch(`/api/auth/favoriteService?id=${id}`, { method: "DELETE" });
+    setFavoriteGames((g) => g.filter((x) => x.id !== id));
+  };
+
+  // Logout
+  const handleLogout = useCallback(() => {
+    signOut({ callbackUrl: "/login" });
+  }, []);
+
+  // Deactivate account
+  const handleDeactivate = useCallback(async () => {
+    if (!window.confirm("Really deactivate your account? This cannot be undone.")) return;
+    setDeactivating(true);
+    setDeactivateError(null);
     try {
-      const res = await fetch(`/api/auth/favoriteService?id=${id}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) throw new Error("Failed to delete favorite game");
-      setFavoriteGames((prev) => prev.filter((game) => game.id !== id));
-    } catch (err) {
-      console.error("Error removing favorite game:", err);
+      const res = await fetch("/api/auth/deactivate", { method: "POST" });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error || "Deactivation failed");
+      // on success, sign out to clear session
+      await signOut({ callbackUrl: "/" });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setDeactivateError(err.message || "Error deactivating");
+      } else {
+        setDeactivateError("An unknown error occurred.");
+      }
+      setDeactivating(false);
     }
-  };
+  }, []);
 
-  const handleLogout = async () => {
-    await signOut({ callbackUrl: "/login" });
-  };
+  // Redirect if not logged in
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
 
-  if (status === "loading") return <div>Loading...</div>;
-
-  if (status === "unauthenticated") {
-    return <p>You need to log in to view your games.</p>;
+  if (status === "loading") {
+    return <div className="p-6">Loading account…</div>;
   }
 
   return (
-    <main className="p-6 min-h-screen">
-      <h1 className="text-4xl font-bold mb-6">
-        Welcome, {session?.user?.name || "User"}!
+    <main className="p-6 min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+      <h1 className="text-3xl font-bold mb-4">
+        Welcome, {session?.user?.name || session?.user?.email}!
       </h1>
 
-      <button
-        onClick={handleLogout}
-        className="bg-red-500 text-white p-2 rounded mb-6"
-      >
-        Logout
-      </button>
+      <div className="space-x-4 mb-6">
+        <button
+          onClick={handleLogout}
+          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+        >
+          Logout
+        </button>
+        <button
+          onClick={handleDeactivate}
+          disabled={deactivating}
+          className="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900 disabled:opacity-50"
+        >
+          {deactivating ? "Deactivating…" : "Deactivate Account"}
+        </button>
+        {deactivateError && (
+          <p className="text-red-500 mt-2">{deactivateError}</p>
+        )}
+      </div>
 
-      {loading ? (
-        <div>Loading...</div>
+      {loadingGames ? (
+        <p>Loading your games…</p>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : (
         <>
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">Favorite Games</h2>
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold mb-2">Favorite Games</h2>
             {favoriteGames.length === 0 ? (
               <p>You have no favorite games.</p>
             ) : (
               <ul className="space-y-4">
-                {favoriteGames.map((game) => (
+                {favoriteGames.map((g) => (
                   <li
-                    key={game.id}
+                    key={g.id}
                     className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow"
                   >
-                    <h3 className="text-xl font-semibold">{game.title}</h3>
-                    <Image
-                      src={game.thumbnail || "/default-thumbnail.jpg"}
-                      alt={`${game.title} thumbnail`}
-                      width={128}
-                      height={96}
-                      className="mt-2 rounded"
-                    />
+                    <h3 className="text-xl font-semibold">{g.title}</h3>
+                    {g.thumbnail && (
+                      <Image
+                        src={g.thumbnail}
+                        alt={g.title}
+                        width={128}
+                        height={96}
+                        className="mt-2 rounded"
+                      />
+                    )}
                     <button
-                      onClick={() => removeFavoriteGame(game.id)}
-                      className="bg-red-500 text-white px-4 py-2 mt-2 rounded hover:bg-red-600"
+                      onClick={() => removeFavoriteGame(g.id)}
+                      className="bg-red-500 text-white px-3 py-1 mt-2 rounded hover:bg-red-600"
                     >
                       Remove
                     </button>
@@ -145,28 +173,30 @@ export default function AccountPage() {
             )}
           </section>
 
-          <section className="mt-10">
-            <h2 className="text-2xl font-semibold mb-4">Saved Games</h2>
+          <section>
+            <h2 className="text-2xl font-semibold mb-2">Saved Games</h2>
             {savedGames.length === 0 ? (
               <p>You have no saved games.</p>
             ) : (
               <ul className="space-y-4">
-                {savedGames.map((game) => (
+                {savedGames.map((g) => (
                   <li
-                    key={game.id}
+                    key={g.id}
                     className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow"
                   >
-                    <h3 className="text-xl font-semibold">{game.title}</h3>
-                    <Image
-                      src={game.thumbnail || "/default-thumbnail.jpg"}
-                      alt={`${game.title} thumbnail`}
-                      width={128}
-                      height={96}
-                      className="mt-2 rounded"
-                    />
+                    <h3 className="text-xl font-semibold">{g.title}</h3>
+                    {g.thumbnail && (
+                      <Image
+                        src={g.thumbnail}
+                        alt={g.title}
+                        width={128}
+                        height={96}
+                        className="mt-2 rounded"
+                      />
+                    )}
                     <button
-                      onClick={() => removeSavedGame(game.id)}
-                      className="bg-red-500 text-white px-4 py-2 mt-2 rounded hover:bg-red-600"
+                      onClick={() => removeSavedGame(g.id)}
+                      className="bg-red-500 text-white px-3 py-1 mt-2 rounded hover:bg-red-600"
                     >
                       Remove
                     </button>
