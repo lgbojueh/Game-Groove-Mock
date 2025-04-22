@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import styles from "../../styles/styles.module.css";
 import Link from "next/link";
+import styles from "../../styles/styles.module.css";
 
 interface FormData {
   identifier: string;
@@ -17,8 +17,11 @@ export default function Login() {
     identifier: "",
     password: "",
   });
-  const [error, setError]   = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const toggleShowPassword = () => setShowPassword((v) => !v);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,30 +30,32 @@ export default function Login() {
     // Basic validation
     if (!formData.identifier.trim()) {
       setError("Please enter your email.");
-      return setLoading(false);
+      return;
     }
     if (!/\S+@\S+\.\S+/.test(formData.identifier)) {
       setError("Please enter a valid email.");
-      return setLoading(false);
+      return;
     }
     if (!formData.password.trim()) {
       setError("Please enter your password.");
-      return setLoading(false);
+      return;
     }
 
     setLoading(true);
-
-    // !! NOTICE: use `identifier`, not `email`
     const res = await signIn("credentials", {
       redirect: false,
       identifier: formData.identifier,
-      password:   formData.password,
+      password: formData.password,
     });
-
     setLoading(false);
 
     if (res?.error) {
-      setError(res.error);
+      // Map the default error code to something user‑friendly
+      if (res.error === "CredentialsSignin") {
+        setError("Incorrect email or password.");
+      } else {
+        setError(res.error);
+      }
     } else {
       router.push("/account");
     }
@@ -62,12 +67,19 @@ export default function Login() {
         <h1 className={`${styles.SignUp} text-3xl font-bold text-center mb-6`}>
           Login
         </h1>
+
         {error && (
-          <p className="text-red-500 mb-4 text-center" aria-live="assertive">
+          <p
+            role="alert"
+            className="text-red-500 mb-4 text-center"
+            aria-live="assertive"
+          >
             {error}
           </p>
         )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Email */}
           <div>
             <label
               htmlFor="login-identifier"
@@ -87,7 +99,9 @@ export default function Login() {
               required
             />
           </div>
-          <div>
+
+          {/* Password w/ Show/Hide */}
+          <div className="relative">
             <label
               htmlFor="login-password"
               className={`${styles.SigningupandLoggingIn} block mb-1`}
@@ -96,15 +110,23 @@ export default function Login() {
             </label>
             <input
               id="login-password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
               value={formData.password}
               onChange={(e) =>
                 setFormData({ ...formData, password: e.target.value })
               }
-              className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-gray-300 p-2 w-full rounded pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
+            <button
+              type="button"
+              onClick={toggleShowPassword}
+              className="absolute inset-y-0 right-0 px-3 flex items-center text-sm text-gray-600 hover:text-gray-800"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
             <div className="mt-1 text-right">
               <Link
                 href="/forgot-password"
@@ -114,6 +136,8 @@ export default function Login() {
               </Link>
             </div>
           </div>
+
+          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
