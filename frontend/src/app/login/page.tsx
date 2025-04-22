@@ -125,7 +125,7 @@ export default function Login() {
               className="absolute inset-y-0 right-0 px-3 flex items-center text-sm text-gray-600 hover:text-gray-800"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              {showPassword ? "Hide" : "Show"}
+              {showPassword ? "Hide Password" : "Show Password"}
             </button>
             <div className="mt-1 text-right">
               <Link
