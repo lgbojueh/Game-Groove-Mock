@@ -1,4 +1,3 @@
-// src/app/account/saved/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -12,60 +11,83 @@ interface SavedGame {
 }
 
 export default function SavedGamesPage() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const [savedGames, setSavedGames] = useState<SavedGame[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    if (status === "authenticated") {
-      (async () => {
+    if (status === "authenticated" && session?.user?.id) {
+      const fetchSavedGames = async () => {
         try {
           setLoading(true);
-          const res = await fetch("/api/auth/savedGames");
-          if (!res.ok) throw new Error(await res.text());
-          setSavedGames(await res.json());
-        } catch (err: unknown) {
-          if (err instanceof Error) {
-            setError(err.message);
-          } else {
-            setError("Unknown error");
+          const userId = session.user.id;
+
+          // ← Note the correct URL here
+          const res = await fetch(`/api/auth/savedGames?userId=${userId}`);
+          if (!res.ok) {
+            const text = await res.text();
+            throw new Error(`Error fetching saved games: ${text}`);
           }
+
+          const data: SavedGame[] = await res.json();
+          setSavedGames(data);
+        } catch (err) {
+          console.error("Failed to fetch saved games:", err);
+          setError(err instanceof Error ? err.message : "An unknown error occurred.");
         } finally {
           setLoading(false);
         }
-      })();
-    }
-  }, [status]);
+      };
 
-  const removeSaved = async (id: number) => {
-    await fetch(`/api/auth/savedGames?id=${id}`, { method: "DELETE" });
-    setSavedGames((g) => g.filter((x) => x.id !== id));
+      fetchSavedGames();
+    }
+  }, [status, session]);
+
+  const removeSavedGame = async (id: number) => {
+    try {
+      const res = await fetch(`/api/auth/savedGames?id=${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete saved game");
+      setSavedGames((prev) => prev.filter((g) => g.id !== id));
+    } catch (err) {
+      console.error("Error removing saved game:", err);
+    }
   };
 
-  if (status === "loading") return <p>Loading...</p>;
-  if (status === "unauthenticated") return <p>Please log in to view saved games.</p>;
+  if (status === "loading") return <div className="p-6">Loading...</div>;
+  if (status === "unauthenticated")
+    return <p className="p-6">Please log in to view saved games.</p>;
 
   return (
-    <main className="p-6">
-      <h1 className="text-3xl mb-4">Saved Games</h1>
+    <main className="p-6 min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+      <h1 className="text-3xl font-bold mb-6">Saved Games</h1>
+
       {loading ? (
-        <p>Loading…</p>
+        <p>Loading...</p>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : savedGames.length === 0 ? (
-        <p>No saved games.</p>
+        <p>You have no saved games.</p>
       ) : (
         <ul className="space-y-4">
-          {savedGames.map((g) => (
-            <li key={g.id} className="p-4 bg-gray-100 rounded">
-              <h2 className="text-xl">{g.title}</h2>
-              {g.thumbnail && (
-                <Image src={g.thumbnail} alt="" width={128} height={80} className="mt-2" />
-              )}
+          {savedGames.map((game) => (
+            <li
+              key={game.id}
+              className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow"
+            >
+              <h3 className="text-xl font-semibold">{game.title}</h3>
+              <Image
+                src={game.thumbnail || "/default-thumbnail.jpg"}
+                alt={`${game.title} thumbnail`}
+                width={128}
+                height={96}
+                className="mt-2 rounded"
+              />
               <button
-                onClick={() => removeSaved(g.id)}
-                className="mt-2 px-3 py-1 bg-red-500 text-white rounded"
+                onClick={() => removeSavedGame(game.id)}
+                className="bg-red-500 text-white px-4 py-2 mt-2 rounded hover:bg-red-600"
               >
                 Remove
               </button>
