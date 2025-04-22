@@ -40,22 +40,17 @@ export default function AccountPage() {
           fetch(`/api/auth/favoriteService?userId=${userId}`),
         ]);
 
-        if (!savedRes.ok) {
-          throw new Error(await savedRes.text());
-        }
-        if (!favRes.ok) {
-          throw new Error(await favRes.text());
-        }
+        if (!savedRes.ok) throw new Error(await savedRes.text());
+        if (!favRes.ok) throw new Error(await favRes.text());
 
         setSavedGames(await savedRes.json());
         setFavoriteGames(await favRes.json());
       } catch (err: unknown) {
         if (err instanceof Error) {
-          setDeactivateError(err.message || "Error deactivating");
+          setError(err.message || "Failed to load games.");
         } else {
-          setDeactivateError("An unknown error occurred.");
+          setError("Failed to load games.");
         }
-        setError(err instanceof Error ? err.message : "Failed to load games.");
       } finally {
         setLoadingGames(false);
       }
@@ -79,14 +74,13 @@ export default function AccountPage() {
 
   // Deactivate account
   const handleDeactivate = useCallback(async () => {
-    if (!window.confirm("Really deactivate your account? This cannot be undone.")) return;
+    if (!confirm("Really deactivate your account? This cannot be undone.")) return;
     setDeactivating(true);
     setDeactivateError(null);
     try {
       const res = await fetch("/api/auth/deactivate", { method: "POST" });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error || "Deactivation failed");
-      // on success, sign out to clear session
       await signOut({ callbackUrl: "/" });
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -100,14 +94,10 @@ export default function AccountPage() {
 
   // Redirect if not logged in
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login");
-    }
+    if (status === "unauthenticated") router.push("/login");
   }, [status, router]);
 
-  if (status === "loading") {
-    return <div className="p-6">Loading account…</div>;
-  }
+  if (status === "loading") return <div className="p-6">Loading account…</div>;
 
   return (
     <main className="p-6 min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -152,14 +142,18 @@ export default function AccountPage() {
                     className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow"
                   >
                     <h3 className="text-xl font-semibold">{g.title}</h3>
-                    {g.thumbnail && (
+                    {g.thumbnail ? (
                       <Image
                         src={g.thumbnail}
-                        alt={g.title}
+                        alt={g.title || "Favorite game thumbnail"}
                         width={128}
                         height={96}
                         className="mt-2 rounded"
                       />
+                    ) : (
+                      <div className="w-32 h-20 bg-gray-300 flex items-center justify-center mt-2 rounded">
+                        <span>No Image</span>
+                      </div>
                     )}
                     <button
                       onClick={() => removeFavoriteGame(g.id)}
@@ -185,14 +179,18 @@ export default function AccountPage() {
                     className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow"
                   >
                     <h3 className="text-xl font-semibold">{g.title}</h3>
-                    {g.thumbnail && (
+                    {g.thumbnail ? (
                       <Image
                         src={g.thumbnail}
-                        alt={g.title}
+                        alt={g.title || "Saved game thumbnail"}
                         width={128}
                         height={96}
                         className="mt-2 rounded"
                       />
+                    ) : (
+                      <div className="w-32 h-20 bg-gray-300 flex items-center justify-center mt-2 rounded">
+                        <span>No Image</span>
+                      </div>
                     )}
                     <button
                       onClick={() => removeSavedGame(g.id)}
