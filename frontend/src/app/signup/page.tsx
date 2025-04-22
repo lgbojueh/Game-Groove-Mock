@@ -1,10 +1,12 @@
+// src/app/signup/page.tsx
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import styles from "../../styles/styles.module.css";
 
-export default function SignUp() {
+export default function SignUpPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     username: "",
@@ -13,93 +15,92 @@ export default function SignUp() {
   });
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Redirect already logged-in users
-  useEffect(() => {
-    if (localStorage.getItem("token")) {
-      router.push("/account");
-    }
-  }, [router]);
+  // Simple validators
+  const validateEmail = (email: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  // Validate password: at least 8 chars, one uppercase, one lowercase, one digit.
-  const validatePassword = (password: string): boolean => {
-    const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,}$/;
-    return passwordRegex.test(password);
-  };
+  const validatePassword = (pw: string) =>
+    /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,}$/.test(pw);
 
-  // Validate email format
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setError("");
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-
-    if (!validateEmail(formData.email)) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-
-    if (!validatePassword(formData.password)) {
-      setError(
-        "Password must be at least 8 characters long, include at least one uppercase letter, one lowercase letter, and one number."
-      );
-      return;
-    }
-
-    if (formData.password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Signup failed");
-        setLoading(false);
+      // 1️⃣ Client‑side validations
+      if (!validateEmail(formData.email)) {
+        setError("Please enter a valid email address.");
+        return;
+      }
+      if (!validatePassword(formData.password)) {
+        setError(
+          "Password must be at least 8 characters, include uppercase, lowercase and a number."
+        );
+        return;
+      }
+      if (formData.password !== confirmPassword) {
+        setError("Passwords do not match.");
         return;
       }
 
-      setSuccess("Signup successful! Redirecting...");
-      setTimeout(() => {
-        // Reset form data after successful signup
-        setFormData({ username: "", email: "", password: "" });
-        setConfirmPassword("");
+      setLoading(true);
+
+      try {
+        // 2️⃣ Create user
+        const res = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+        const body = await res.json();
+
+        if (!res.ok) {
+          setError(body.error || "Signup failed");
+          setLoading(false);
+          return;
+        }
+
+        // 3️⃣ Auto‑login via NextAuth Credentials provider
+        const signin = await signIn("credentials", {
+          redirect: false,
+          identifier: formData.email,
+          password: formData.password,
+        });
+
+        if (signin?.error) {
+          setError(signin.error || "Auto‑login failed. Please log in manually.");
+          setLoading(false);
+          return;
+        }
+
+        // 4️⃣ Success! Send them to their account
         router.push("/account");
-      }, 2000);
-    } catch (err) {
-      console.error("Error in signup:", err);
-      setError("An unexpected error occurred.");
-    } finally {
-      setLoading(false);
-    }
-  }, [formData, confirmPassword, router]);
+      } catch (err) {
+        console.error("Signup error:", err);
+        setError("An unexpected error occurred.");
+        setLoading(false);
+      }
+    },
+    [formData, confirmPassword, router]
+  );
 
   return (
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen flex items-center justify-center">
       <section className="max-w-md w-full bg-gray-100 dark:bg-gray-800 p-8 rounded-lg shadow-lg">
-        <header className="mb-6 text-center">
-          <h1 className={`${styles.SignUp} text-3xl font-bold`}>Sign Up</h1>
-        </header>
+        <h1 className={`${styles.SignUp} text-3xl font-bold text-center mb-6`}>
+          Sign Up
+        </h1>
 
-        {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
-        {success && <p className="text-green-500 mb-4 text-center">{success}</p>}
+        {error && (
+          <p className="text-red-500 mb-4 text-center" role="alert">
+            {error}
+          </p>
+        )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Username */}
           <div>
             <label
               htmlFor="signup-username"
@@ -110,17 +111,16 @@ export default function SignUp() {
             <input
               id="signup-username"
               type="text"
-              placeholder="Enter your username"
               value={formData.username}
               onChange={(e) =>
                 setFormData({ ...formData, username: e.target.value })
               }
-              className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
-              autoFocus
+              className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
+          {/* Email */}
           <div>
             <label
               htmlFor="signup-email"
@@ -131,17 +131,16 @@ export default function SignUp() {
             <input
               id="signup-email"
               type="email"
-              placeholder="Enter your email"
               value={formData.email}
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
               }
-              className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
-              aria-label="Email Address"
+              className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
+          {/* Password */}
           <div>
             <label
               htmlFor="signup-password"
@@ -152,20 +151,19 @@ export default function SignUp() {
             <input
               id="signup-password"
               type="password"
-              placeholder="Enter your password"
               value={formData.password}
               onChange={(e) =>
                 setFormData({ ...formData, password: e.target.value })
               }
-              className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
-              aria-label="Password"
+              className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <p className="text-xs text-gray-500 mt-1">
-              Password must be at least 8 characters long, include at least one uppercase letter, one lowercase letter, and one number.
+              At least 8 characters, one uppercase, one lowercase, and one number.
             </p>
           </div>
 
+          {/* Confirm Password */}
           <div>
             <label
               htmlFor="signup-confirm-password"
@@ -176,21 +174,20 @@ export default function SignUp() {
             <input
               id="signup-confirm-password"
               type="password"
-              placeholder="Re-enter your password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
-              aria-label="Confirm Password"
+              className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
+          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
-            className="bg-blue-500 text-white p-2 w-full rounded hover:bg-blue-600 transition disabled:opacity-50"
+            className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition disabled:opacity-50"
           >
-            {loading ? "Signing up..." : "Sign Up"}
+            {loading ? "Signing up…" : "Sign Up"}
           </button>
         </form>
       </section>
