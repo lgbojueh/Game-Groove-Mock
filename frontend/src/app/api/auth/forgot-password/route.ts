@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   try {
     const { email } = await request.json();
 
-    // Validate input
+    // 1) Validate input
     if (!email || typeof email !== 'string') {
       return NextResponse.json(
         { error: 'A valid email is required' },
@@ -16,69 +16,60 @@ export async function POST(request: Request) {
       );
     }
 
-    // Look up the user by email, only active accounts (isActive = true)
+    // 2) Find active user
     const user = await prisma.user.findFirst({
       where: { email, isActive: true },
     });
 
-    // Always return a generic success message to prevent email enumeration
+    // Always return success to avoid account enumeration
     if (!user) {
       return NextResponse.json({
         message: 'If the email exists, a reset link will be sent.'
       });
     }
 
-    // Generate a secure reset token
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    const tokenExpiry = new Date(Date.now() + 3600000); // 1 hour from now
+    // 3) Generate token & expiry
+    const resetToken   = crypto.randomBytes(32).toString('hex');
+    const tokenExpiry  = new Date(Date.now() + 3600_000); // 1h
 
-    // Update the user record with reset token and expiry
+    // 4) Persist token on user record
     await prisma.user.update({
       where: { id: user.id },
       data: { resetToken, resetTokenExpiry: tokenExpiry },
     });
 
-    // Validate environment variables for SMTP configuration
-    if (
-      !process.env.SMTP_HOST ||
-      !process.env.SMTP_PORT ||
-      !process.env.SMTP_USER ||
-      !process.env.SMTP_PASS
-    ) {
-      console.error('SMTP configuration is missing in environment variables');
+    // 5) Ensure SMTP env vars are set
+    const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, NEXTAUTH_URL } = process.env;
+    if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS || !NEXTAUTH_URL) {
+      console.error('Missing SMTP or NEXTAUTH_URL env config');
       return NextResponse.json(
         { error: 'Email service is not configured' },
         { status: 500 }
       );
     }
 
-    // Configure the transporter using environment variables
+    // 6) Configure Nodemailer
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: Number(process.env.SMTP_PORT) === 465, // true for port 465, false for others
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-      connectionTimeout: 10000,
+      host:     SMTP_HOST,
+      port:     Number(SMTP_PORT),
+      secure:   Number(SMTP_PORT) === 465,
+      auth:     { user: SMTP_USER, pass: SMTP_PASS },
+      // optional timeouts, etc.
     });
 
-    // Create a reset URL (adjust the domain as needed)
-    const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${resetToken}`;
+    // 7) Build the reset link
+    const resetUrl = `${NEXTAUTH_URL}/reset-password?token=${resetToken}`;
 
-    // Email message options
-    const message = {
-      from: `Game Grove <${process.env.SMTP_USER}>`,
-      to: user.email,
+    // 8) Send the mail
+    const info = await transporter.sendMail({
+      from:    `Game Groove <${SMTP_USER}>`,
+      to:      user.email,
       subject: 'Reset Your Password',
-      text: `Please use the following link to reset your password: ${resetUrl}`,
-      html: `<p>Please use the following link to reset your password:</p><a href="${resetUrl}">${resetUrl}</a>`,
-    };
+      text:    `Click to reset: ${resetUrl}`,
+      html:    `<p>Click to reset:</p><a href="${resetUrl}">${resetUrl}</a>`,
+    });
 
-    // Send the email
-    const info = await transporter.sendMail(message);
-    console.log('Email sent. Preview URL:', nodemailer.getTestMessageUrl(info));
+    console.log('Forgot‑password email sent. Preview URL:', nodemailer.getTestMessageUrl(info));
 
     return NextResponse.json({
       message: 'If the email exists, a reset link will be sent.',
