@@ -104,7 +104,7 @@ export default function Navbar() {
               type="button"
               aria-haspopup="true"
               aria-controls="account-dropdown"
-              aria-expanded="true"
+              aria-expanded={dropdownOpen}
               aria-label="Toggle account menu"
               onMouseEnter={openDropdown}
               onMouseLeave={closeDropdown}
