@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 
 type BlogPostType = {
   id: string;
@@ -59,7 +59,6 @@ These new releases are already creating a buzz in the gaming community. Be sure 
 
 export default function BlogPostPage() {
   const { id } = useParams();
-  const router = useRouter();
   const post = id ? posts[id as keyof typeof posts] : undefined;
 
   if (!post) {
