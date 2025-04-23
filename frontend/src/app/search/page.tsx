@@ -1,4 +1,3 @@
-// src/app/search/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -34,7 +33,7 @@ export default function SearchForm() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
 
-  // each filter is an array of selected values
+  // multi-select filter state arrays
   const [players, setPlayers] = useState<string[]>([]);
   const [complexity, setComplexity] = useState<string[]>([]);
   const [playtime, setPlaytime] = useState<string[]>([]);
@@ -51,11 +50,11 @@ export default function SearchForm() {
   }[] = [
     {
       id: "players",
-      label: "Players",
+      label: "Number of Players",
       options: [
-        { value: "2", label: "2" },
-        { value: "3-4", label: "3–4" },
-        { value: "5+", label: "5+" },
+        { value: "2", label: "2 Players" },
+        { value: "3-4", label: "3–4 Players" },
+        { value: "5+", label: "5+ Players" },
       ],
       selected: players,
       setSelected: setPlayers,
@@ -75,9 +74,9 @@ export default function SearchForm() {
       id: "playtime",
       label: "Play Time",
       options: [
-        { value: "short", label: "≤30 min" },
-        { value: "medium", label: "30–60 min" },
-        { value: "long", label: "≥60 min" },
+        { value: "short", label: "Short (≤30 min)" },
+        { value: "medium", label: "Medium (30–60 min)" },
+        { value: "long", label: "Long (60+ min)" },
       ],
       selected: playtime,
       setSelected: setPlaytime,
@@ -96,7 +95,7 @@ export default function SearchForm() {
     },
     {
       id: "age",
-      label: "Age",
+      label: "Age Rating",
       options: [
         { value: "kids", label: "Kids (5+)" },
         { value: "teen", label: "Teen (13+)" },
@@ -128,7 +127,7 @@ export default function SearchForm() {
     e.preventDefault();
     const q = searchQuery.trim() || "board game";
 
-    // fetch & store results
+    // fetch basic → detailed, store for results page
     const basic = await fetchGames(q);
     const ids = basic.map((g) => g.id!).filter(Boolean);
     const chunks = chunkArray(ids, 20);
@@ -144,7 +143,7 @@ export default function SearchForm() {
     }
     localStorage.setItem("searchResults", JSON.stringify(detailed));
 
-    // build multi-select params
+    // build query params (multiple values allowed)
     const params = new URLSearchParams();
     params.set("query", q);
     filters.forEach((f) => f.selected.forEach((v) => params.append(f.id, v)));
@@ -153,48 +152,58 @@ export default function SearchForm() {
   };
 
   return (
-    <main className="p-4 bg-[var(--background)] text-[var(--foreground)] min-h-screen">
-      <h1 className="text-3xl sm:text-5xl font-bold text-center mb-6">
+    <main className="p-8 bg-[var(--background)] text-[var(--foreground)] min-h-screen">
+      <h1 className="text-5xl font-bold text-center mb-10">
         Find Your Next Board Game
       </h1>
 
       <form
         onSubmit={handleSubmit}
-        className="max-w-3xl mx-auto bg-white dark:bg-gray-800 p-4 rounded-lg shadow grid gap-4 md:grid-cols-2"
+        className="max-w-5xl mx-auto bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl grid gap-8 md:grid-cols-2"
       >
+        {/* Render each filter as a larger checkbox group */}
         {filters.map((f) => (
-          <fieldset key={f.id} className="border dark:border-gray-600 rounded px-3 py-2 text-sm">
-            <legend className="font-medium text-sm mb-1">{f.label}</legend>
-            <div className="flex flex-col space-y-1">
+          <fieldset
+            key={f.id}
+            className="border border-gray-300 dark:border-gray-600 rounded-lg p-6"
+          >
+            <legend className="font-semibold text-lg mb-4">{f.label}</legend>
+            <div className="flex flex-col space-y-3">
               {f.options.map((opt) => (
-                <label key={opt.value} className="flex items-center text-sm">
+                <label
+                  key={opt.value}
+                  className="flex items-center space-x-3 text-base"
+                >
                   <input
                     type="checkbox"
-                    className="h-4 w-4 mr-2"
+                    className="h-5 w-5"
                     checked={f.selected.includes(opt.value)}
-                    onChange={() => toggleValue(f.selected, f.setSelected, opt.value)}
+                    onChange={() =>
+                      toggleValue(f.selected, f.setSelected, opt.value)
+                    }
                   />
-                  {opt.label}
+                  <span>{opt.label}</span>
                 </label>
               ))}
             </div>
           </fieldset>
         ))}
 
+        {/* Search bar spans full width */}
         <div className="md:col-span-2">
           <input
             type="text"
             placeholder="Search for a game…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full p-2 rounded-lg bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-sm"
+            className="w-full p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-lg border border-gray-300 dark:border-gray-600"
             aria-label="Search Games"
           />
         </div>
 
         <button
           type="submit"
-          className="md:col-span-2 py-2 text-base font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition"
+          className="md:col-span-2 py-4 text-xl font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition"
         >
           Search
         </button>
