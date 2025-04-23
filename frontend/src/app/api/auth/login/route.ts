@@ -1,4 +1,8 @@
 // src/app/api/auth/login/route.ts
+
+// force this API route to run in Node.js (so we can import `jsonwebtoken`)
+export const runtime = 'nodejs';
+
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';

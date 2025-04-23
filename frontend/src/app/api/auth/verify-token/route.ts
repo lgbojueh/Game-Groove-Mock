@@ -1,4 +1,7 @@
 // src/app/api/auth/verify-token/route.ts
+
+export const runtime = 'nodejs';
+
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 
