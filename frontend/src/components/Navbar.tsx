@@ -74,8 +74,8 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Center (desktop only) */}
-        <div className="hidden lg:flex items-center space-x-6">
+        {/* Center (desktop only): Nav Links + Search Icon */}
+        <div className="hidden lg:flex items-center space-x-6 relative">
           <Link href="/" className="text-white hover:text-gray-200">
             Home
           </Link>
@@ -91,13 +91,8 @@ export default function Navbar() {
           <Link href="/about" className="text-white hover:text-gray-200">
             About
           </Link>
-        </div>
 
-        {/* Right (desktop only): Search, Theme, Auth */}
-        <div className="hidden lg:flex items-center space-x-4 relative">
-          <ThemeToggle />
-
-          {/* Search icon / form */}
+          {/* Search icon */}
           {!searchOpen ? (
             <button
               type="button"
@@ -129,8 +124,12 @@ export default function Navbar() {
               </button>
             </form>
           )}
+        </div>
 
-          {/* Account dropdown */}
+        {/* Right (desktop only): Theme + Auth */}
+        <div className="hidden lg:flex items-center space-x-4 relative">
+          <ThemeToggle />
+
           {user ? (
             <div ref={dropdownRef} className="relative">
               <button
@@ -156,9 +155,7 @@ export default function Navbar() {
                     My Account
                   </button>
                   <button
-                    onClick={() =>
-                      router.push("/account/favorites")
-                    }
+                    onClick={() => router.push("/account/favorites")}
                     className={`${styles.accountInfo} block w-full text-left px-4 py-2`}
                   >
                     Favorite Games
@@ -200,7 +197,7 @@ export default function Navbar() {
         <div className="flex lg:hidden items-center space-x-2">
           <ThemeToggle />
 
-          {/* Search icon */}
+          {/* Mobile Search icon */}
           {!searchOpen ? (
             <button
               type="button"
@@ -236,7 +233,7 @@ export default function Navbar() {
             </form>
           )}
 
-          {/* Hamburger: split into two literal buttons */}
+          {/* Hamburger toggle */}
           {!mobileOpen ? (
             <button
               type="button"
@@ -264,39 +261,19 @@ export default function Navbar() {
       {/* Mobile drawer */}
       {mobileOpen && (
         <div className="lg:hidden bg-red-500 px-4 pb-4 space-y-2">
-          <Link
-            href="/"
-            className="block text-white hover:text-gray-200"
-            onClick={() => setMobileOpen(false)}
-          >
+          <Link href="/" className="block text-white hover:text-gray-200" onClick={() => setMobileOpen(false)}>
             Home
           </Link>
-          <Link
-            href="/games"
-            className="block text-white hover:text-gray-200"
-            onClick={() => setMobileOpen(false)}
-          >
+          <Link href="/games" className="block text-white hover:text-gray-200" onClick={() => setMobileOpen(false)}>
             All Games
           </Link>
-          <Link
-            href="/featured"
-            className="block text-white hover:text-gray-200"
-            onClick={() => setMobileOpen(false)}
-          >
+          <Link href="/featured" className="block text-white hover:text-gray-200" onClick={() => setMobileOpen(false)}>
             Featured
           </Link>
-          <Link
-            href="/blog"
-            className="block text-white hover:text-gray-200"
-            onClick={() => setMobileOpen(false)}
-          >
+          <Link href="/blog" className="block text-white hover:text-gray-200" onClick={() => setMobileOpen(false)}>
             Blog
           </Link>
-          <Link
-            href="/about"
-            className="block text-white hover:text-gray-200"
-            onClick={() => setMobileOpen(false)}
-          >
+          <Link href="/about" className="block text-white hover:text-gray-200" onClick={() => setMobileOpen(false)}>
             About
           </Link>
 
@@ -309,18 +286,10 @@ export default function Navbar() {
             </button>
           ) : (
             <>
-              <Link
-                href="/login"
-                className="block text-white hover:text-gray-200"
-                onClick={() => setMobileOpen(false)}
-              >
+              <Link href="/login" className="block text-white hover:text-gray-200" onClick={() => setMobileOpen(false)}>
                 Login
               </Link>
-              <Link
-                href="/signup"
-                className="block text-white hover:text-gray-200"
-                onClick={() => setMobileOpen(false)}
-              >
+              <Link href="/signup" className="block text-white hover:text-gray-200" onClick={() => setMobileOpen(false)}>
                 Sign Up
               </Link>
             </>
