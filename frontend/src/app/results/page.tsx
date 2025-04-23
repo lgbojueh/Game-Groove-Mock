@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { cleanDescription, shortenDescription } from "@/utils/cleanup";
 
+
 interface BasicGame {
   id: string;
   name: string;
