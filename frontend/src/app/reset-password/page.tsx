@@ -1,68 +1,68 @@
-"use client";
+// src/app/reset-password/page.tsx
+'use client';
 
-import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 export default function ResetPassword() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const token = searchParams.get("token");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const token = searchParams.get('token');
+
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!token) {
-      setError("Invalid or expired reset link.");
+      setError('Invalid or expired reset link.');
     }
   }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
+    setError('');
+    setSuccess('');
 
     if (!password || !confirmPassword) {
-      setError("Please fill in both password fields.");
+      setError('Please fill in both password fields.');
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError('Passwords do not match.');
       return;
     }
 
     const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,}$/;
     if (!passwordRegex.test(password)) {
       setError(
-        "Password must be at least 8 characters long, include at least one uppercase letter, one lowercase letter, and one number."
+        'Password must be at least 8 characters long, include at least one uppercase letter, one lowercase letter, and one number.'
       );
       return;
     }
 
     try {
       setLoading(true);
-      const response = await fetch("/api/auth/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, newPassword: password }),
       });
-
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Reset failed.");
+        throw new Error(data.error || 'Reset failed.');
       }
 
-      setSuccess("Password has been reset successfully. Redirecting to login...");
-      setTimeout(() => router.push("/login"), 3000);
-    } catch (err: Error | unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Something went wrong.";
-      console.error("Error resetting password:", errorMessage);
-      setError(errorMessage);
+      setSuccess('Password has been reset successfully. Redirecting to login...');
+      setTimeout(() => router.push('/login'), 3000);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Something went wrong.';
+      console.error('Error resetting password:', message);
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -92,6 +92,7 @@ export default function ResetPassword() {
                 disabled={loading}
               />
             </div>
+
             <div>
               <label htmlFor="confirm-password" className="block mb-1 font-medium">
                 Confirm Password
@@ -106,12 +107,13 @@ export default function ResetPassword() {
                 disabled={loading}
               />
             </div>
+
             <button
               type="submit"
               disabled={loading}
               className="bg-blue-500 text-white w-full p-2 rounded hover:bg-blue-600 transition disabled:opacity-50"
             >
-              {loading ? "Resetting..." : "Reset Password"}
+              {loading ? 'Resetting...' : 'Reset Password'}
             </button>
           </form>
         )}
