@@ -30,170 +30,165 @@ interface BasicGame {
 export default function SearchForm() {
   const router = useRouter();
 
-  const [players, setPlayers] = useState("any");
-  const [complexity, setComplexity] = useState("any");
-  const [playtime, setPlaytime] = useState("any");
-  const [genre, setGenre] = useState("any");
-  const [age, setAge] = useState("any");
-  const [theme, setTheme] = useState("any");
-
+  // now arrays instead of single values
+  const [players, setPlayers] = useState<string[]>([]);
+  const [complexity, setComplexity] = useState<string[]>([]);
+  const [playtime, setPlaytime] = useState<string[]>([]);
+  const [genre, setGenre] = useState<string[]>([]);
+  const [age, setAge] = useState<string[]>([]);
+  const [theme, setTheme] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const effectiveQuery = searchQuery.trim() ? searchQuery.trim() : "board game";
+    const q = searchQuery.trim() || "board game";
 
-    const params = new URLSearchParams();
-    params.set("query", effectiveQuery);
-    params.set("players", players);
-    params.set("complexity", complexity);
-    params.set("playtime", playtime);
-    params.set("genre", genre);
-    params.set("age", age);
-    params.set("theme", theme);
-
-    const basicResults = await fetchGames(effectiveQuery);
-    console.log("Basic search results:", basicResults);
-
-    const allIds: string[] = basicResults.map((game) => game.id).filter((id): id is string => id !== null);
-    const idChunks = chunkArray<string>(allIds, 20);
-
-    let detailedResults: BasicGame[] = [];
-    for (const chunk of idChunks) {
-      const details = await fetchDetailedGames(chunk);
-      const cleaned = details.map((game) => ({
-        ...game,
-        description: shortenDescription(cleanDescription(game.description)),
-      }));
-      detailedResults = detailedResults.concat(cleaned);
+    // fetch & store detailed results
+    const basic = await fetchGames(q);
+    const ids = basic.map((g) => g.id!).filter(Boolean);
+    const chunks = chunkArray(ids, 20);
+    const detailed: BasicGame[] = [];
+    for (const c of chunks) {
+      const dets = await fetchDetailedGames(c);
+      detailed.push(
+        ...dets.map((g) => ({
+          ...g,
+          description: shortenDescription(cleanDescription(g.description)),
+        }))
+      );
     }
+    localStorage.setItem("searchResults", JSON.stringify(detailed));
 
-    localStorage.setItem("searchResults", JSON.stringify(detailedResults));
+    // build params with multiple values
+    const params = new URLSearchParams();
+    params.set("query", q);
+    players.forEach((v) => params.append("players", v));
+    complexity.forEach((v) => params.append("complexity", v));
+    playtime.forEach((v) => params.append("playtime", v));
+    genre.forEach((v) => params.append("genre", v));
+    age.forEach((v) => params.append("age", v));
+    theme.forEach((v) => params.append("theme", v));
 
     router.push(`/results?${params.toString()}`);
   };
 
+  const mkMulti = (
+    id: string,
+    label: string,
+    opts: { value: string; label: string }[],
+    sel: string[],
+    onChange: (arr: string[]) => void
+  ) => (
+    <div>
+      <label htmlFor={id} className="block font-semibold mb-1">
+        {label}
+      </label>
+      <select
+        id={id}
+        multiple
+        value={sel}
+        onChange={(e) =>
+          onChange(Array.from(e.target.selectedOptions, (o) => o.value))
+        }
+        className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white"
+      >
+        {opts.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen bg-[var(--background)] text-[var(--foreground)] px-6">
-      <h1 className="text-4xl sm:text-6xl font-bold text-center mb-10">
+    <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen">
+      <h1 className="text-4xl font-bold mb-8 text-center">
         Find Your Next Board Game
       </h1>
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-3xl bg-red-600 dark:bg-red-400 p-6 rounded-lg shadow-md"
+        className="max-w-3xl mx-auto bg-red-600 dark:bg-red-400 p-6 rounded-lg shadow-md grid gap-4 md:grid-cols-2"
       >
-        <div className="grid grid-rows-1 md:grid-rows-2 gap-4">
-          {/* Filters (same as before) */}
-          <div>
-            <label htmlFor="players" className="block font-semibold mb-1">
-              Number of Players
-            </label>
-            <select
-              id="players"
-              value={players}
-              onChange={(e) => setPlayers(e.target.value)}
-              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white"
-            >
-              <option value="any">Any</option>
-              <option value="2">2 Players</option>
-              <option value="3-4">3-4 Players</option>
-              <option value="5+">5+ Players</option>
-            </select>
-          </div>
+        {mkMulti(
+          "players",
+          "Number of Players",
+          [
+            { value: "2", label: "2 Players" },
+            { value: "3-4", label: "3–4 Players" },
+            { value: "5+", label: "5+ Players" },
+          ],
+          players,
+          setPlayers
+        )}
 
-          <div>
-            <label htmlFor="complexity" className="block font-semibold mb-1">
-              Complexity
-            </label>
-            <select
-              id="complexity"
-              value={complexity}
-              onChange={(e) => setComplexity(e.target.value)}
-              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white"
-            >
-              <option value="any">Any</option>
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
-            </select>
-          </div>
+        {mkMulti(
+          "complexity",
+          "Complexity",
+          [
+            { value: "easy", label: "Easy" },
+            { value: "medium", label: "Medium" },
+            { value: "hard", label: "Hard" },
+          ],
+          complexity,
+          setComplexity
+        )}
 
-          <div>
-            <label htmlFor="playtime" className="block font-semibold mb-1">
-              Play Time
-            </label>
-            <select
-              id="playtime"
-              value={playtime}
-              onChange={(e) => setPlaytime(e.target.value)}
-              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white"
-            >
-              <option value="any">Any</option>
-              <option value="short">Short (30 min or less)</option>
-              <option value="medium">Medium (30-60 min)</option>
-              <option value="long">Long (60+ min)</option>
-            </select>
-          </div>
+        {mkMulti(
+          "playtime",
+          "Play Time",
+          [
+            { value: "short", label: "Short (≤30m)" },
+            { value: "medium", label: "Medium (30–60m)" },
+            { value: "long", label: "Long (60m+)" },
+          ],
+          playtime,
+          setPlaytime
+        )}
 
-          <div>
-            <label htmlFor="genre" className="block font-semibold mb-1">
-              Genre
-            </label>
-            <select
-              id="genre"
-              value={genre}
-              onChange={(e) => setGenre(e.target.value)}
-              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white"
-            >
-              <option value="any">Any</option>
-              <option value="strategy">Strategy</option>
-              <option value="party">Party</option>
-              <option value="family">Family</option>
-              <option value="adventure">Adventure</option>
-            </select>
-          </div>
+        {mkMulti(
+          "genre",
+          "Genre",
+          [
+            { value: "strategy", label: "Strategy" },
+            { value: "party", label: "Party" },
+            { value: "family", label: "Family" },
+            { value: "adventure", label: "Adventure" },
+          ],
+          genre,
+          setGenre
+        )}
 
-          <div>
-            <label htmlFor="age" className="block font-semibold mb-1">
-              Age Rating
-            </label>
-            <select
-              id="age"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white"
-            >
-              <option value="any">Any</option>
-              <option value="kids">Kids (5+)</option>
-              <option value="teen">Teen (13+)</option>
-              <option value="adult">Adult (18+)</option>
-            </select>
-          </div>
+        {mkMulti(
+          "age",
+          "Age Rating",
+          [
+            { value: "kids", label: "Kids (5+)" },
+            { value: "teen", label: "Teen (13+)" },
+            { value: "adult", label: "Adult (18+)" },
+          ],
+          age,
+          setAge
+        )}
 
-          <div>
-            <label htmlFor="theme" className="block font-semibold mb-1">
-              Theme
-            </label>
-            <select
-              id="theme"
-              value={theme}
-              onChange={(e) => setTheme(e.target.value)}
-              className="w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-black dark:text-white"
-            >
-              <option value="any">Any</option>
-              <option value="fantasy">Fantasy</option>
-              <option value="sci-fi">Sci-Fi</option>
-              <option value="horror">Horror</option>
-              <option value="historical">Historical</option>
-            </select>
-          </div>
-        </div>
+        {mkMulti(
+          "theme",
+          "Theme",
+          [
+            { value: "fantasy", label: "Fantasy" },
+            { value: "sci-fi", label: "Sci-Fi" },
+            { value: "horror", label: "Horror" },
+            { value: "historical", label: "Historical" },
+          ],
+          theme,
+          setTheme
+        )}
 
-        <div className="w-full max-w-md mt-6">
+        <div className="md:col-span-2">
           <input
             type="text"
-            placeholder="Search for a game..."
+            placeholder="Search for a game…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-700 text-black dark:text-white border border-gray-300 dark:border-gray-600"
@@ -203,7 +198,7 @@ export default function SearchForm() {
 
         <button
           type="submit"
-          className="mt-4 px-6 py-3 text-lg font-semibold rounded-lg transition bg-blue-400 hover:bg-gray-500 dark:bg-blue-700 dark:hover:bg-blue-600 text-[var(--foreground)]"
+          className="md:col-span-2 mt-2 w-full px-6 py-3 text-lg font-semibold rounded-lg bg-blue-400 hover:bg-blue-500 transition text-white"
         >
           Search
         </button>
