@@ -1,4 +1,7 @@
 // src/app/api/auth/favoriteService/route.ts
+
+export const runtime = 'nodejs';
+
 import { NextResponse, type NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";

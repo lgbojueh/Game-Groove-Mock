@@ -1,4 +1,7 @@
 // src/app/api/auth/signup/route.ts
+
+export const runtime = 'nodejs';
+
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
