@@ -1,3 +1,4 @@
+// src/app/search/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -33,7 +34,7 @@ export default function SearchForm() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
 
-  // multi-select filter state arrays
+  // each filter is an array of selected values
   const [players, setPlayers] = useState<string[]>([]);
   const [complexity, setComplexity] = useState<string[]>([]);
   const [playtime, setPlaytime] = useState<string[]>([]);
@@ -146,41 +147,35 @@ export default function SearchForm() {
     // build query params (multiple values allowed)
     const params = new URLSearchParams();
     params.set("query", q);
-    filters.forEach((f) => f.selected.forEach((v) => params.append(f.id, v)));
+    filters.forEach((f) =>
+      f.selected.forEach((v) => params.append(f.id, v))
+    );
 
     router.push(`/results?${params.toString()}`);
   };
 
   return (
-    <main className="p-8 bg-[var(--background)] text-[var(--foreground)] min-h-screen">
-      <h1 className="text-5xl font-bold text-center mb-10">
+    <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen">
+      <h1 className="text-4xl sm:text-6xl font-bold text-center mb-8">
         Find Your Next Board Game
       </h1>
 
       <form
         onSubmit={handleSubmit}
-        className="max-w-5xl mx-auto bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl grid gap-8 md:grid-cols-2"
+        className="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg grid gap-6 md:grid-cols-2"
       >
-        {/* Render each filter as a larger checkbox group */}
+        {/* Render each filter as a checkbox group */}
         {filters.map((f) => (
-          <fieldset
-            key={f.id}
-            className="border border-gray-300 dark:border-gray-600 rounded-lg p-6"
-          >
-            <legend className="font-semibold text-lg mb-4">{f.label}</legend>
-            <div className="flex flex-col space-y-3">
+          <fieldset key={f.id} className="border border-gray-300 dark:border-gray-600 rounded p-4">
+            <legend className="font-semibold mb-2">{f.label}</legend>
+            <div className="flex flex-col space-y-2">
               {f.options.map((opt) => (
-                <label
-                  key={opt.value}
-                  className="flex items-center space-x-3 text-base"
-                >
+                <label key={opt.value} className="flex items-center space-x-2">
                   <input
                     type="checkbox"
-                    className="h-5 w-5"
+                    className="h-4 w-4"
                     checked={f.selected.includes(opt.value)}
-                    onChange={() =>
-                      toggleValue(f.selected, f.setSelected, opt.value)
-                    }
+                    onChange={() => toggleValue(f.selected, f.setSelected, opt.value)}
                   />
                   <span>{opt.label}</span>
                 </label>
@@ -196,14 +191,14 @@ export default function SearchForm() {
             placeholder="Search for a game…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-lg border border-gray-300 dark:border-gray-600"
+            className="w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-700 text-black dark:text-white border border-gray-300 dark:border-gray-600"
             aria-label="Search Games"
           />
         </div>
 
         <button
           type="submit"
-          className="md:col-span-2 py-4 text-xl font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition"
+          className="md:col-span-2 py-3 text-lg font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition"
         >
           Search
         </button>
