@@ -1,3 +1,4 @@
+// src/app/games/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -20,7 +21,7 @@ interface BasicGame {
   id: string;
   name: string;
   thumbnail: string;
-  description?: string;
+  description: string;    // now non-optional
 }
 
 export default function Games() {
@@ -36,13 +37,14 @@ export default function Games() {
     setError("");
 
     try {
-      // 1) Basic search
+      // 1) Basic search — give each a description="" so TS knows it exists
       const basic: BasicGame[] = (await fetchGames(query))
         .filter((g) => g.id)
         .map((g) => ({
           id: String(g.id),
           name: g.name || "Unknown Game",
           thumbnail: g.thumbnail || "/default-game-thumbnail.jpg",
+          description: "",     // ← initialize description
         }));
 
       if (!basic.length) {
@@ -63,12 +65,12 @@ export default function Games() {
             id: String(d.id),
             name: d.name || "Unknown Game",
             thumbnail: d.thumbnail || "/default-game-thumbnail.jpg",
-            description: cleanDescription(d.description),
+            description: cleanDescription(d.description), 
           }))
         );
       }
 
-      // 3) Merge back
+      // 3) Merge back into basic[]
       for (const det of detailsAcc) {
         const idx = basic.findIndex((b) => b.id === det.id);
         if (idx > -1) {

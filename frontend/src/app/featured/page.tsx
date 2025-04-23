@@ -73,30 +73,41 @@ export default function Featured() {
           <div className="overflow-y-auto max-h-[70vh]">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {popularGames.map((game) => (
-                <Link
+                <div
                   key={game.id ?? ""}
-                  href={`/game/${game.id}`}
-                  className="block p-4 bg-gray-400 dark:bg-gray-700 rounded shadow hover:shadow-xl transition"
+                  className="p-4 bg-gray-400 dark:bg-gray-700 rounded shadow hover:shadow-xl transition flex flex-col"
                 >
-                  <h3 className="font-semibold mb-2">{game.name}</h3>
-                  {game.thumbnail ? (
-                    <Image
-                      src={game.thumbnail}
-                      alt={`${game.name} thumbnail`}
-                      width={200}
-                      height={150}
-                      className="w-full h-[150px] object-cover rounded mb-2"
-                    />
-                  ) : (
-                    <div className="w-full h-[150px] bg-gray-300 flex items-center justify-center rounded mb-2">
-                      <span>No Image Available</span>
-                    </div>
-                  )}
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <Link href={`/game/${game.id}`} className="block">
+                    <h3 className="font-semibold mb-2 text-lg">{game.name}</h3>
+                    {game.thumbnail ? (
+                      <Image
+                        src={game.thumbnail}
+                        alt={`${game.name} thumbnail`}
+                        width={200}
+                        height={150}
+                        className="w-full h-[150px] object-cover rounded mb-2"
+                      />
+                    ) : (
+                      <div className="w-full h-[150px] bg-gray-300 flex items-center justify-center rounded mb-2">
+                        <span>No Image Available</span>
+                      </div>
+                    )}
+                  </Link>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 flex-1">
                     {shortenDescription(cleanDescription(game.description)) ||
                       "A brief description of the game."}
                   </p>
-                </Link>
+                  <a
+                    href={`https://www.google.com/search?tbm=shop&q=${encodeURIComponent(
+                      game.name + " board game"
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-block bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-center"
+                  >
+                    Buy on Google
+                  </a>
+                </div>
               ))}
             </div>
           </div>

@@ -1,4 +1,3 @@
-// src/app/game/[id]/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -21,14 +20,12 @@ interface Game {
   theme: string;
 }
 
-// shape returned by your favoriteService
 interface FavoriteRecord {
   id: number;
   name: string;
   thumbnail: string | null;
 }
 
-// (If you implement a savedGames, it could be identical)
 interface SavedRecord {
   id: number;
   title: string;
@@ -43,11 +40,10 @@ export default function GameDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // track the record-IDs so we can DELETE later
   const [favoriteId, setFavoriteId] = useState<number | null>(null);
   const [savedId, setSavedId]       = useState<number | null>(null);
 
-  // 1) load the game itself
+  // 1) Load the game
   useEffect(() => {
     async function load() {
       try {
@@ -67,12 +63,10 @@ export default function GameDetailsPage() {
     load();
   }, [id]);
 
-  // 2) once we know the user is authenticated *and* the game is loaded,
-  //    fetch their existing favorites & savedGames to seed the button state
+  // 2) Load user's existing favorite & saved entries
   useEffect(() => {
     if (status !== "authenticated" || !game) return;
 
-    // favorites
     fetch("/api/auth/favoriteService")
       .then((res) => res.json() as Promise<FavoriteRecord[]>)
       .then((list) => {
@@ -81,7 +75,6 @@ export default function GameDetailsPage() {
       })
       .catch(console.error);
 
-    // saved games (you’ll need to create savedGames similarly)
     fetch("/api/auth/savedGames")
       .then((res) => res.json() as Promise<SavedRecord[]>)
       .then((list) => {
@@ -99,10 +92,7 @@ export default function GameDetailsPage() {
     if (!game) return;
 
     if (favoriteId) {
-      // DELETE
-      const res = await fetch(`/api/auth/favoriteService?id=${favoriteId}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(`/api/auth/favoriteService?id=${favoriteId}`, { method: "DELETE" });
       if (res.ok) {
         setFavoriteId(null);
         alert("Removed from favorites");
@@ -110,14 +100,10 @@ export default function GameDetailsPage() {
         alert("Failed to remove favorite");
       }
     } else {
-      // POST
       const res = await fetch("/api/auth/favoriteService", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: game.name,
-          thumbnail: game.thumbnail,
-        }),
+        body: JSON.stringify({ name: game.name, thumbnail: game.thumbnail }),
       });
       if (res.ok) {
         const created = (await res.json()) as FavoriteRecord;
@@ -137,10 +123,7 @@ export default function GameDetailsPage() {
     if (!game) return;
 
     if (savedId) {
-      // DELETE
-      const res = await fetch(`/api/auth/savedGames?id=${savedId}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(`/api/auth/savedGames?id=${savedId}`, { method: "DELETE" });
       if (res.ok) {
         setSavedId(null);
         alert("Removed from saved games");
@@ -148,14 +131,10 @@ export default function GameDetailsPage() {
         alert("Failed to remove saved game");
       }
     } else {
-      // POST
       const res = await fetch("/api/auth/savedGames", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: game.name,
-          thumbnail: game.thumbnail,
-        }),
+        body: JSON.stringify({ title: game.name, thumbnail: game.thumbnail }),
       });
       if (res.ok) {
         const created = (await res.json()) as SavedRecord;
@@ -178,6 +157,7 @@ export default function GameDetailsPage() {
       </header>
       <main className="p-6 bg-[var(--background)] text-[var(--foreground)] flex-1 overflow-y-auto">
         <h1 className="text-4xl font-bold mb-4">{game.name}</h1>
+
         {game.thumbnail ? (
           <Image
             src={game.thumbnail}
@@ -191,9 +171,11 @@ export default function GameDetailsPage() {
             <span>No Image Available</span>
           </div>
         )}
+
         <div className="mb-4 whitespace-pre-line">
           <p>{cleanDescription(game.description)}</p>
         </div>
+
         <div className="flex space-x-4 mb-8">
           <button
             onClick={toggleFavorite}
@@ -216,6 +198,17 @@ export default function GameDetailsPage() {
           >
             {savedId ? "Unsave Game" : "Save Game"}
           </button>
+
+          <a
+            href={`https://www.google.com/search?tbm=shop&q=buy+${encodeURIComponent(
+              game.name
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700 transition"
+          >
+            Buy on Google
+          </a>
         </div>
       </main>
     </div>
