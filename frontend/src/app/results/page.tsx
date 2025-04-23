@@ -8,17 +8,10 @@ import Image from "next/image";
 import { cleanDescription, shortenDescription } from "@/utils/cleanup";
 
 interface BasicGame {
-  id: string | null;
+  id: string;
   name: string;
   thumbnail: string;
   description?: string;
-  yearpublished?: string;
-  minage?: string;
-  minplayers?: string;
-  maxplayers?: string;
-  playingtime?: string;
-  averageRating?: string;
-  averageWeight?: string;
   players?: string;
   complexity?: string;
   playtime?: string;
@@ -31,138 +24,76 @@ export default function ResultsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const players = searchParams.get("players") || "any";
-  const complexity = searchParams.get("complexity") || "any";
-  const playtime = searchParams.get("playtime") || "any";
-  const genre = searchParams.get("genre") || "any";
-  const age = searchParams.get("age") || "any";
-  const theme = searchParams.get("theme") || "any";
-
-  const yearMin = searchParams.get("yearMin");
-  const yearMax = searchParams.get("yearMax");
-  const minAge = searchParams.get("minAge");
-  const ratingMin = searchParams.get("ratingMin");
-  const ratingMax = searchParams.get("ratingMax");
-  const weightMin = searchParams.get("weightMin");
-  const weightMax = searchParams.get("weightMax");
+  // pull _all_ values for each filter
+  const players = searchParams.getAll("players");
+  const complexity = searchParams.getAll("complexity");
+  const playtime = searchParams.getAll("playtime");
+  const genre = searchParams.getAll("genre");
+  const age = searchParams.getAll("age");
+  const theme = searchParams.getAll("theme");
 
   const [games, setGames] = useState<BasicGame[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // load stored results
     const stored = localStorage.getItem("searchResults");
     let results: BasicGame[] = stored ? JSON.parse(stored) : [];
 
-    if (yearMin) {
-      results = results.filter(
-        (game) =>
-          game.yearpublished &&
-          parseInt(game.yearpublished, 10) >= parseInt(yearMin, 10)
+    // helper: apply multi‐select filter
+    const applyFilter = (
+      selected: string[],
+      prop: keyof BasicGame,
+      list: BasicGame[]
+    ) => {
+      if (selected.length === 0) return list;
+      return list.filter((g) =>
+        g[prop] != null && selected.includes(g[prop]!)
       );
-    }
-    if (yearMax) {
-      results = results.filter(
-        (game) =>
-          game.yearpublished &&
-          parseInt(game.yearpublished, 10) <= parseInt(yearMax, 10)
-      );
-    }
-    if (minAge) {
-      results = results.filter(
-        (game) =>
-          game.minage && parseInt(game.minage, 10) >= parseInt(minAge, 10)
-      );
-    }
-    if (ratingMin) {
-      results = results.filter(
-        (game) =>
-          game.averageRating &&
-          parseFloat(game.averageRating) >= parseFloat(ratingMin)
-      );
-    }
-    if (ratingMax) {
-      results = results.filter(
-        (game) =>
-          game.averageRating &&
-          parseFloat(game.averageRating) <= parseFloat(ratingMax)
-      );
-    }
-    if (weightMin) {
-      results = results.filter(
-        (game) =>
-          game.averageWeight &&
-          parseFloat(game.averageWeight) >= parseFloat(weightMin)
-      );
-    }
-    if (weightMax) {
-      results = results.filter(
-        (game) =>
-          game.averageWeight &&
-          parseFloat(game.averageWeight) <= parseFloat(weightMax)
-      );
-    }
+    };
 
-    if (players !== "any") {
-      results = results.filter((game) => game.players === players);
-    }
-    if (complexity !== "any") {
-      results = results.filter((game) => game.complexity === complexity);
-    }
-    if (playtime !== "any") {
-      results = results.filter((game) => game.playtime === playtime);
-    }
-    if (genre !== "any") {
-      results = results.filter((game) => game.genre === genre);
-    }
-    if (age !== "any") {
-      results = results.filter((game) => game.age === age);
-    }
-    if (theme !== "any") {
-      results = results.filter((game) => game.theme === theme);
-    }
+    // apply each category
+    results = applyFilter(players, "players", results);
+    results = applyFilter(complexity, "complexity", results);
+    results = applyFilter(playtime, "playtime", results);
+    results = applyFilter(genre, "genre", results);
+    results = applyFilter(age, "age", results);
+    results = applyFilter(theme, "theme", results);
 
-    const cleanedResults = results.map((game) => ({
-      ...game,
-      description: shortenDescription(cleanDescription(game.description)),
+    // clean up descriptions
+    const cleaned = results.map((g) => ({
+      ...g,
+      description: shortenDescription(cleanDescription(g.description)),
     }));
 
-    setGames(cleanedResults);
+    setGames(cleaned);
     setLoading(false);
-  }, [
-    players,
-    complexity,
-    playtime,
-    genre,
-    age,
-    theme,
-    yearMin,
-    yearMax,
-    minAge,
-    ratingMin,
-    ratingMax,
-    weightMin,
-    weightMax,
-  ]);
+  }, [players, complexity, playtime, genre, age, theme]);
+
+  // back button
+  const goBack = () => router.back();
 
   return (
     <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       <header className="flex items-center justify-between px-6 py-4 border-b border-gray-300 dark:border-gray-600">
         <h1 className="text-4xl sm:text-6xl font-bold">Search Results</h1>
         <button
-          onClick={() => router.back()}
+          onClick={goBack}
           className="px-4 py-2 rounded bg-gray-400 hover:bg-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600"
         >
           Back
         </button>
       </header>
+
       <section className="px-6 py-4">
-        {loading && <p>Loading...</p>}
+        {loading && <p>Loading…</p>}
+
         {!loading && games.length > 0 && (
           <div className="mt-6 overflow-y-auto max-h-[70vh]">
             <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {games.map((game) => (
                 <li
-                  key={game.id!}
+                  key={game.id}
                   className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-lg transition"
                 >
                   <Link href={`/game/${game.id}`} className="block">
@@ -191,8 +122,9 @@ export default function ResultsPage() {
             </ul>
           </div>
         )}
+
         {!loading && games.length === 0 && (
-          <p>No games found. Try a different search or adjust your filters.</p>
+          <p>No games found matching your filters. Try broadening your search.</p>
         )}
       </section>
     </main>
