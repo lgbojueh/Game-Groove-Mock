@@ -2,35 +2,31 @@
 "use client";
 export const dynamic = 'force-dynamic';
 
-import { useTheme } from "next-themes";
-import { useState, useEffect } from "react";
 import Image from "next/image";
 
+/**
+ * Logo switches icons purely via CSS. 
+ * Dark-mode logo is shown when .dark class is absent.
+ * Light-mode logo is shown when .dark class is present.
+ * No JS gating needed, eliminating flicker.
+ */
 export default function Logo() {
-  const { theme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  // Only render on the client to avoid SSR/theme mismatch
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
-
-  const currentTheme = theme === "system" ? resolvedTheme : theme;
-  const logoSrc =
-    currentTheme === "dark"
-      ? "/game-groove-logo-light.svg"   // light logo for dark theme
-      : "/game-groove-logo-dark.svg";    // dark logo for light theme
-
   return (
-    <Image
-      src={logoSrc}
-      alt="Game Grove Logo"
-      width={30}
-      height={30}
-      priority
-      className="object-contain"
-    />
+    <div className="relative w-8 h-8">
+      {/* Dark-mode logo: visible in light theme (no .dark) */}
+      <Image
+        src="/game-groove-logo-dark.svg"
+        alt="Game Grove Logo"
+        fill
+        className="block dark:hidden object-contain"
+      />
+      {/* Light-mode logo: visible in dark theme (.dark class) */}
+      <Image
+        src="/game-groove-logo-light.svg"
+        alt="Game Grove Logo"
+        fill
+        className="hidden dark:block object-contain"
+      />
+    </div>
   );
 }
