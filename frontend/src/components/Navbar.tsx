@@ -7,6 +7,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { useTheme } from "next-themes";
 import {
   Search as SearchIcon,
   ChevronDown,
@@ -19,6 +20,14 @@ import styles from "../styles/styles.module.css";
 export default function Navbar() {
   const { data: session } = useSession();
   const user = session?.user;
+  const router = useRouter();
+  const {} = useTheme();
+
+  // Only render logo after hydration to avoid flicker
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -26,7 +35,6 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   // Close account dropdown if clicking outside
   useEffect(() => {
@@ -62,13 +70,16 @@ export default function Navbar() {
         {/* Left: Logo */}
         <div className="flex items-center space-x-3">
           <Link href="/">
-            <Image
-              src="/game-groove-icon.svg"
-              alt="Game Groove Logo"
-              width={30}
-              height={30}
-              priority
-            />
+            {/* only show logo after client mount to match theme */}
+            {mounted && (
+              <Image
+                src="/game-groove-icon.svg"
+                alt="Game Groove Logo"
+                width={30}
+                height={30}
+                priority
+              />
+            )}
           </Link>
           <Link href="/" className="text-xl font-bold text-white">
             Game Groove
@@ -99,7 +110,6 @@ export default function Navbar() {
               type="button"
               onClick={() => setSearchOpen(true)}
               aria-label="Open search"
-              aria-expanded="false"
               className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
             >
               <SearchIcon className="text-white" />
@@ -297,6 +307,7 @@ export default function Navbar() {
           )}
         </div>
       )}
-    </nav>
-  );
-}
+          {/* Closing tag for the navigation bar */}
+        </nav>
+      );
+    }
