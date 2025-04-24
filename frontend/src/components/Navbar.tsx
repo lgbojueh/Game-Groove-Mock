@@ -75,8 +75,8 @@ export default function Navbar() {
               <Image
                 src="/game-groove-icon.svg"
                 alt="Game Groove Logo"
-                width={30}
-                height={30}
+                width={80}
+                height={80}
                 priority
               />
             )}
