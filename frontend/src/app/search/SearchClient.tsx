@@ -1,3 +1,4 @@
+// src/app/search/SearchClient.tsx
 "use client";
 
 import { useState } from "react";
@@ -153,7 +154,7 @@ export default function SearchClient() {
 
   return (
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen">
-      <h1 className="text-4xl sm:text-6xl font-bold text-center mb-8">
+      <h1 className="text-4xl sm:text-6xl font-bold text-center mb-8 text-gray-900 dark:text-gray-100">
         Find Your Next Board Game
       </h1>
 
@@ -166,13 +167,18 @@ export default function SearchClient() {
             key={f.id}
             className="border border-gray-300 dark:border-gray-600 rounded p-4"
           >
-            <legend className="font-semibold mb-2">{f.label}</legend>
+            <legend className="font-semibold mb-2 text-gray-900 dark:text-gray-100">
+              {f.label}
+            </legend>
             <div className="flex flex-col space-y-2">
               {f.options.map((opt) => (
-                <label key={opt.value} className="flex items-center space-x-2">
+                <label
+                  key={opt.value}
+                  className="flex items-center space-x-2 text-gray-800 dark:text-gray-200"
+                >
                   <input
                     type="checkbox"
-                    className="h-4 w-4"
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-500"
                     checked={f.selected.includes(opt.value)}
                     onChange={() =>
                       toggleValue(f.selected, f.setSelected, opt.value)
@@ -191,14 +197,26 @@ export default function SearchClient() {
             placeholder="Search for a game…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-700 text-black dark:text-white border border-gray-300 dark:border-gray-600"
             aria-label="Search Games"
+            className="
+              w-full p-3 rounded-lg 
+              bg-gray-100 dark:bg-gray-700 
+              border border-gray-300 dark:border-gray-600
+              text-gray-900 dark:text-gray-100
+              placeholder-gray-500 dark:placeholder-gray-400
+              focus:outline-none focus:ring-2 focus:ring-blue-500
+            "
           />
         </div>
 
         <button
           type="submit"
-          className="md:col-span-2 py-3 text-lg font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition"
+          className="
+            md:col-span-2 py-3 text-lg font-semibold rounded-lg 
+            bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500
+            text-white dark:text-white
+            transition
+          "
         >
           Search
         </button>
