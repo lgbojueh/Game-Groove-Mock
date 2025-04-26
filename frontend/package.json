@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "migrate": "prisma migrate dev --schema=prisma/schema.prisma",
-    "generate": "prisma generate --schema=prisma/schema.prisma"
+    "generate": "prisma generate --schema=prisma/schema.prisma",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build"
   },
   "dependencies": {
     "@next-auth/prisma-adapter": "^1.0.7",
