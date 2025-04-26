@@ -178,9 +178,10 @@ export default function SearchClient() {
           <fieldset
             key={f.id}
             className="
-             ${i % 2 === 0 ? 'bg-gray-100 dark:bg-gray-700' : 'bg-red-50 dark:bg-gray-800'}
-+              border border-gray-300 dark:border-gray-600
-+              rounded p-4
+              bg-gray-800       /* light: gentle light-gray */
+              dark:bg-gray-500    /* dark: deep gray */
+              border border-gray-300 dark:border-gray-200
+              rounded p-4
             "
           >
             <legend className="font-semibold mb-2 text-gray-900 dark:text-gray-100">
