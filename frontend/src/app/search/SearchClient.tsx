@@ -121,7 +121,7 @@ export default function SearchClient() {
 
   const toggleValue = (
     arr: string[],
-    setArr: (v: string[]) => void,
+    setArr: (vals: string[]) => void,
     val: string
   ) => {
     if (arr.includes(val)) setArr(arr.filter((x) => x !== val));
@@ -205,11 +205,12 @@ export default function SearchClient() {
             aria-label="Search Games"
             className="
               w-full p-3 rounded-lg
-              bg-gray-900       /* light mode: dark box */
-              dark:bg-gray-200  /* dark mode: light box */
-              text-white         /* always white text */
-              placeholder-gray-400 dark:placeholder-gray-600
-              border border-gray-700 dark:border-gray-400
+              bg-gray-100       /* light mode: lighter gray */
+              dark:bg-gray-900   /* dark mode: dark box */
+              text-black        /* light mode: black text */
+              dark:text-white   /* dark mode: white text */
+              placeholder-gray-500 dark:placeholder-gray-400
+              border border-gray-300 dark:border-gray-700
               focus:outline-none focus:ring-2 focus:ring-blue-500
             "
           />
