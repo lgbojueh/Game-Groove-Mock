@@ -119,7 +119,11 @@ export default function SearchClient() {
     },
   ];
 
-  const toggleValue = (arr: string[], setArr: (v: string[]) => void, val: string) => {
+  const toggleValue = (
+    arr: string[],
+    setArr: (v: string[]) => void,
+    val: string
+  ) => {
     if (arr.includes(val)) setArr(arr.filter((x) => x !== val));
     else setArr([...arr, val]);
   };
@@ -147,14 +151,16 @@ export default function SearchClient() {
     // build query params (multiple values allowed)
     const params = new URLSearchParams();
     params.set("query", q);
-    filters.forEach((f) => f.selected.forEach((v) => params.append(f.id, v)));
+    filters.forEach((f) =>
+      f.selected.forEach((v) => params.append(f.id, v))
+    );
 
     router.push(`/results?${params.toString()}`);
   };
 
   return (
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen">
-      <h1 className="text-4xl sm:text-6xl font-bold text-center mb-8 text-gray-900 dark:text-gray-100">
+      <h1 className="text-4xl sm:text-6xl font-bold text-center mb-8">
         Find Your Next Board Game
       </h1>
 
@@ -167,18 +173,16 @@ export default function SearchClient() {
             key={f.id}
             className="border border-gray-300 dark:border-gray-600 rounded p-4"
           >
-            <legend className="font-semibold mb-2 text-gray-900 dark:text-gray-100">
-              {f.label}
-            </legend>
+            <legend className="font-semibold mb-2">{f.label}</legend>
             <div className="flex flex-col space-y-2">
               {f.options.map((opt) => (
                 <label
                   key={opt.value}
-                  className="flex items-center space-x-2 text-gray-800 dark:text-gray-200"
+                  className="flex items-center space-x-2"
                 >
                   <input
                     type="checkbox"
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-500"
+                    className="h-4 w-4"
                     checked={f.selected.includes(opt.value)}
                     onChange={() =>
                       toggleValue(f.selected, f.setSelected, opt.value)
@@ -191,6 +195,7 @@ export default function SearchClient() {
           </fieldset>
         ))}
 
+        {/* —— only this input box changed: —— */}
         <div className="md:col-span-2">
           <input
             type="text"
@@ -199,11 +204,12 @@ export default function SearchClient() {
             onChange={(e) => setSearchQuery(e.target.value)}
             aria-label="Search Games"
             className="
-              w-full p-3 rounded-lg 
-              bg-gray-100 dark:bg-gray-700 
-              border border-gray-300 dark:border-gray-600
-              text-gray-900 dark:text-gray-100
-              placeholder-gray-500 dark:placeholder-gray-400
+              w-full p-3 rounded-lg
+              bg-gray-900       /* light mode: dark box */
+              dark:bg-gray-200  /* dark mode: light box */
+              text-white         /* always white text */
+              placeholder-gray-400 dark:placeholder-gray-600
+              border border-gray-700 dark:border-gray-400
               focus:outline-none focus:ring-2 focus:ring-blue-500
             "
           />
@@ -211,12 +217,7 @@ export default function SearchClient() {
 
         <button
           type="submit"
-          className="
-            md:col-span-2 py-3 text-lg font-semibold rounded-lg 
-            bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500
-            text-white dark:text-white
-            transition
-          "
+          className="md:col-span-2 py-3 text-lg font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition"
         >
           Search
         </button>
