@@ -225,7 +225,7 @@ export default function SearchClient() {
               text-black         /* light: black text */
               dark:text-white    /* dark: white text */
               placeholder-gray-500 dark:placeholder-gray-400
-              border border-gray-300 dark:border-gray-700
+              border border-gray-300 dark:border-gray-200
               focus:outline-none focus:ring-2 focus:ring-red-500
             "
           />
