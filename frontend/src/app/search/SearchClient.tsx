@@ -148,7 +148,7 @@ export default function SearchClient() {
     }
     localStorage.setItem("searchResults", JSON.stringify(detailed));
 
-    // build query params (multiple values allowed)
+    // build query params
     const params = new URLSearchParams();
     params.set("query", q);
     filters.forEach((f) =>
@@ -166,19 +166,32 @@ export default function SearchClient() {
 
       <form
         onSubmit={handleSubmit}
-        className="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg grid gap-6 md:grid-cols-2"
+        className="
+          max-w-4xl mx-auto
+          bg-gray-50        /* light: soft off-white */
+          dark:bg-gray-800  /* dark: unchanged */
+          p-6 rounded-xl shadow-lg
+          grid gap-6 md:grid-cols-2
+        "
       >
         {filters.map((f) => (
           <fieldset
             key={f.id}
-            className="border border-gray-300 dark:border-gray-600 rounded p-4"
+            className="
+              bg-gray-100        /* light: gentle light-gray */
+              dark:bg-gray-700    /* dark: unchanged */
+              border border-gray-300 dark:border-gray-600
+              rounded p-4
+            "
           >
-            <legend className="font-semibold mb-2">{f.label}</legend>
+            <legend className="font-semibold mb-2 text-gray-900 dark:text-gray-100">
+              {f.label}
+            </legend>
             <div className="flex flex-col space-y-2">
               {f.options.map((opt) => (
                 <label
                   key={opt.value}
-                  className="flex items-center space-x-2"
+                  className="flex items-center space-x-2 text-gray-900 dark:text-gray-100"
                 >
                   <input
                     type="checkbox"
@@ -195,7 +208,6 @@ export default function SearchClient() {
           </fieldset>
         ))}
 
-        {/* —— only this input box changed: —— */}
         <div className="md:col-span-2">
           <input
             type="text"
@@ -205,10 +217,10 @@ export default function SearchClient() {
             aria-label="Search Games"
             className="
               w-full p-3 rounded-lg
-              bg-gray-100       /* light mode: lighter gray */
-              dark:bg-gray-900   /* dark mode: dark box */
-              text-black        /* light mode: black text */
-              dark:text-white   /* dark mode: white text */
+              bg-gray-100        /* light: light-gray box */
+              dark:bg-gray-900   /* dark: dark box */
+              text-black         /* light: black text */
+              dark:text-white    /* dark: white text */
               placeholder-gray-500 dark:placeholder-gray-400
               border border-gray-300 dark:border-gray-700
               focus:outline-none focus:ring-2 focus:ring-blue-500
