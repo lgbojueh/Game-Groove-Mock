@@ -168,8 +168,8 @@ export default function SearchClient() {
         onSubmit={handleSubmit}
         className="
           max-w-4xl mx-auto
-          bg-gray-50        /* light: soft off-white */
-          dark:bg-gray-800  /* dark: unchanged */
+          bg-gray-50         /* light: off-white */
+          dark:bg-gray-800   /* dark: deep gray */
           p-6 rounded-xl shadow-lg
           grid gap-6 md:grid-cols-2
         "
@@ -179,8 +179,8 @@ export default function SearchClient() {
             key={f.id}
             className="
               bg-gray-100        /* light: gentle light-gray */
-              dark:bg-gray-700    /* dark: unchanged */
-              border border-gray-300 dark:border-red-300
+              dark:bg-gray-700    /* dark: deep gray */
+              border border-gray-300 dark:border-gray-600
               rounded p-4
             "
           >
@@ -195,7 +195,10 @@ export default function SearchClient() {
                 >
                   <input
                     type="checkbox"
-                    className="h-4 w-4"
+                    className="
+                      h-4 w-4
+                      text-red-600 focus:ring-red-500
+                    "
                     checked={f.selected.includes(opt.value)}
                     onChange={() =>
                       toggleValue(f.selected, f.setSelected, opt.value)
@@ -217,20 +220,20 @@ export default function SearchClient() {
             aria-label="Search Games"
             className="
               w-full p-3 rounded-lg
-              bg-gray-100        /* light: light-gray box */
-              dark:bg-gray-900   /* dark: dark box */
+              bg-gray-100        /* light: light-gray */
+              dark:bg-gray-900   /* dark: deeper gray */
               text-black         /* light: black text */
               dark:text-white    /* dark: white text */
               placeholder-gray-500 dark:placeholder-gray-400
               border border-gray-300 dark:border-gray-700
-              focus:outline-none focus:ring-2 focus:ring-blue-500
+              focus:outline-none focus:ring-2 focus:ring-red-500
             "
           />
         </div>
 
         <button
           type="submit"
-          className="md:col-span-2 py-3 text-lg font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition"
+          className="md:col-span-2 py-3 text-lg font-semibold rounded-lg bg-red-600 hover:bg-red-700 text-white transition"
         >
           Search
         </button>
