@@ -180,7 +180,7 @@ export default function SearchClient() {
             className="
               bg-gray-100        /* light: gentle light-gray */
               dark:bg-gray-700    /* dark: unchanged */
-              border border-gray-300 dark:border-gray-600
+              border border-gray-300 dark:border-red-300
               rounded p-4
             "
           >
