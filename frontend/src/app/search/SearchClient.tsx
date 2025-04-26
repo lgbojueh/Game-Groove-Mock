@@ -28,10 +28,13 @@ interface BasicGame {
   description?: string;
 }
 
+type FilterOption = { value: string; label: string };
+
 export default function SearchClient() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
 
+  // each filter is an array of selected values
   const [players, setPlayers] = useState<string[]>([]);
   const [complexity, setComplexity] = useState<string[]>([]);
   const [playtime, setPlaytime] = useState<string[]>([]);
@@ -39,7 +42,13 @@ export default function SearchClient() {
   const [age, setAge] = useState<string[]>([]);
   const [theme, setTheme] = useState<string[]>([]);
 
-  const filters = [
+  const filters: {
+    id: string;
+    label: string;
+    options: FilterOption[];
+    selected: string[];
+    setSelected: (vals: string[]) => void;
+  }[] = [
     {
       id: "players",
       label: "Number of Players",
@@ -108,20 +117,22 @@ export default function SearchClient() {
       selected: theme,
       setSelected: setTheme,
     },
-  ] as const;
+  ];
 
   const toggleValue = (
     arr: string[],
     setArr: (vals: string[]) => void,
     val: string
   ) => {
-    setArr(arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val]);
+    if (arr.includes(val)) setArr(arr.filter((x) => x !== val));
+    else setArr([...arr, val]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const q = searchQuery.trim() || "board game";
 
+    // fetch basic → detailed, store for results page
     const basic = await fetchGames(q);
     const ids = basic.map((g) => g.id!).filter(Boolean);
     const chunks = chunkArray(ids, 20);
@@ -137,6 +148,7 @@ export default function SearchClient() {
     }
     localStorage.setItem("searchResults", JSON.stringify(detailed));
 
+    // build query params
     const params = new URLSearchParams();
     params.set("query", q);
     filters.forEach((f) =>
@@ -156,8 +168,8 @@ export default function SearchClient() {
         onSubmit={handleSubmit}
         className="
           max-w-4xl mx-auto
-          bg-gray-50        /* light */
-          dark:bg-gray-800  /* dark */
+          bg-gray-50        /* light: soft off-white */
+          dark:bg-gray-800  /* dark: unchanged */
           p-6 rounded-xl shadow-lg
           grid gap-6 md:grid-cols-2
         "
@@ -166,9 +178,9 @@ export default function SearchClient() {
           <fieldset
             key={f.id}
             className="
-              bg-gray-50        /* light box bg */
-              dark:bg-gray-700  /* dark */
-              border border-gray-200 dark:border-gray-600
+              bg-gray-100        /* light: gentle light-gray */
+              dark:bg-gray-700    /* dark: unchanged */
+              border border-gray-300 dark:border-gray-600
               rounded p-4
             "
           >
@@ -205,12 +217,12 @@ export default function SearchClient() {
             aria-label="Search Games"
             className="
               w-full p-3 rounded-lg
-              bg-gray-50        /* light */
-              dark:bg-gray-900  /* dark */
-              text-black        /* light */
-              dark:text-white   /* dark */
+              bg-gray-100        /* light: light-gray box */
+              dark:bg-gray-900   /* dark: dark box */
+              text-black         /* light: black text */
+              dark:text-white    /* dark: white text */
               placeholder-gray-500 dark:placeholder-gray-400
-              border border-gray-200 dark:border-gray-700
+              border border-gray-300 dark:border-gray-700
               focus:outline-none focus:ring-2 focus:ring-blue-500
             "
           />
