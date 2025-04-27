@@ -1,3 +1,4 @@
+// src/app/account/AccountClient.tsx
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -5,18 +6,20 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-interface Game {
+interface GameItem {
   id: number;
   title: string;
-  thumbnail?: string;
+  thumbnail: string | null; // low-res placeholder
+  // If you ever store a high-res URL too, you can add:
+  // image?: string;
 }
 
 export default function AccountClient() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const [savedGames, setSavedGames] = useState<Game[]>([]);
-  const [favoriteGames, setFavoriteGames] = useState<Game[]>([]);
+  const [savedGames, setSavedGames] = useState<GameItem[]>([]);
+  const [favoriteGames, setFavoriteGames] = useState<GameItem[]>([]);
   const [loadingGames, setLoadingGames] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,8 +45,11 @@ export default function AccountClient() {
         if (!savedRes.ok) throw new Error(await savedRes.text());
         if (!favRes.ok) throw new Error(await favRes.text());
 
-        setSavedGames(await savedRes.json());
-        setFavoriteGames(await favRes.json());
+        const savedData: GameItem[] = await savedRes.json();
+        const favData:  GameItem[] = await favRes.json();
+
+        setSavedGames(savedData);
+        setFavoriteGames(favData);
       } catch (err: unknown) {
         if (err instanceof Error) {
           setError(err.message || "Failed to load games.");
@@ -56,7 +62,7 @@ export default function AccountClient() {
     })();
   }, [status, session]);
 
-  // Remove handlers
+  // Handlers
   const removeSavedGame = async (id: number) => {
     await fetch(`/api/auth/savedGames?id=${id}`, { method: "DELETE" });
     setSavedGames((g) => g.filter((x) => x.id !== id));
@@ -66,12 +72,10 @@ export default function AccountClient() {
     setFavoriteGames((g) => g.filter((x) => x.id !== id));
   };
 
-  // Logout
+  // Logout & deactivate
   const handleLogout = useCallback(() => {
     signOut({ callbackUrl: "/login" });
   }, []);
-
-  // Deactivate account
   const handleDeactivate = useCallback(async () => {
     if (!confirm("Really deactivate your account? This cannot be undone.")) return;
     setDeactivating(true);
@@ -127,6 +131,7 @@ export default function AccountClient() {
         <p className="text-red-500">{error}</p>
       ) : (
         <>
+          {/* Favorites */}
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-2">Favorite Games</h2>
             {favoriteGames.length === 0 ? (
@@ -134,33 +139,42 @@ export default function AccountClient() {
             ) : (
               <ul className="space-y-4">
                 {favoriteGames.map((g) => (
-                  <li key={g.id} className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow">
-                    <h3 className="text-xl font-semibold">{g.title}</h3>
+                  <li
+                    key={g.id}
+                    className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow flex items-start space-x-4"
+                  >
                     {g.thumbnail ? (
                       <Image
                         src={g.thumbnail}
                         alt={g.title}
                         width={128}
                         height={96}
-                        className="mt-2 rounded"
+                        quality={80}           // higher-fidelity
+                        placeholder="blur"     // blur-up placeholder
+                        blurDataURL={g.thumbnail}
+                        className="rounded flex-shrink-0"
                       />
                     ) : (
-                      <div className="w-32 h-20 bg-gray-300 flex items-center justify-center mt-2 rounded">
+                      <div className="w-32 h-24 bg-gray-300 flex items-center justify-center rounded">
                         <span>No Image</span>
                       </div>
                     )}
-                    <button
-                      onClick={() => removeFavoriteGame(g.id)}
-                      className="bg-red-500 text-white px-3 py-1 mt-2 rounded hover:bg-red-600"
-                    >
-                      Remove
-                    </button>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold">{g.title}</h3>
+                      <button
+                        onClick={() => removeFavoriteGame(g.id)}
+                        className="mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>
             )}
           </section>
 
+          {/* Saved */}
           <section>
             <h2 className="text-2xl font-semibold mb-2">Saved Games</h2>
             {savedGames.length === 0 ? (
@@ -168,27 +182,35 @@ export default function AccountClient() {
             ) : (
               <ul className="space-y-4">
                 {savedGames.map((g) => (
-                  <li key={g.id} className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow">
-                    <h3 className="text-xl font-semibold">{g.title}</h3>
+                  <li
+                    key={g.id}
+                    className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow flex items-start space-x-4"
+                  >
                     {g.thumbnail ? (
                       <Image
                         src={g.thumbnail}
                         alt={g.title}
                         width={128}
                         height={96}
-                        className="mt-2 rounded"
+                        quality={80}
+                        placeholder="blur"
+                        blurDataURL={g.thumbnail}
+                        className="rounded flex-shrink-0"
                       />
                     ) : (
-                      <div className="w-32 h-20 bg-gray-300 flex items-center justify-center mt-2 rounded">
+                      <div className="w-32 h-24 bg-gray-300 flex items-center justify-center rounded">
                         <span>No Image</span>
                       </div>
                     )}
-                    <button
-                      onClick={() => removeSavedGame(g.id)}
-                      className="bg-red-500 text-white px-3 py-1 mt-2 rounded hover:bg-red-600"
-                    >
-                      Remove
-                    </button>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold">{g.title}</h3>
+                      <button
+                        onClick={() => removeSavedGame(g.id)}
+                        className="mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>

@@ -7,7 +7,7 @@ import Image from "next/image";
 interface FavoriteGame {
   id: number;
   name: string;
-  thumbnail?: string;
+  thumbnail: string | null;  // low-res placeholder
 }
 
 export default function FavoritesClient() {
@@ -21,18 +21,22 @@ export default function FavoritesClient() {
       const userId = session.user.id;
 
       async function fetchFavorites() {
+        setLoading(true);
+        setError("");
         try {
-          const response = await fetch(`/api/auth/favoriteService?userId=${userId}`);
-          if (!response.ok) {
-            const text = await response.text();
+          const res = await fetch(
+            `/api/auth/favoriteService?userId=${userId}`
+          );
+          if (!res.ok) {
+            const text = await res.text();
             throw new Error(`Favorite games error: ${text}`);
           }
-          const data: FavoriteGame[] = await response.json();
+          const data: FavoriteGame[] = await res.json();
           setFavorites(data);
         } catch (err: unknown) {
           if (err instanceof Error) {
-            console.error("Error fetching favorites:", err.message);
-            setError(err.message || "An error occurred while fetching favorites.");
+            console.error("Error fetching favorites:", err);
+            setError(err.message || "Error fetching favorites.");
           } else {
             console.error("Unknown error fetching favorites:", err);
             setError("An unknown error occurred.");
@@ -54,8 +58,13 @@ export default function FavoritesClient() {
       if (!res.ok) throw new Error("Failed to remove favorite");
       setFavorites((prev) => prev.filter((fav) => fav.id !== id));
     } catch (err: unknown) {
-      if (err instanceof Error) console.error("Error removing favorite:", err.message);
-      else console.error("Unknown error removing favorite:", err);
+      if (err instanceof Error) {
+        console.error("Error removing favorite:", err);
+        setError(err.message || "Error removing favorite.");
+      } else {
+        console.error("Unknown error removing favorite:", err);
+        setError("An unknown error occurred.");
+      }
     }
   };
 
@@ -79,7 +88,10 @@ export default function FavoritesClient() {
       ) : (
         <ul className="space-y-4">
           {favorites.map((fav) => (
-            <li key={fav.id} className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow">
+            <li
+              key={fav.id}
+              className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow"
+            >
               <h3 className="text-xl font-semibold">{fav.name}</h3>
               {fav.thumbnail ? (
                 <Image
@@ -87,6 +99,9 @@ export default function FavoritesClient() {
                   alt={`${fav.name} thumbnail`}
                   width={128}
                   height={80}
+                  quality={80}                   // higher JPEG/WebP quality
+                  placeholder="blur"             // blur-up placeholder
+                  blurDataURL={fav.thumbnail}    // low-res source
                   className="rounded mt-2 object-contain"
                 />
               ) : (

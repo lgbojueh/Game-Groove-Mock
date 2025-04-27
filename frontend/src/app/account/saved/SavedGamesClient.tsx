@@ -1,3 +1,4 @@
+// src/app/saved/SavedGamesClient.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -7,7 +8,7 @@ import Image from "next/image";
 interface SavedGame {
   id: number;
   title: string;
-  thumbnail?: string;
+  thumbnail: string | null;
 }
 
 export default function SavedGamesClient() {
@@ -19,21 +20,24 @@ export default function SavedGamesClient() {
   useEffect(() => {
     if (status === "authenticated" && session?.user?.id) {
       const fetchSavedGames = async () => {
+        setLoading(true);
+        setError("");
         try {
-          setLoading(true);
           const userId = session.user.id;
-
           const res = await fetch(`/api/auth/savedGames?userId=${userId}`);
           if (!res.ok) {
             const text = await res.text();
             throw new Error(`Error fetching saved games: ${text}`);
           }
-
           const data: SavedGame[] = await res.json();
           setSavedGames(data);
-        } catch (err) {
+        } catch (err: unknown) {
           console.error("Failed to fetch saved games:", err);
-          setError(err instanceof Error ? err.message : "An unknown error occurred.");
+          if (err instanceof Error) {
+            setError(err.message);
+          } else {
+            setError("An unknown error occurred.");
+          }
         } finally {
           setLoading(false);
         }
@@ -50,8 +54,13 @@ export default function SavedGamesClient() {
       });
       if (!res.ok) throw new Error("Failed to delete saved game");
       setSavedGames((prev) => prev.filter((g) => g.id !== id));
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Error removing saved game:", err);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unknown error occurred while removing the saved game.");
+      }
     }
   };
 
@@ -81,13 +90,24 @@ export default function SavedGamesClient() {
               className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow"
             >
               <h3 className="text-xl font-semibold">{game.title}</h3>
-              <Image
-                src={game.thumbnail || "/default-thumbnail.jpg"}
-                alt={`${game.title} thumbnail`}
-                width={128}
-                height={96}
-                className="mt-2 rounded"
-              />
+
+              {game.thumbnail ? (
+                <Image
+                  src={game.thumbnail}
+                  alt={`${game.title} thumbnail`}
+                  width={128}
+                  height={96}
+                  /* higher JPEG/WebP quality */
+                  quality={80}
+                  sizes="(max-width: 640px) 100vw, 128px"
+                  className="rounded mt-2 object-cover"
+                />
+              ) : (
+                <div className="w-32 h-24 bg-gray-300 flex items-center justify-center mt-2 rounded">
+                  <span>No Image</span>
+                </div>
+              )}
+
               <button
                 onClick={() => removeSavedGame(game.id)}
                 className="bg-red-500 text-white px-4 py-2 mt-2 rounded hover:bg-red-600"
