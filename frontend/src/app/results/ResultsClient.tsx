@@ -10,7 +10,8 @@ import { cleanDescription, shortenDescription } from "@/utils/cleanup";
 interface BasicGame {
   id: string;
   name: string;
-  thumbnail: string;
+  thumbnail: string;   // low-res placeholder
+  image: string;       // high-res cover art
   description?: string;
   players?: string;
   complexity?: string;
@@ -39,7 +40,7 @@ export default function ResultsClient() {
     const age        = searchParams.getAll("age");
     const theme      = searchParams.getAll("theme");
 
-    // grab cached results
+    // grab cached results (now containing both thumbnail & image)
     const stored = localStorage.getItem("searchResults");
     let results: BasicGame[] = stored ? JSON.parse(stored) : [];
 
@@ -95,12 +96,16 @@ export default function ResultsClient() {
               >
                 <Link href={`/game/${game.id}`}>
                   <h3 className="font-semibold mb-2">{game.name}</h3>
-                  {game.thumbnail ? (
+
+                  {game.image || game.thumbnail ? (
                     <Image
-                      src={game.thumbnail}
-                      alt={`${game.name} thumbnail`}
+                      src={game.image || game.thumbnail}
+                      alt={`${game.name} cover art`}
                       width={200}
-                      height={150}
+                      height={144}         // keeps your  aspect ratio
+                      quality={80}         // bump up quality
+                      placeholder="blur"   // blur-up effect
+                      blurDataURL={game.thumbnail}
                       className="w-full h-36 object-cover rounded mb-2"
                     />
                   ) : (
@@ -108,6 +113,7 @@ export default function ResultsClient() {
                       <span>No Image</span>
                     </div>
                   )}
+
                   <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
                     {game.description}
                   </p>

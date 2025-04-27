@@ -1,8 +1,9 @@
+// src/app/featured/FeaturedClient.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { fetchHotGames } from "@/utils/fetchHotGames";
-import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
+import { fetchDetailedGames, DetailedGame } from "@/utils/fetchDetailedGames";
 import { cleanDescription, shortenDescription } from "@/utils/cleanup";
 import Link from "next/link";
 import Image from "next/image";
@@ -16,47 +17,58 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
   return results;
 }
 
-// Interface for a basic game object.
-interface BasicGame {
+// Unified interface for featured games with high-res & low-res images
+interface FeaturedGame {
   id: string;
   name: string;
-  thumbnail: string;
-  description?: string;
+  thumbnail: string; // low-res placeholder
+  image: string;     // high-res cover art
+  description: string;
   complexity?: string;
   players?: string;
   theme?: string;
 }
 
 export default function FeaturedClient() {
-  const [popularGames, setPopularGames] = useState<BasicGame[]>([]);
+  const [popularGames, setPopularGames] = useState<FeaturedGame[]>([]);
   const [loading, setLoading] = useState(false);
 
   const getPopularGames = async () => {
     setLoading(true);
     try {
-      const basicGames = (await fetchHotGames()) as BasicGame[];
-      const validGames = basicGames.filter((game) => game.id !== null) as BasicGame[];
+      // 1️⃣ Fetch the “hot” list (low-res + high-res)
+      const hotGames = await fetchHotGames(); // returns HotGame[]
+      // Extract IDs
+      const allIds = hotGames.map((g) => g.id);
+      const idChunks = chunkArray(allIds, 20);
 
-      const idChunks = chunkArray(validGames.map((g) => g.id), 20);
-      let detailedResults: BasicGame[] = [];
-
+      // 2️⃣ Fetch details in batches (includes image, thumbnail, description)
+      const detailed: DetailedGame[] = [];
       for (const chunk of idChunks) {
-        const details = await fetchDetailedGames(chunk);
-        detailedResults = detailedResults.concat(details as BasicGame[]);
+        const batch = await fetchDetailedGames(chunk);
+        detailed.push(...batch);
       }
 
-      // merge details into validGames
-      validGames.forEach((game) => {
-        const det = detailedResults.find((d) => d.id === game.id);
-        if (det) {
-          game.thumbnail = det.thumbnail;
-          game.description = det.description;
-        }
+      // 3️⃣ Merge basic + detailed into FeaturedGame[]
+      const merged: FeaturedGame[] = hotGames.map((basic) => {
+        const det = detailed.find((d) => d.id === basic.id);
+        return {
+          id: basic.id,
+          name: basic.name,
+          thumbnail: det?.thumbnail ?? basic.thumbnail,
+          image: det?.image ?? basic.image ?? basic.thumbnail,
+          description: det
+            ? shortenDescription(cleanDescription(det.description))
+            : "No description available.",
+          complexity: det?.complexity,
+          players: det?.players,
+          theme: det?.theme,
+        };
       });
 
-      setPopularGames(validGames);
+      setPopularGames(merged);
     } catch (err) {
-      console.error("Error fetching featured games:", err);
+      console.error("❌ Error fetching featured games:", err);
       setPopularGames([]);
     } finally {
       setLoading(false);
@@ -70,54 +82,45 @@ export default function FeaturedClient() {
   return (
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen">
       <h1 className="text-4xl font-bold mb-6">Featured Games</h1>
-      <section className="mb-6">
-        <h2 className="text-2xl font-semibold mb-2">Popular Games</h2>
-        {loading ? (
-          <p>Loading popular games...</p>
-        ) : (
-          <div className="overflow-y-auto max-h-[70vh]">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {popularGames.map((game) => (
-                <div
-                  key={game.id}
-                  className="p-4 bg-gray-400 dark:bg-gray-700 rounded shadow hover:shadow-xl transition flex flex-col"
-                >
-                  <Link href={`/game/${game.id}`} className="block">
-                    <h3 className="font-semibold mb-2 text-lg">{game.name}</h3>
-                    {game.thumbnail ? (
-                      <Image
-                        src={game.thumbnail}
-                        alt={`${game.name} thumbnail`}
-                        width={200}
-                        height={150}
-                        className="w-full h-[150px] object-cover rounded mb-2"
-                      />
-                    ) : (
-                      <div className="w-full h-[150px] bg-gray-300 flex items-center justify-center rounded mb-2">
-                        <span>No Image Available</span>
-                      </div>
-                    )}
-                  </Link>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 flex-1">
-                    {shortenDescription(cleanDescription(game.description ?? "")) ||
-                      "A brief description of the game."}
-                  </p>
-                  <a
-                    href={`https://www.google.com/search?tbm=shop&q=${encodeURIComponent(
-                      game.name + " board game"
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 inline-block bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-center"
-                  >
-                    Buy on Google
-                  </a>
-                </div>
-              ))}
-            </div>
+
+      {loading ? (
+        <p>Loading popular games...</p>
+      ) : (
+        <div className="overflow-y-auto max-h-[70vh]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {popularGames.map((game) => (
+              <Link
+                key={game.id}
+                href={`/game/${game.id}`}
+                className="block p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-xl transition"
+              >
+                <h3 className="font-semibold mb-2 text-lg">{game.name}</h3>
+
+                {game.image || game.thumbnail ? (
+                  <Image
+                    src={game.image || game.thumbnail}
+                    alt={`${game.name} cover art`}
+                    width={200}
+                    height={150}
+                    quality={80}
+                    placeholder="blur"
+                    blurDataURL={game.thumbnail}
+                    className="w-full h-[150px] object-cover rounded mb-2"
+                  />
+                ) : (
+                  <div className="w-full h-[150px] bg-gray-300 flex items-center justify-center rounded mb-2">
+                    <span>No Image Available</span>
+                  </div>
+                )}
+
+                <p className="text-sm text-gray-600 dark:text-gray-300 flex-1">
+                  {game.description}
+                </p>
+              </Link>
+            ))}
           </div>
-        )}
-      </section>
+        </div>
+      )}
     </main>
   );
 }

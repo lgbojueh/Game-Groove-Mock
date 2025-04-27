@@ -1,34 +1,50 @@
 // src/utils/fetchGames.ts
-export const fetchGames = async (query: string) => {
+export interface GameSummary {
+  id: string;
+  name: string;
+  thumbnail: string; // low-res (blur placeholder)
+  image: string;     // high-res cover art
+  complexity: string;
+  players: string;
+  theme: string;
+  playtime: string;
+  genre: string;
+  age: string;
+}
+
+export const fetchGames = async (query: string): Promise<GameSummary[]> => {
   try {
     console.log("📡 Fetching games for query:", query);
-    const response = await fetch(
-      `https://www.boardgamegeek.com/xmlapi2/search?query=${query}&type=boardgame`
+    const res = await fetch(
+      `https://www.boardgamegeek.com/xmlapi2/search?query=${encodeURIComponent(
+        query
+      )}&type=boardgame`
     );
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.statusText}`);
+    if (!res.ok) {
+      throw new Error(`API request failed: ${res.statusText}`);
     }
-    const xmlText = await response.text();
-    console.log("📜 API Response XML:", xmlText);
-
+    const xmlText = await res.text();
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlText, "text/xml");
     const items = Array.from(xmlDoc.getElementsByTagName("item"));
 
-    const games = items.map((item) => {
-      const id = item.getAttribute("id");
+    const games: GameSummary[] = items.map((item) => {
+      const id = item.getAttribute("id") || "";
 
-      const nameElements = item.getElementsByTagName("name");
-      let title = "Unknown Game";
-      for (let i = 0; i < nameElements.length; i++) {
-        if (nameElements[i].getAttribute("type") === "primary") {
-          title = nameElements[i].getAttribute("value") || "Unknown Game";
-          break;
-        }
-      }
+      // Name (primary)
+      const nameElems = Array.from(item.getElementsByTagName("name"));
+      const name =
+        nameElems.find((n) => n.getAttribute("type") === "primary")
+          ?.getAttribute("value") || "Unknown Game";
 
-      const thumbnail = item.getElementsByTagName("thumbnail")[0]?.textContent || "";
+      // Low-res thumbnail
+      const thumbnail =
+        item.getElementsByTagName("thumbnail")[0]?.textContent || "";
 
+      // High-res cover art
+      const image = item.getElementsByTagName("image")[0]?.textContent || "";
+
+      // Dummy metadata (you may override with real stats later)
       const complexity = "medium";
       const players = "3-4";
       const theme = "adventure";
@@ -36,7 +52,18 @@ export const fetchGames = async (query: string) => {
       const genre = "strategy";
       const age = "teen";
 
-      return { id, name: title, thumbnail, complexity, players, theme, playtime, genre, age };
+      return {
+        id,
+        name,
+        thumbnail,
+        image,
+        complexity,
+        players,
+        theme,
+        playtime,
+        genre,
+        age,
+      };
     });
 
     console.log("✅ Parsed Games:", games);

@@ -3,22 +3,9 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { fetchGameDetails } from "@/utils/fetchGameDetails";
+import { fetchGameDetails, GameDetails } from "@/utils/fetchGameDetails";
 import { cleanDescription } from "@/utils/cleanup";
 import Image from "next/image";
-
-interface Game {
-  id: string;
-  name: string;
-  thumbnail?: string;
-  description?: string;
-  complexity: string;
-  players: string;
-  playtime: string;
-  genre: string;
-  age: string;
-  theme: string;
-}
 
 interface FavoriteRecord {
   id: number;
@@ -36,20 +23,20 @@ export default function GameDetailsClient() {
   const { id } = useParams();
   const { status } = useSession();
 
-  const [game, setGame] = useState<Game | null>(null);
+  const [game, setGame] = useState<GameDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const [favoriteId, setFavoriteId] = useState<number | null>(null);
   const [savedId, setSavedId] = useState<number | null>(null);
 
-  // 1) Load the game
+  // 1) Load the game details (with image & thumbnail)
   useEffect(() => {
     async function load() {
       try {
         const data = await fetchGameDetails(id as string);
         if (data && data.id) {
-          setGame({ ...data, id: data.id as string });
+          setGame(data);
         } else {
           setError("Invalid game data.");
         }
@@ -92,7 +79,9 @@ export default function GameDetailsClient() {
     if (!game) return;
 
     if (favoriteId) {
-      const res = await fetch(`/api/auth/favoriteService?id=${favoriteId}`, { method: "DELETE" });
+      const res = await fetch(`/api/auth/favoriteService?id=${favoriteId}`, {
+        method: "DELETE",
+      });
       if (res.ok) {
         setFavoriteId(null);
         alert("Removed from favorites");
@@ -123,7 +112,9 @@ export default function GameDetailsClient() {
     if (!game) return;
 
     if (savedId) {
-      const res = await fetch(`/api/auth/savedGames?id=${savedId}`, { method: "DELETE" });
+      const res = await fetch(`/api/auth/savedGames?id=${savedId}`, {
+        method: "DELETE",
+      });
       if (res.ok) {
         setSavedId(null);
         alert("Removed from saved games");
@@ -158,12 +149,16 @@ export default function GameDetailsClient() {
       <main className="p-6 bg-[var(--background)] text-[var(--foreground)] flex-1 overflow-y-auto">
         <h1 className="text-4xl font-bold mb-4">{game.name}</h1>
 
-        {game.thumbnail ? (
+        {/** High-res cover art with blur placeholder **/}
+        {game.image || game.thumbnail ? (
           <Image
-            src={game.thumbnail}
-            alt={`${game.name} thumbnail`}
+            src={game.image || game.thumbnail}
+            alt={`${game.name} cover art`}
             width={400}
             height={300}
+            quality={80}               // sharper output
+            placeholder="blur"         // blur-up effect
+            blurDataURL={game.thumbnail} // low-res placeholder
             className="w-full max-w-md mb-4 object-cover rounded max-h-96"
           />
         ) : (

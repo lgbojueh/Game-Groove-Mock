@@ -1,13 +1,34 @@
 // src/utils/fetchGameDetails.ts
-export const fetchGameDetails = async (id: string) => {
-  try {
-    console.log("Fetching game details for id:", id);
-    const response = await fetch(`https://www.boardgamegeek.com/xmlapi2/thing?id=${id}&stats=1`);
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.statusText}`);
-    }
-    const xmlText = await response.text();
 
+export interface GameDetails {
+  id: string | null;
+  name: string;
+  thumbnail: string; // low-res placeholder
+  image: string;     // high-res cover art
+  description: string;
+  players: string;
+  complexity: string;
+  playtime: string;
+  genre: string;
+  age: string;
+  theme: string;
+}
+
+export const fetchGameDetails = async (
+  id: string
+): Promise<GameDetails | null> => {
+  try {
+    console.log("📡 Fetching game details for id:", id);
+    const res = await fetch(
+      `https://www.boardgamegeek.com/xmlapi2/thing?id=${encodeURIComponent(
+        id
+      )}&stats=1`
+    );
+    if (!res.ok) {
+      throw new Error(`API request failed: ${res.statusText}`);
+    }
+
+    const xmlText = await res.text();
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlText, "text/xml");
     const item = xmlDoc.getElementsByTagName("item")[0];
@@ -15,18 +36,29 @@ export const fetchGameDetails = async (id: string) => {
       throw new Error("No game details found");
     }
 
-    // Extract the primary name
-    const nameElements = Array.from(item.getElementsByTagName("name"));
-    const primaryNameElement = nameElements.find((el) => el.getAttribute("type") === "primary");
-    const name = primaryNameElement?.getAttribute("value") || "Unknown Game";
+    // Primary name
+    const name = Array.from(item.getElementsByTagName("name"))
+      .find((n) => n.getAttribute("type") === "primary")
+      ?.getAttribute("value") || "Unknown Game";
 
-    const idAttr = item.getAttribute("id");
-    const thumbnail = item.getElementsByTagName("thumbnail")[0]?.textContent || "";
-    const description = item.getElementsByTagName("description")[0]?.textContent || "No description available.";
+    // IDs
+    const idAttr = item.getAttribute("id") || null;
 
-    // Dummy filters for now (aligns with other game utils)
-    const complexity = "medium";
+    // Low-res thumbnail
+    const thumbnail =
+      item.getElementsByTagName("thumbnail")[0]?.textContent || "";
+
+    // High-res cover art
+    const image = item.getElementsByTagName("image")[0]?.textContent || "";
+
+    // Full description
+    const description =
+      item.getElementsByTagName("description")[0]?.textContent ||
+      "No description available.";
+
+    // (Dummy) metadata — replace with real stats if available
     const players = "3-4";
+    const complexity = "medium";
     const playtime = "medium";
     const genre = "strategy";
     const age = "teen";
@@ -36,16 +68,17 @@ export const fetchGameDetails = async (id: string) => {
       id: idAttr,
       name,
       thumbnail,
+      image,
       description,
-      complexity,
       players,
+      complexity,
       playtime,
       genre,
       age,
       theme,
     };
   } catch (error) {
-    console.error("Error fetching game details:", error);
+    console.error("❌ Error fetching game details:", error);
     return null;
   }
 };

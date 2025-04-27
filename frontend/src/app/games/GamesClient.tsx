@@ -1,10 +1,11 @@
+// src/app/games/GamesClient.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { fetchGames } from "@/utils/fetchGames";
-import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
+import { fetchGames, GameSummary } from "@/utils/fetchGames";
+import { fetchDetailedGames, DetailedGame } from "@/utils/fetchDetailedGames";
 import { cleanDescription, shortenDescription } from "@/utils/cleanup";
 
 // Helper to split an array into chunks
@@ -19,8 +20,9 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
 interface BasicGame {
   id: string;
   name: string;
-  thumbnail: string;
-  description: string;    // now non-optional
+  thumbnail: string;   // low-res blur placeholder
+  image: string;       // high-res cover art
+  description: string; // now non-optional
 }
 
 export default function GamesClient() {
@@ -36,46 +38,46 @@ export default function GamesClient() {
     setError("");
 
     try {
-      const basic: BasicGame[] = (await fetchGames(query))
-        .filter((g) => g.id)
-        .map((g) => ({
-          id: String(g.id),
-          name: g.name || "Unknown Game",
-          thumbnail: g.thumbnail || "/default-game-thumbnail.jpg",
-          description: "",
-        }));
-
-      if (!basic.length) {
+      // 1️⃣ Fetch basic summaries (with both thumbnail & image)
+      const basicSummaries: GameSummary[] = await fetchGames(query);
+      if (basicSummaries.length === 0) {
         setGames([]);
-        setLoading(false);
         return;
       }
 
+      // Map into our BasicGame shape, defaulting image to thumbnail
+      const basic: BasicGame[] = basicSummaries.map((g) => ({
+        id: String(g.id),
+        name: g.name,
+        thumbnail: g.thumbnail || "/default-game-thumbnail.jpg",
+        image: g.image || g.thumbnail || "/default-game-thumbnail.jpg",
+        description: "",
+      }));
+
+      // 2️⃣ Fetch details in batches to fill in descriptions (and override thumbs if you like)
       const allIds = basic.map((g) => g.id);
       const chunks = chunkArray(allIds, 20);
-      let detailsAcc: BasicGame[] = [];
+      const detailsAcc: DetailedGame[] = [];
 
       for (const chunk of chunks) {
         const dets = await fetchDetailedGames(chunk);
-        detailsAcc = detailsAcc.concat(
-          dets.map((d) => ({
-            id: String(d.id),
-            name: d.name || "Unknown Game",
-            thumbnail: d.thumbnail || "/default-game-thumbnail.jpg",
-            description: cleanDescription(d.description),
-          }))
-        );
+        detailsAcc.push(...dets);
       }
 
-      for (const det of detailsAcc) {
-        const idx = basic.findIndex((b) => b.id === det.id);
-        if (idx > -1) {
-          basic[idx].thumbnail = det.thumbnail;
-          basic[idx].description = det.description;
-        }
-      }
+      // 3️⃣ Merge description (and optionally higher-res image) back into basic[]
+      const merged = basic.map((b) => {
+        const det = detailsAcc.find((d) => String(d.id) === b.id);
+        return {
+          ...b,
+          thumbnail: det?.thumbnail || b.thumbnail,
+          image: det?.image || b.image,
+          description: det
+            ? cleanDescription(det.description)
+            : "No description available.",
+        };
+      });
 
-      setGames(basic);
+      setGames(merged);
     } catch (err) {
       console.error("Error fetching games:", err);
       setError("Failed to load games. Please try again later.");
@@ -129,15 +131,18 @@ export default function GamesClient() {
                 <Link key={game.id} href={`/game/${game.id}`} className="block">
                   <div className="p-4 bg-gray-200 dark:bg-gray-700 rounded shadow hover:shadow-lg transition">
                     <Image
-                      src={game.thumbnail}
-                      alt={`${game.name} thumbnail`}
+                      src={game.image}
+                      alt={`${game.name} cover art`}
                       width={200}
                       height={150}
+                      quality={80} // higher JPEG/WebP quality
+                      placeholder="blur" // blur-up placeholder
+                      blurDataURL={game.thumbnail} // low-res blur source
                       className="w-full h-[150px] object-cover rounded mb-2"
                     />
                     <h2 className="font-semibold text-lg mb-1">{game.name}</h2>
                     <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
-                      {shortenDescription(game.description) || "No description available."}
+                      {shortenDescription(game.description)}
                     </p>
                   </div>
                 </Link>
