@@ -28,11 +28,20 @@ export default function ResultsClient() {
   const [games, setGames] = useState<BasicGame[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Use the stringified query so useEffect only fires when the actual params change
   const queryString = searchParams.toString();
 
   useEffect(() => {
-    // pull out all selected filters
+    // grab cached results (with both image & thumbnail)
+    const stored = localStorage.getItem("searchResults");
+    let results: BasicGame[] = stored ? JSON.parse(stored) : [];
+
+    if (!results.length) {
+      setGames([]);
+      setLoading(false);
+      return;
+    }
+
+    // extract filters
     const players    = searchParams.getAll("players");
     const complexity = searchParams.getAll("complexity");
     const playtime   = searchParams.getAll("playtime");
@@ -40,21 +49,17 @@ export default function ResultsClient() {
     const age        = searchParams.getAll("age");
     const theme      = searchParams.getAll("theme");
 
-    // grab cached results (now containing both thumbnail & image)
-    const stored = localStorage.getItem("searchResults");
-    let results: BasicGame[] = stored ? JSON.parse(stored) : [];
-
-    // filter helper
+    // apply filter only if it doesn't empty out the list
     const applyFilter = (
       selected: string[],
       prop: keyof BasicGame,
       list: BasicGame[]
-    ) =>
-      selected.length === 0
-        ? list
-        : list.filter((g) => g[prop] != null && selected.includes(g[prop]!));
+    ): BasicGame[] => {
+      if (selected.length === 0) return list;
+      const filtered = list.filter((g) => g[prop] != null && selected.includes(g[prop]!));
+      return filtered.length > 0 ? filtered : list;
+    };
 
-    // run through each filter
     results = applyFilter(players,    "players",    results);
     results = applyFilter(complexity, "complexity", results);
     results = applyFilter(playtime,   "playtime",   results);
@@ -94,26 +99,30 @@ export default function ResultsClient() {
                 key={game.id}
                 className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow"
               >
-                <Link href={`/game/${game.id}`}>
+                <Link href={`/game/${game.id}`} className="block">
                   <h3 className="font-semibold mb-2">{game.name}</h3>
-
-                  {game.image || game.thumbnail ? (
-                    <Image
-                      src={game.image || game.thumbnail}
-                      alt={`${game.name} cover art`}
-                      width={200}
-                      height={144}         // keeps your  aspect ratio
-                      quality={80}         // bump up quality
-                      placeholder="blur"   // blur-up effect
-                      blurDataURL={game.thumbnail}
-                      className="w-full h-36 object-cover rounded mb-2"
-                    />
-                  ) : (
-                    <div className="w-full h-36 bg-gray-300 flex items-center justify-center rounded mb-2">
-                      <span>No Image</span>
-                    </div>
-                  )}
-
+                  {(() => {
+                    const src = game.image || game.thumbnail;
+                    if (src) {
+                      return (
+                        <Image
+                          src={src}
+                          alt={`${game.name} cover art`}
+                          width={200}
+                          height={144}
+                          quality={80}
+                          placeholder="blur"
+                          blurDataURL={game.thumbnail || undefined}
+                          className="w-full h-36 object-cover rounded mb-2"
+                        />
+                      );
+                    }
+                    return (
+                      <div className="w-full h-36 bg-gray-300 flex items-center justify-center rounded mb-2">
+                        <span>No Image</span>
+                      </div>
+                    );
+                  })()}
                   <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
                     {game.description}
                   </p>
