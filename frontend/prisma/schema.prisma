@@ -1,3 +1,5 @@
+// prisma/schema.prisma
+
 generator client {
   provider = "prisma-client-js"
   output   = "../node_modules/.prisma/client"
@@ -9,17 +11,19 @@ datasource db {
 }
 
 model User {
-  id               Int          @id @default(autoincrement())
-  username         String       @unique
-  email            String       @unique
+  id               Int           @id @default(autoincrement())
+  username         String        @unique
+  email            String        @unique
   password         String
-  created_at       DateTime     @default(now())
-  isActive         Boolean      @default(true)
+  created_at       DateTime      @default(now())
+  isActive         Boolean       @default(true)
   resetToken       String?
   resetTokenExpiry DateTime?
 
-  favorites        Favorite[]
-  savedGames       SavedGame[]
+  favorites   Favorite[]
+  savedGames  SavedGame[]
+  ratings     Rating[]
+  comments    Comment[]
 
   @@map("users")
 }
@@ -31,8 +35,8 @@ model Favorite {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
 }
 
 model SavedGame {
@@ -42,6 +46,30 @@ model SavedGame {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+}
+
+/// Stores one 1–5 star rating per (game, user)
+model Rating {
+  gameId  String
+  userId  Int
+  rating  Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([gameId, userId])
+  @@map("ratings")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  gameId    String
   userId    Int
+  text      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
 }
