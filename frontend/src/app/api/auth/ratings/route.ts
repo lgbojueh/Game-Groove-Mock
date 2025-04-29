@@ -18,10 +18,10 @@ export async function GET(req: Request) {
   }
 
   // Parse the user ID (string → number)
-  const userId = parseInt(session.user.id, 10);
+  const userId = session.user.id; // Keep userId as a string
 
   const rec = await prisma.rating.findUnique({
-    where: { gameId_userId: { gameId, userId } },
+    where: { gameId_userId: { gameId, userId: userId.toString() } },
   });
 
   return NextResponse.json({ rating: rec?.rating ?? 0 });
@@ -50,8 +50,8 @@ export async function POST(req: Request) {
 
   // Upsert the rating
   await prisma.rating.upsert({
-    where: { gameId_userId: { gameId, userId } },
-    create: { gameId, userId, rating: r },
+    where: { gameId_userId: { gameId, userId: userId.toString() } },
+    create: { gameId, userId: userId.toString(), rating: r },
     update: { rating: r },
   });
 

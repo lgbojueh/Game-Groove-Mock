@@ -52,7 +52,7 @@ export async function POST(req: Request) {
   const comment = await prisma.comment.create({
     data: {
       gameId,
-      userId,           // now a number
+      userId: userId.toString(), // convert number to string
       text,
       parentId: parentId ?? null,
     },
