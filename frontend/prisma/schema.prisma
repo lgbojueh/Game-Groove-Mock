@@ -1,5 +1,8 @@
+// prisma/schema.prisma
+
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -8,18 +11,17 @@ datasource db {
 }
 
 model User {
-  id               Int       @id @default(autoincrement())
-  username         String    @unique
-  email            String    @unique
+  id               Int          @id @default(autoincrement())
+  username         String       @unique
+  email            String       @unique
   password         String
-  created_at       DateTime  @default(now())
-  isActive         Boolean   @default(true)
+  created_at       DateTime     @default(now())
+  isActive         Boolean      @default(true)
   resetToken       String?
   resetTokenExpiry DateTime?
 
   favorites        Favorite[]
   savedGames       SavedGame[]
-  comments         Comment[]
 
   @@map("users")
 }
@@ -31,8 +33,8 @@ model Favorite {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
 
   @@map("favorites")
 }
@@ -44,13 +46,13 @@ model SavedGame {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
 
   @@map("saved_games")
 }
 
-/// Allow ANY string (guest UUID or real User.id as string)
+/// One (string) userId per (game, user) combo—guests and real users alike.
 model Rating {
   gameId String
   userId String
@@ -60,16 +62,14 @@ model Rating {
   @@map("ratings")
 }
 
+/// Flat comments table—no Prisma relation fields.
 model Comment {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   gameId    String
   userId    String
   text      String
   parentId  Int?
-  createdAt DateTime @default(now())
-
-  replies   Comment[] @relation("ReplyRelation", references: [id], fields: [parentId])
-  parent    Comment?  @relation("ReplyRelation", fields: [parentId], references: [id])
+  createdAt DateTime  @default(now())
 
   @@map("comments")
 }
