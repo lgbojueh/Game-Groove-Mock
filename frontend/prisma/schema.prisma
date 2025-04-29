@@ -50,30 +50,27 @@ model SavedGame {
   userId Int
 }
 
-/// Stores one 1–5 star rating per (game, user)
+/// Stores one 1–5 star rating per (game, user or guest)
 model Rating {
-  gameId  String
-  userId  Int
-  rating  Int
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gameId String
+  userId String   // can be a real User ID or a guest UUID
+  rating Int
 
   @@id([gameId, userId])
   @@map("ratings")
 }
 
-/// Free-form comments with optional replies
+/// Free-form comments, supporting threaded replies
 model Comment {
-  id         Int       @id @default(autoincrement())
-  gameId     String
-  userId     Int
-  text       String
-  createdAt  DateTime  @default(now())
-  parentId   Int?      
+  id        Int       @id @default(autoincrement())
+  gameId    String
+  userId    String    // can be a real User ID or a guest UUID
+  text      String
+  createdAt DateTime  @default(now())
+  parentId  Int?
 
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parent  Comment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies Comment[] @relation("CommentReplies")
+  replies  Comment[] @relation("CommentReplies")
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
 
   @@map("comments")
 }
