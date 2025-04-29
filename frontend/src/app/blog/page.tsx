@@ -1,3 +1,4 @@
+// src/app/blog/page.tsx
 import Link from "next/link";
 
 const posts = [
@@ -30,36 +31,43 @@ const posts = [
 export default function Blog() {
   return (
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen">
-      {/* Header for the blog page */}
+      {/* Page Header */}
       <header className="mb-10">
-        <h1 className="text-4xl font-bold text-center">Blog</h1>
+        <h1 className="text-4xl font-bold text-center">
+          Blog
+        </h1>
       </header>
 
-      {/* Section for blog posts with a centered layout */}
+      {/* Posts List */}
       <section className="max-w-4xl mx-auto space-y-8">
         {posts.map((post) => (
           <article
             key={post.id}
-            className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition"
+            className="p-6 bg-gray-50 dark:bg-gray-400 rounded-lg shadow-md hover:shadow-xl transition"
           >
             {/* Post Header */}
             <header>
-              <Link href={`/blog/${post.id}`}> {`Read more about ${post.title}`}
-                  <h2 className="text-2xl font-semibold mb-2 hover:underline">
-                    {post.title}
-                  </h2>
+              <Link
+                href={`/blog/${post.id}`}
+                className="block hover:underline"
+              >
+                <h2 className="text-2xl font-semibold mb-2">
+                  {post.title}
+                </h2>
               </Link>
             </header>
 
             {/* Post Summary */}
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
+            <p className="mb-4">
               {post.summary}
             </p>
 
-            {/* Post Footer for date */}
+            {/* Post Date */}
             <footer>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                <time dateTime={post.dateTime}>{post.date}</time>
+              <p className="text-sm">
+                <time dateTime={post.dateTime}>
+                  {post.date}
+                </time>
               </p>
             </footer>
           </article>

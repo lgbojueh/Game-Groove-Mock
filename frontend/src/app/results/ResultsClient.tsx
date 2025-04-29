@@ -31,7 +31,7 @@ export default function ResultsClient() {
   const queryString = searchParams.toString();
 
   useEffect(() => {
-    // grab cached results (with both image & thumbnail)
+    // pull cached results
     const stored = localStorage.getItem("searchResults");
     let results: BasicGame[] = stored ? JSON.parse(stored) : [];
 
@@ -41,7 +41,7 @@ export default function ResultsClient() {
       return;
     }
 
-    // extract filters
+    // apply filters (players, complexity, playtime, genre, age, theme)...
     const players    = searchParams.getAll("players");
     const complexity = searchParams.getAll("complexity");
     const playtime   = searchParams.getAll("playtime");
@@ -49,7 +49,6 @@ export default function ResultsClient() {
     const age        = searchParams.getAll("age");
     const theme      = searchParams.getAll("theme");
 
-    // apply filter only if it doesn't empty out the list
     const applyFilter = (
       selected: string[],
       prop: keyof BasicGame,
@@ -80,7 +79,7 @@ export default function ResultsClient() {
   return (
     <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       <header className="flex items-center justify-between px-6 py-4 border-b">
-        <h1 className="text-4xl font-bold">Search Results</h1>
+        <h1 className="text-4xl font-bold text-[var(--foreground)]">Search Results</h1>
         <button
           onClick={() => router.back()}
           className="px-4 py-2 bg-gray-400 rounded hover:bg-gray-500"
@@ -90,17 +89,21 @@ export default function ResultsClient() {
       </header>
 
       <section className="px-6 py-4">
-        {loading && <p>Loading…</p>}
+        {loading && (
+          <p className="text-[var(--foreground)]">Loading…</p>
+        )}
 
         {!loading && games.length > 0 && (
           <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {games.map((game) => (
               <li
                 key={game.id}
-                className="p-4 bg-gray-100 dark:bg-gray-700 rounded shadow"
+                className="p-4 bg-gray-100 dark:bg-gray-400 rounded shadow"
               >
                 <Link href={`/game/${game.id}`} className="block">
-                  <h3 className="font-semibold mb-2">{game.name}</h3>
+                  <h3 className="font-semibold mb-2 text-[var(--foreground)]">
+                    {game.name}
+                  </h3>
                   {(() => {
                     const src = game.image || game.thumbnail;
                     if (src) {
@@ -123,7 +126,7 @@ export default function ResultsClient() {
                       </div>
                     );
                   })()}
-                  <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
+                  <p className="text-sm text-[var(--foreground)] line-clamp-3">
                     {game.description}
                   </p>
                 </Link>
@@ -133,7 +136,9 @@ export default function ResultsClient() {
         )}
 
         {!loading && games.length === 0 && (
-          <p>No games found matching your filters. Try broadening your search.</p>
+          <p className="text-[var(--foreground)]">
+            No games found matching your filters. Try broadening your search.
+          </p>
         )}
       </section>
     </main>

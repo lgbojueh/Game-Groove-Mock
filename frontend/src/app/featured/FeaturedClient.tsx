@@ -92,9 +92,9 @@ export default function FeaturedClient() {
               <Link
                 key={game.id}
                 href={`/game/${game.id}`}
-                className="block p-4 bg-gray-100 dark:bg-gray-700 rounded shadow hover:shadow-xl transition"
+                className="block p-4 bg-gray-100 dark:bg-gray-400 rounded shadow hover:shadow-xl transition"
               >
-                <h3 className="font-semibold mb-2 text-lg">{game.name}</h3>
+                <h3 className="font-semibold mb-2 text-lg text-[var(--foreground)]">{game.name}</h3>
 
                 {game.image || game.thumbnail ? (
                   <Image
@@ -113,7 +113,7 @@ export default function FeaturedClient() {
                   </div>
                 )}
 
-                <p className="text-sm text-gray-600 dark:text-gray-300 flex-1">
+                <p className="text-sm text-[var(--foreground)] flex-1">
                   {game.description}
                 </p>
               </Link>

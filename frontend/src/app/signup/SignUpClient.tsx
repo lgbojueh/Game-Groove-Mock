@@ -86,7 +86,7 @@ export default function SignUpClient() {
 
   return (
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen flex items-center justify-center">
-      <section className="max-w-md w-full bg-gray-100 dark:bg-gray-800 p-8 rounded-lg shadow-lg">
+      <section className="max-w-md w-full bg-gray-100 dark:bg-gray-400 p-8 rounded-lg shadow-lg">
         <h1 className={`${styles.SignUp} text-3xl font-bold text-center mb-6`}>Sign Up</h1>
 
         {error && (
@@ -145,7 +145,7 @@ export default function SignUpClient() {
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="mt-1 text-sm text-blue-600 hover:underline"
+              className="mt-1 text-sm text-blue-800 hover:underline"
             >
               {showPassword ? "Hide Password" : "Show Password"}
             </button>
@@ -167,7 +167,7 @@ export default function SignUpClient() {
             <button
               type="button"
               onClick={() => setShowConfirmPassword((v) => !v)}
-              className="mt-1 text-sm text-blue-600 hover:underline"
+              className="mt-1 text-sm text-blue-800 hover:underline"
             >
               {showConfirmPassword ? "Hide Password" : "Show Password"}
             </button>

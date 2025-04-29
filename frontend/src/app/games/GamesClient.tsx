@@ -54,7 +54,7 @@ export default function GamesClient() {
         description: "",
       }));
 
-      // 2️⃣ Fetch details in batches to fill in descriptions (and override thumbs if you like)
+      // 2️⃣ Fetch details in batches to fill in descriptions
       const allIds = basic.map((g) => g.id);
       const chunks = chunkArray(allIds, 20);
       const detailsAcc: DetailedGame[] = [];
@@ -129,7 +129,7 @@ export default function GamesClient() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {games.slice(0, visibleCount).map((game) => (
                 <Link key={game.id} href={`/game/${game.id}`} className="block">
-                  <div className="p-4 bg-gray-200 dark:bg-gray-700 rounded shadow hover:shadow-lg transition">
+                  <div className="p-4 bg-gray-200 dark:bg-gray-400 rounded shadow hover:shadow-lg transition">
                     <Image
                       src={game.image}
                       alt={`${game.name} cover art`}
@@ -140,8 +140,14 @@ export default function GamesClient() {
                       blurDataURL={game.thumbnail} // low-res blur source
                       className="w-full h-[150px] object-cover rounded mb-2"
                     />
-                    <h2 className="font-semibold text-lg mb-1">{game.name}</h2>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
+
+                    {/* Title: black in light, white in dark */}
+                    <h2 className="font-semibold text-lg mb-1 text-[var(--foreground)]">
+                      {game.name}
+                    </h2>
+
+                    {/* Description: black in light, white in dark */}
+                    <p className="text-sm text-[var(--foreground)] line-clamp-3">
                       {shortenDescription(game.description)}
                     </p>
                   </div>

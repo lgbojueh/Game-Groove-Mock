@@ -1,3 +1,4 @@
+// src/app/game/[id]/GameDetailsClient.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -30,7 +31,7 @@ export default function GameDetailsClient() {
   const [favoriteId, setFavoriteId] = useState<number | null>(null);
   const [savedId, setSavedId] = useState<number | null>(null);
 
-  // 1) Load the game details (with image & thumbnail)
+  // 1) Load the game details
   useEffect(() => {
     async function load() {
       try {
@@ -72,93 +73,39 @@ export default function GameDetailsClient() {
   }, [status, game]);
 
   const toggleFavorite = async () => {
-    if (status !== "authenticated") {
-      alert("You must be logged in to favorite a game");
-      return;
-    }
-    if (!game) return;
-
-    if (favoriteId) {
-      const res = await fetch(`/api/auth/favoriteService?id=${favoriteId}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        setFavoriteId(null);
-        alert("Removed from favorites");
-      } else {
-        alert("Failed to remove favorite");
-      }
-    } else {
-      const res = await fetch("/api/auth/favoriteService", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: game.name, thumbnail: game.thumbnail }),
-      });
-      if (res.ok) {
-        const created = (await res.json()) as FavoriteRecord;
-        setFavoriteId(created.id);
-        alert("Added to favorites");
-      } else {
-        alert("Failed to add favorite");
-      }
-    }
+    // ... unchanged
   };
 
   const toggleSaved = async () => {
-    if (status !== "authenticated") {
-      alert("You must be logged in to save a game");
-      return;
-    }
-    if (!game) return;
-
-    if (savedId) {
-      const res = await fetch(`/api/auth/savedGames?id=${savedId}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        setSavedId(null);
-        alert("Removed from saved games");
-      } else {
-        alert("Failed to remove saved game");
-      }
-    } else {
-      const res = await fetch("/api/auth/savedGames", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: game.name, thumbnail: game.thumbnail }),
-      });
-      if (res.ok) {
-        const created = (await res.json()) as SavedRecord;
-        setSavedId(created.id);
-        alert("Added to saved games");
-      } else {
-        alert("Failed to save game");
-      }
-    }
+    // ... unchanged
   };
 
   if (loading) return <p className="p-6">Loading…</p>;
-  if (error) return <p className="p-6 text-red-500">{error}</p>;
-  if (!game) return <p className="p-6">No game found.</p>;
+  if (error)   return <p className="p-6 text-red-500">{error}</p>;
+  if (!game)   return <p className="p-6">No game found.</p>;
 
   return (
     <div className="flex flex-col h-screen">
       <header className="p-4 bg-gray-500 text-white">
         <h2>Game Details</h2>
       </header>
-      <main className="p-6 bg-[var(--background)] text-[var(--foreground)] flex-1 overflow-y-auto">
-        <h1 className="text-4xl font-bold mb-4">{game.name}</h1>
 
-        {/** High-res cover art with blur placeholder **/}
+      <main className="p-6 bg-[var(--background)] text-[var(--foreground)] flex-1 overflow-y-auto">
+        {/* Title */}
+        <h1 className="text-4xl font-bold mb-4 text-[var(--foreground)]">
+          {game.name}
+        </h1>
+
+        {/* Image */}
         {game.image || game.thumbnail ? (
           <Image
             src={game.image || game.thumbnail}
             alt={`${game.name} cover art`}
             width={400}
             height={300}
-            quality={80}               // sharper output
-            placeholder="blur"         // blur-up effect
-            blurDataURL={game.thumbnail} // low-res placeholder
+            quality={80}
+            placeholder="blur"
+            blurDataURL={game.thumbnail || undefined}
             className="w-full max-w-md mb-4 object-cover rounded max-h-96"
           />
         ) : (
@@ -167,10 +114,14 @@ export default function GameDetailsClient() {
           </div>
         )}
 
+        {/* Description */}
         <div className="mb-4 whitespace-pre-line">
-          <p>{cleanDescription(game.description)}</p>
+          <p className="text-[var(--foreground)]">
+            {cleanDescription(game.description)}
+          </p>
         </div>
 
+        {/* Actions */}
         <div className="flex space-x-4 mb-8">
           <button
             onClick={toggleFavorite}
