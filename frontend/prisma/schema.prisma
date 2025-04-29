@@ -11,12 +11,12 @@ datasource db {
 }
 
 model User {
-  id               Int           @id @default(autoincrement())
-  username         String        @unique
-  email            String        @unique
+  id               Int       @id @default(autoincrement())
+  username         String    @unique
+  email            String    @unique
   password         String
-  created_at       DateTime      @default(now())
-  isActive         Boolean       @default(true)
+  created_at       DateTime  @default(now())
+  isActive         Boolean   @default(true)
   resetToken       String?
   resetTokenExpiry DateTime?
 
@@ -62,14 +62,18 @@ model Rating {
   @@map("ratings")
 }
 
+/// Free-form comments with optional replies
 model Comment {
-  id        Int      @id @default(autoincrement())
-  gameId    String
-  userId    Int
-  text      String
-  createdAt DateTime @default(now())
+  id         Int       @id @default(autoincrement())
+  gameId     String
+  userId     Int
+  text       String
+  createdAt  DateTime  @default(now())
+  parentId   Int?      
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  Comment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("CommentReplies")
 
   @@map("comments")
 }
