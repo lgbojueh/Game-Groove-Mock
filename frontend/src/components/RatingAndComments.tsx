@@ -1,7 +1,10 @@
+// src/components/RatingAndComments.tsx
 "use client";
 
 import { useState, useEffect } from "react";
-import StarRating from "react-rating-stars-component";
+import { useSession } from "next-auth/react";
+import ReactStars from "react-rating-stars-component";
+import { FaRegStar, FaStar } from "react-icons/fa";
 import { getGuestId } from "@/utils/guest";
 
 interface Comment {
@@ -14,7 +17,8 @@ interface Comment {
 }
 
 export default function RatingAndComments({ gameId }: { gameId: string }) {
-  const userId = typeof window !== "undefined" ? getGuestId() : "unknown";
+  const { data: session } = useSession();
+  const userId = session?.user?.id ?? getGuestId();
 
   const [rating, setRating] = useState(0);
   const [average, setAverage] = useState(0);
@@ -24,26 +28,28 @@ export default function RatingAndComments({ gameId }: { gameId: string }) {
   const [replyText, setReplyText] = useState("");
 
   useEffect(() => {
+    // fetch user's rating
     fetch(`/api/ratings?gameId=${gameId}&userId=${userId}`)
       .then((r) => r.json())
       .then((d) => setRating(d.rating ?? 0));
 
+    // fetch average rating
     fetch(`/api/ratings/average?gameId=${gameId}`)
       .then((r) => r.json())
       .then((d) => setAverage(d.average ?? 0));
 
+    // fetch comments + replies
     fetch(`/api/comments?gameId=${gameId}`)
       .then((r) => r.json())
       .then(setComments);
   }, [gameId, userId]);
 
   const handleRate = (newRating: number) => {
-    const r = Math.floor(newRating);
-    setRating(r);
+    setRating(newRating);
     fetch("/api/ratings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ gameId, rating: r }),
+      body: JSON.stringify({ gameId, rating: newRating }),
     });
   };
 
@@ -51,53 +57,48 @@ export default function RatingAndComments({ gameId }: { gameId: string }) {
     const text = parentId ? replyText : newComment;
     if (!text.trim()) return;
 
-    const res = await fetch("/api/comments", {
+    await fetch("/api/comments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ gameId, text, parentId }),
     });
-    if (res.ok) {
-      const created: Comment = await res.json();
-      if (parentId) {
-        setComments((prev) =>
-          prev.map((c) =>
-            c.id === parentId
-              ? { ...c, replies: [created, ...c.replies] }
-              : c
-          )
-        );
-        setReplyText("");
-        setReplyTo(null);
-      } else {
-        setComments([created, ...comments]);
-        setNewComment("");
-      }
-    } else {
-      const err = await res.json();
-      alert(err.error);
-    }
+
+    setNewComment("");
+    setReplyText("");
+    setReplyTo(null);
+
+    // refresh comments
+    fetch(`/api/comments?gameId=${gameId}`)
+      .then((r) => r.json())
+      .then(setComments);
   };
 
   return (
     <div className="mt-8 space-y-6 text-[var(--foreground)]">
+      {/* Average Rating */}
       <div>
         <span className="font-semibold">Average Rating:</span>{" "}
         <span>{average.toFixed(1)} ★</span>
       </div>
 
+      {/* Your Rating */}
       <div>
-        <h3 className="text-lg font-semibold">Your Rating</h3>
-        <StarRating
+        <h3 className="text-lg font-semibold mb-2">Your Rating</h3>
+        <ReactStars
           count={5}
           value={rating}
           onChange={handleRate}
-          size={24}
+          size={32}
           activeColor="#800020"
+          emptyIcon={<FaRegStar />}
+          filledIcon={<FaStar />}
+          isHalf={false}
         />
       </div>
 
+      {/* Comment Form */}
       <div>
-        <h3 className="text-lg font-semibold">Leave a Comment</h3>
+        <h3 className="text-lg font-semibold mb-2">Leave a Comment</h3>
         <textarea
           className="w-full border p-2 rounded"
           rows={3}
@@ -114,8 +115,9 @@ export default function RatingAndComments({ gameId }: { gameId: string }) {
         </button>
       </div>
 
+      {/* Comments & Replies */}
       <div>
-        <h3 className="text-lg font-semibold">Comments</h3>
+        <h3 className="text-lg font-semibold mb-2">Comments</h3>
         <ul className="space-y-4">
           {comments.map((c) => (
             <li

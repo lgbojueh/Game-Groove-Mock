@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { fetchGameDetails, GameDetails } from "@/utils/fetchGameDetails";
 import { cleanDescription } from "@/utils/cleanup";
 import Image from "next/image";
+import RatingAndComments from "@/components/RatingAndComments";
 
 interface FavoriteRecord {
   id: number;
@@ -72,12 +73,42 @@ export default function GameDetailsClient() {
       .catch(console.error);
   }, [status, game]);
 
+  // Toggle favorite
   const toggleFavorite = async () => {
-    // ... unchanged
+    if (!game) return;
+    if (favoriteId) {
+      await fetch(`/api/auth/favoriteService?id=${favoriteId}`, { method: "DELETE" });
+      setFavoriteId(null);
+    } else {
+      const res = await fetch("/api/auth/favoriteService", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: game.name, thumbnail: game.thumbnail }),
+      });
+      if (res.ok) {
+        const created = (await res.json()) as FavoriteRecord;
+        setFavoriteId(created.id);
+      }
+    }
   };
 
+  // Toggle saved
   const toggleSaved = async () => {
-    // ... unchanged
+    if (!game) return;
+    if (savedId) {
+      await fetch(`/api/auth/savedGames?id=${savedId}`, { method: "DELETE" });
+      setSavedId(null);
+    } else {
+      const res = await fetch("/api/auth/savedGames", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: game.name, thumbnail: game.thumbnail }),
+      });
+      if (res.ok) {
+        const created = (await res.json()) as SavedRecord;
+        setSavedId(created.id);
+      }
+    }
   };
 
   if (loading) return <p className="p-6">Loading…</p>;
@@ -156,6 +187,9 @@ export default function GameDetailsClient() {
             Buy on Google
           </a>
         </div>
+
+        {/* Rating & Comments */}
+        <RatingAndComments gameId={game.id as string} />
       </main>
     </div>
   );
