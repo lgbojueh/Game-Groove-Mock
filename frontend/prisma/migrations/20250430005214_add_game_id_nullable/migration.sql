@@ -1,7 +1,9 @@
--- 1️⃣ Add the new column as nullable
-ALTER TABLE "favorites"    ADD "gameId" TEXT;
-ALTER TABLE "saved_games"  ADD "gameId" TEXT;
+-- prisma/migrations/20250430005214_add_game_id_nullable/migration.sql
 
--- 2️⃣ Remove any old rows that don’t yet have a gameId
-DELETE FROM "favorites"   WHERE "gameId" IS NULL;
-DELETE FROM "saved_games" WHERE "gameId" IS NULL;
+-- 1) Add the new column (nullable)
+ALTER TABLE "Favorite"  ADD "gameId" TEXT;
+ALTER TABLE "SavedGame" ADD "gameId" TEXT;
+
+-- 2) Delete any rows that had no gameId assigned
+DELETE FROM "Favorite"   WHERE "gameId" IS NULL;
+DELETE FROM "SavedGame"  WHERE "gameId" IS NULL;
