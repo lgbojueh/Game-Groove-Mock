@@ -1,11 +1,17 @@
 // src/app/api/auth/savedGames/route.ts
-
 export const runtime = 'nodejs';
 
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+
+interface SavedItem {
+  id: number;
+  gameId: string;
+  title: string;
+  thumbnail: string | null;
+}
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -13,20 +19,20 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  try {
-    const userId = Number(session.user.id);
-    const saved = await prisma.savedGame.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-    });
-    return NextResponse.json(saved);
-  } catch (err) {
-    console.error("Error fetching saved games:", err);
-    return NextResponse.json(
-      { error: "Error fetching saved games" },
-      { status: 500 }
-    );
-  }
+  const userId = Number(session.user.id);
+  const raw = await prisma.savedGame.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const saved: SavedItem[] = raw.map((s) => ({
+    id: s.id,
+    gameId: s.gameId,
+    title: s.title,
+    thumbnail: s.thumbnail,
+  }));
+
+  return NextResponse.json(saved);
 }
 
 export async function POST(req: NextRequest) {
@@ -35,31 +41,37 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  try {
-    const { title, thumbnail } = (await req.json()) as {
-      title?: string;
-      thumbnail?: string;
-    };
+  const body = (await req.json()) as {
+    gameId?: string;
+    title?: string;
+    thumbnail?: string;
+  };
+  const { gameId, title, thumbnail } = body;
 
-    if (!title) {
-      return NextResponse.json({ error: "Title is required" }, { status: 400 });
-    }
-
-    const newSaved = await prisma.savedGame.create({
-      data: {
-        title,
-        thumbnail: thumbnail ?? null,
-        user: { connect: { id: Number(session.user.id) } },
-      },
-    });
-    return NextResponse.json(newSaved, { status: 201 });
-  } catch (err) {
-    console.error("Error creating saved game:", err);
-    return NextResponse.json(
-      { error: "Error creating saved game" },
-      { status: 500 }
-    );
+  if (!gameId) {
+    return NextResponse.json({ error: "gameId is required" }, { status: 400 });
   }
+  if (!title) {
+    return NextResponse.json({ error: "Title is required" }, { status: 400 });
+  }
+
+  const created = await prisma.savedGame.create({
+    data: {
+      gameId,
+      title,
+      thumbnail: thumbnail ?? null,
+      user: { connect: { id: Number(session.user.id) } },
+    },
+  });
+
+  const result: SavedItem = {
+    id: created.id,
+    gameId: created.gameId,
+    title: created.title,
+    thumbnail: created.thumbnail,
+  };
+
+  return NextResponse.json(result, { status: 201 });
 }
 
 export async function DELETE(req: NextRequest) {
@@ -73,16 +85,16 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "ID is required" }, { status: 400 });
   }
 
-  try {
-    const deleted = await prisma.savedGame.delete({
-      where: { id: Number(idParam) },
-    });
-    return NextResponse.json(deleted);
-  } catch (err) {
-    console.error("Error deleting saved game:", err);
-    return NextResponse.json(
-      { error: "Error deleting saved game" },
-      { status: 500 }
-    );
-  }
+  const deleted = await prisma.savedGame.delete({
+    where: { id: Number(idParam) },
+  });
+
+  const result: SavedItem = {
+    id: deleted.id,
+    gameId: deleted.gameId,
+    title: deleted.title,
+    thumbnail: deleted.thumbnail,
+  };
+
+  return NextResponse.json(result);
 }

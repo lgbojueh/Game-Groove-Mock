@@ -35,6 +35,7 @@ export async function createFavorite(userId: number, favoriteData: FavoriteData)
     const newFavorite = await prisma.favorite.create({
       data: {
         name: favoriteData.name,
+        gameId: "default-game-id", // Replace with a valid gameId value
         user: { connect: { id: userId } },
       },
     });
