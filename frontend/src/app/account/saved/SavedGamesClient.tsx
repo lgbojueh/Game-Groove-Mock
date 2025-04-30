@@ -3,10 +3,12 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import Image from "next/image";
 
 interface SavedGame {
   id: number;
+  gameId: string;
   title: string;
   thumbnail: string | null;
 }
@@ -15,35 +17,25 @@ export default function SavedGamesClient() {
   const { data: session, status } = useSession();
   const [savedGames, setSavedGames] = useState<SavedGame[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (status === "authenticated" && session?.user?.id) {
-      const fetchSavedGames = async () => {
-        setLoading(true);
-        setError("");
-        try {
-          const userId = session.user.id;
-          const res = await fetch(`/api/auth/savedGames?userId=${userId}`);
-          if (!res.ok) {
-            const text = await res.text();
-            throw new Error(`Error fetching saved games: ${text}`);
-          }
-          const data: SavedGame[] = await res.json();
-          setSavedGames(data);
-        } catch (err: unknown) {
-          console.error("Failed to fetch saved games:", err);
-          if (err instanceof Error) {
-            setError(err.message);
-          } else {
-            setError("An unknown error occurred.");
-          }
-        } finally {
-          setLoading(false);
-        }
-      };
+      const userId = session.user.id;
+      setLoading(true);
+      setError("");
 
-      fetchSavedGames();
+      fetch(`/api/auth/savedGames?userId=${userId}`)
+        .then((res) => {
+          if (!res.ok) throw new Error(res.statusText);
+          return res.json() as Promise<SavedGame[]>;
+        })
+        .then(setSavedGames)
+        .catch((err) => {
+          console.error("Error fetching saved games:", err);
+          setError(err.message || "Error fetching saved games.");
+        })
+        .finally(() => setLoading(false));
     }
   }, [status, session]);
 
@@ -55,22 +47,19 @@ export default function SavedGamesClient() {
       if (!res.ok) throw new Error("Failed to delete saved game");
       setSavedGames((prev) => prev.filter((g) => g.id !== id));
     } catch (err: unknown) {
-      console.error("Error removing saved game:", err);
       if (err instanceof Error) {
-        setError(err.message);
+        console.error("Error removing saved game:", err);
+        setError(err.message || "Error removing saved game.");
       } else {
-        setError("An unknown error occurred while removing the saved game.");
+        console.error("Unexpected error:", err);
+        setError("An unexpected error occurred.");
       }
     }
   };
 
-  if (status === "loading") {
-    return <div className="p-6">Loading...</div>;
-  }
-
-  if (status === "unauthenticated") {
+  if (status === "loading") return <div className="p-6">Loading...</div>;
+  if (status === "unauthenticated")
     return <p className="p-6">Please log in to view saved games.</p>;
-  }
 
   return (
     <main className="p-6 min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -83,37 +72,42 @@ export default function SavedGamesClient() {
       ) : savedGames.length === 0 ? (
         <p>You have no saved games.</p>
       ) : (
-        <ul className="space-y-4">
+        <ul className="space-y-6">
           {savedGames.map((game) => (
             <li
               key={game.id}
-              className="bg-gray-100 dark:bg-gray-400 p-4 rounded shadow"
+              className="bg-gray-100 dark:bg-gray-400 p-4 rounded shadow grid grid-cols-[auto_1fr] gap-4 items-start"
             >
-              <h3 className="text-xl font-semibold">{game.title}</h3>
+              <Link href={`/game/${game.gameId}`}>
+                {game.thumbnail ? (
+                  <Image
+                    src={game.thumbnail}
+                    alt={`${game.title} thumbnail`}
+                    width={128}
+                    height={96}
+                    className="rounded cursor-pointer"
+                  />
+                ) : (
+                  <div className="w-32 h-24 bg-gray-300 rounded flex items-center justify-center">
+                    <span>No Image</span>
+                  </div>
+                )}
+              </Link>
 
-              {game.thumbnail ? (
-                <Image
-                  src={game.thumbnail}
-                  alt={`${game.title} thumbnail`}
-                  width={128}
-                  height={96}
-                  /* higher JPEG/WebP quality */
-                  quality={80}
-                  sizes="(max-width: 640px) 100vw, 128px"
-                  className="rounded mt-2 object-cover"
-                />
-              ) : (
-                <div className="w-32 h-24 bg-gray-300 flex items-center justify-center mt-2 rounded">
-                  <span>No Image</span>
-                </div>
-              )}
-
-              <button
-                onClick={() => removeSavedGame(game.id)}
-                className="bg-red-500 text-white px-4 py-2 mt-2 rounded hover:bg-red-600"
-              >
-                Remove
-              </button>
+              <div>
+                <Link
+                  href={`/game/${game.gameId}`}
+                  className="text-xl font-semibold hover:underline"
+                >
+                  {game.title}
+                </Link>
+                <button
+                  onClick={() => removeSavedGame(game.id)}
+                  className="mt-2 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                >
+                  Remove
+                </button>
+              </div>
             </li>
           ))}
         </ul>

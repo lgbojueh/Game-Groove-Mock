@@ -1,39 +1,40 @@
 // src/app/game/[id]/GameDetailsClient.tsx
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { fetchGameDetails, GameDetails } from "@/utils/fetchGameDetails";
-import { cleanDescription } from "@/utils/cleanup";
-import Image from "next/image";
-import RatingAndComments from "@/components/RatingAndComments";
+import { useState, useEffect }                      from "react";
+import { useParams }                                from "next/navigation";
+import { useSession }                               from "next-auth/react";
+import { fetchGameDetails, GameDetails }            from "@/utils/fetchGameDetails";
+import { cleanDescription }                         from "@/utils/cleanup";
+import Image                                        from "next/image";
+import RatingAndComments                            from "@/components/RatingAndComments";
 
 interface FavoriteRecord {
-  id: number;
-  name: string;
+  id:        number;
+  gameId:    string;
+  title:     string;
   thumbnail: string | null;
 }
 
 interface SavedRecord {
-  id: number;
-  title: string;
+  id:        number;
+  gameId:    string;
+  title:     string;
   thumbnail: string | null;
 }
 
 export default function GameDetailsClient() {
-  const { id } = useParams();
-  const router = useRouter();
+  const { id }     = useParams();
   const { status } = useSession();
 
-  const [game, setGame] = useState<GameDetails | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [game,       setGame]       = useState<GameDetails | null>(null);
+  const [loading,    setLoading]    = useState(true);
+  const [error,      setError]      = useState("");
 
   const [favoriteId, setFavoriteId] = useState<number | null>(null);
-  const [savedId, setSavedId] = useState<number | null>(null);
+  const [savedId,    setSavedId]    = useState<number | null>(null);
 
-  // 1) Load game details
+  // 1. Load game details
   useEffect(() => {
     async function load() {
       try {
@@ -53,21 +54,24 @@ export default function GameDetailsClient() {
     load();
   }, [id]);
 
-  // 2) Load existing favorite & saved if authenticated
+  // 2. Load existing favorite & saved IDs
   useEffect(() => {
     if (status !== "authenticated" || !game) return;
 
+    // -- favorites
     fetch("/api/auth/favoriteService")
-      .then((res) => res.json() as Promise<FavoriteRecord[]>)
-      .then((list) => {
-        const found = list.find((f) => f.name === game.name);
+      .then((r) => r.json())
+      .then((list: FavoriteRecord[]) => {
+        // Compare against the `title` field, not `name`
+        const found = list.find((f) => f.title === game.name);
         setFavoriteId(found?.id ?? null);
       })
       .catch(console.error);
 
+    // -- saved
     fetch("/api/auth/savedGames")
-      .then((res) => res.json() as Promise<SavedRecord[]>)
-      .then((list) => {
+      .then((r) => r.json())
+      .then((list: SavedRecord[]) => {
         const found = list.find((s) => s.title === game.name);
         setSavedId(found?.id ?? null);
       })
@@ -75,80 +79,101 @@ export default function GameDetailsClient() {
   }, [status, game]);
 
   // Toggle favorite
-  const toggleFavorite = useCallback(async () => {
+  const toggleFavorite = async () => {
     if (status !== "authenticated") {
-      alert("Please sign up or log in to add favorites.");
+      alert("You must be logged in to favorite a game.");
       return;
     }
     if (!game) return;
 
+    // Remove if already favorited
     if (favoriteId) {
-      const res = await fetch(`/api/auth/favoriteService?id=${favoriteId}`, { method: "DELETE" });
+      const res = await fetch(`/api/auth/favoriteService?id=${favoriteId}`, {
+        method: "DELETE",
+      });
       if (res.ok) {
         setFavoriteId(null);
-        alert("Removed from favorites");
+        alert("Removed from favorites.");
       } else {
-        alert("Failed to remove favorite");
+        const err = await res.json();
+        alert("Error removing favorite: " + err.error);
       }
-    } else {
-      const res = await fetch("/api/auth/favoriteService", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: game.name, thumbnail: game.thumbnail }),
-      });
-      if (res.ok) {
-        const created = (await res.json()) as FavoriteRecord;
-        setFavoriteId(created.id);
-        alert("Added to favorites");
-      } else {
-        alert("Failed to add favorite");
-      }
+      return;
     }
-  }, [status, favoriteId, game]);
+
+    // Otherwise create favorite
+    const res = await fetch("/api/auth/favoriteService", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        gameId:    game.id,
+        name:      game.name,      // the API expects `name` for title
+        thumbnail: game.thumbnail,
+      }),
+    });
+
+    if (res.ok) {
+      const created = (await res.json()) as FavoriteRecord;
+      setFavoriteId(created.id);
+      alert("Added to favorites!");
+    } else {
+      const err = await res.json();
+      alert("Error adding favorite: " + err.error);
+    }
+  };
 
   // Toggle saved
-  const toggleSaved = useCallback(async () => {
+  const toggleSaved = async () => {
     if (status !== "authenticated") {
-      alert("Please sign up or log in to save games.");
+      alert("You must be logged in to save a game.");
       return;
     }
     if (!game) return;
 
+    // Remove if already saved
     if (savedId) {
-      const res = await fetch(`/api/auth/savedGames?id=${savedId}`, { method: "DELETE" });
-      if (res.ok) {
-        setSavedId(null);
-        alert("Removed from saved games");
-      } else {
-        alert("Failed to remove saved game");
-      }
-    } else {
-      const res = await fetch("/api/auth/savedGames", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: game.name, thumbnail: game.thumbnail }),
+      const res = await fetch(`/api/auth/savedGames?id=${savedId}`, {
+        method: "DELETE",
       });
       if (res.ok) {
-        const created = (await res.json()) as SavedRecord;
-        setSavedId(created.id);
-        alert("Game saved");
+        setSavedId(null);
+        alert("Removed from saved games.");
       } else {
-        alert("Failed to save game");
+        const err = await res.json();
+        alert("Error removing saved game: " + err.error);
       }
+      return;
     }
-  }, [status, savedId, game]);
+
+    // Otherwise create saved game
+    const res = await fetch("/api/auth/savedGames", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        gameId:    game.id,
+        title:     game.name,
+        thumbnail: game.thumbnail,
+      }),
+    });
+
+    if (res.ok) {
+      const created = (await res.json()) as SavedRecord;
+      setSavedId(created.id);
+      alert("Saved game!");
+    } else {
+      const err = await res.json();
+      alert("Error saving game: " + err.error);
+    }
+  };
 
   if (loading) return <p className="p-6">Loading…</p>;
-  if (error) return <p className="p-6 text-red-500">{error}</p>;
-  if (!game) return <p className="p-6">No game found.</p>;
+  if (error)   return <p className="p-6 text-red-500">{error}</p>;
+  if (!game)   return <p className="p-6">No game found.</p>;
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="p-4 bg-gray-500 text-white flex items-center justify-between">
+      <header className="p-4 bg-gray-500 text-white">
         <h2>Game Details</h2>
-        <button onClick={() => router.back()} className="underline">
-          Back
-        </button>
       </header>
 
       <main className="p-6 bg-[var(--background)] text-[var(--foreground)] flex-1 overflow-y-auto">
@@ -158,7 +183,7 @@ export default function GameDetailsClient() {
         {/* Image */}
         {game.image || game.thumbnail ? (
           <Image
-            src={game.image || game.thumbnail}
+            src={game.image || game.thumbnail!}
             alt={`${game.name} cover art`}
             width={400}
             height={300}
@@ -171,17 +196,19 @@ export default function GameDetailsClient() {
         )}
 
         {/* Description */}
-        <div className="mb-8 whitespace-pre-line">
+        <div className="mb-4 whitespace-pre-line">
           <p>{cleanDescription(game.description)}</p>
         </div>
 
-        {/* Actions */}
-        <div className="flex gap-4 mb-8">
+        {/* Action Buttons */}
+        <div className="flex mb-8">
           <button
             onClick={toggleFavorite}
-            className={`px-4 py-2 rounded ${
-              favoriteId ? "bg-red-600 text-white" : "bg-gray-200 text-black"
-            } hover:opacity-90`}
+            className={`mr-4 px-4 py-2 rounded ${
+              favoriteId
+                ? "bg-red-600 text-white hover:bg-red-700"
+                : "bg-gray-200 text-black hover:bg-gray-300"
+            }`}
           >
             {favoriteId ? "Remove Favorite" : "Add to Favorites"}
           </button>
@@ -189,8 +216,10 @@ export default function GameDetailsClient() {
           <button
             onClick={toggleSaved}
             className={`px-4 py-2 rounded ${
-              savedId ? "bg-purple-600 text-white" : "bg-gray-200 text-black"
-            } hover:opacity-90`}
+              savedId
+                ? "bg-purple-600 text-white hover:bg-purple-700"
+                : "bg-gray-200 text-black hover:bg-gray-300"
+            }`}
           >
             {savedId ? "Unsave Game" : "Save Game"}
           </button>
@@ -201,14 +230,14 @@ export default function GameDetailsClient() {
             )}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700 transition"
+            className="ml-auto px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
           >
             Buy on Google
           </a>
         </div>
 
-        {/* Rating & Comments */}
-        <RatingAndComments gameId={game.id as string} />
+        {/* Ratings & Comments */}
+        {game.id && <RatingAndComments gameId={game.id} />}
       </main>
     </div>
   );
