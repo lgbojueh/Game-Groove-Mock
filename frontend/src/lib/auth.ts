@@ -1,10 +1,12 @@
+// src/lib/auth.ts
+
 import { NextAuthOptions, DefaultSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
-// Extend session
+// Extend Session and User
 declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
@@ -13,7 +15,6 @@ declare module "next-auth" {
       email?: string | null;
     } & DefaultSession["user"];
   }
-
   interface User {
     id: string;
     username?: string | null;
@@ -35,14 +36,28 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+        // Normalize email to lowercase and trim whitespace
+        const normalizedEmail = credentials.email.trim().toLowerCase();
+
+        // Find user case-insensitively
+        const user = await prisma.user.findFirst({
+          where: {
+            email: { equals: normalizedEmail, mode: "insensitive" },
+            isActive: true,
+          },
         });
 
-        if (!user || !user.password) return null;
+        if (!user || !user.password) {
+          return null;
+        }
 
-        const isValid = await bcrypt.compare(credentials.password, user.password);
-        if (!isValid) return null;
+        const isValid = await bcrypt.compare(
+          credentials.password,
+          user.password
+        );
+        if (!isValid) {
+          return null;
+        }
 
         return {
           id: user.id.toString(),
@@ -52,9 +67,11 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
+
   session: {
     strategy: "jwt",
   },
+
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -65,7 +82,7 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      if (token && session.user) {
+      if (session.user) {
         session.user.id = token.id as string;
         session.user.name = token.name as string;
         session.user.email = token.email as string;
@@ -73,8 +90,10 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
+
   pages: {
     signIn: "/login",
   },
+
   secret: process.env.NEXTAUTH_SECRET,
 };

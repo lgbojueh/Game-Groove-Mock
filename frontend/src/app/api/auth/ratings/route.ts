@@ -1,58 +1,64 @@
-// src/app/api/auth/ratings/route.ts
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
-import { authOptions } from "@/lib/auth";
 
 export async function GET(req: Request) {
-  // Only signed-in users have a stored rating
-  const session = await getServerSession(authOptions);
-  if (!session) {
+  const { searchParams } = new URL(req.url);
+  const gameId = searchParams.get("gameId");
+  const userId = searchParams.get("userId");
+  if (!gameId || !userId) {
     return NextResponse.json({ rating: 0 });
   }
 
-  const { searchParams } = new URL(req.url);
-  const gameId = searchParams.get("gameId");
-  if (!gameId) {
-    return NextResponse.json({ rating: 0 }, { status: 400 });
-  }
-
-  // Parse the user ID (string → number)
-  const userId = session.user.id; // Keep userId as a string
-
+  // Fetch this user's rating (or return 0)
   const rec = await prisma.rating.findUnique({
-    where: { gameId_userId: { gameId, userId: userId.toString() } },
+    where: {
+      gameId_userId: {
+        gameId,
+        userId,      // string
+      },
+    },
   });
 
   return NextResponse.json({ rating: rec?.rating ?? 0 });
 }
 
 export async function POST(req: Request) {
-  // Must be signed in to rate
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { gameId, rating } = (await req.json()) as {
+  const body = (await req.json()) as {
     gameId: string;
+    userId: string;
     rating: number;
   };
 
-  // Parse the user ID (string → number)
-  const userId = parseInt(session.user.id, 10);
-
-  // Validate inputs
-  const r = Math.floor(rating);
-  if (!gameId || r < 1 || r > 5) {
-    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+  // Validate
+  if (
+    !body.gameId ||
+    !body.userId ||
+    typeof body.rating !== "number" ||
+    body.rating < 1 ||
+    body.rating > 5
+  ) {
+    return NextResponse.json(
+      { error: "Invalid payload" },
+      { status: 400 }
+    );
   }
 
-  // Upsert the rating
+  // Upsert the rating (create new or update existing)
   await prisma.rating.upsert({
-    where: { gameId_userId: { gameId, userId: userId.toString() } },
-    create: { gameId, userId: userId.toString(), rating: r },
-    update: { rating: r },
+    where: {
+      gameId_userId: {
+        gameId: body.gameId,
+        userId: body.userId,
+      },
+    },
+    create: {
+      gameId: body.gameId,
+      userId: body.userId,
+      rating: body.rating,
+    },
+    update: {
+      rating: body.rating,
+    },
   });
 
   return NextResponse.json({ success: true });

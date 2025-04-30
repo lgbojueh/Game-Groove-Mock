@@ -87,7 +87,7 @@ export default function SavedGamesClient() {
           {savedGames.map((game) => (
             <li
               key={game.id}
-              className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow"
+              className="bg-gray-100 dark:bg-gray-400 p-4 rounded shadow"
             >
               <h3 className="text-xl font-semibold">{game.title}</h3>
 

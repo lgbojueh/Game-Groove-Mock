@@ -1,5 +1,4 @@
 // src/app/api/auth/signup/route.ts
-
 export const runtime = 'nodejs';
 
 import { NextResponse } from 'next/server';
@@ -10,19 +9,32 @@ export async function POST(request: Request) {
   try {
     const { username, email, password } = await request.json();
 
-    // Basic validation
-    if (typeof username !== 'string' || typeof email !== 'string' || typeof password !== 'string') {
-      return NextResponse.json({ error: 'Invalid input types' }, { status: 400 });
+    // Basic type validation
+    if (
+      typeof username !== 'string' ||
+      typeof email !== 'string' ||
+      typeof password !== 'string'
+    ) {
+      return NextResponse.json(
+        { error: 'Invalid input types' },
+        { status: 400 }
+      );
     }
 
-    // Check if the email is already in use
+    // Normalize inputs
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedUsername = username.trim();
+
+    // Check for existing email (case-insensitive)
     const existingEmail = await prisma.user.findFirst({
       where: {
-        email,
+        email: {
+          equals: normalizedEmail,
+          mode: 'insensitive',
+        },
         isActive: true,
       },
     });
-
     if (existingEmail) {
       return NextResponse.json(
         { error: 'An account with this email already exists.' },
@@ -30,14 +42,16 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if the username is already taken
+    // Check for existing username (case-insensitive)
     const existingUsername = await prisma.user.findFirst({
       where: {
-        username,
+        username: {
+          equals: normalizedUsername,
+          mode: 'insensitive',
+        },
         isActive: true,
       },
     });
-
     if (existingUsername) {
       return NextResponse.json(
         { error: 'Username is taken. Please choose another one.' },
@@ -49,13 +63,13 @@ export async function POST(request: Request) {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Create the user in the database
+    // Create the user
     const user = await prisma.user.create({
       data: {
-        username,
-        email,
+        username: normalizedUsername,
+        email: normalizedEmail,
         password: hashedPassword,
-        isActive: true, // Optional if handled by default
+        isActive: true,
       },
     });
 
@@ -70,6 +84,9 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('Error in signup:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

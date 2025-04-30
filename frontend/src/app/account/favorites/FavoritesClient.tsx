@@ -90,7 +90,7 @@ export default function FavoritesClient() {
           {favorites.map((fav) => (
             <li
               key={fav.id}
-              className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow"
+              className="bg-gray-100 dark:bg-gray-400 p-4 rounded shadow"
             >
               <h3 className="text-xl font-semibold">{fav.name}</h3>
               {fav.thumbnail ? (

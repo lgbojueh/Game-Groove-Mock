@@ -5,13 +5,13 @@ import { useState, useEffect, useCallback } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 
 interface GameItem {
-  id: number;
+  id: number;        // primary key in your favorites/savedGames table
+  gameId: string;    // the BGG game ID
   title: string;
-  thumbnail: string | null; // low-res placeholder
-  // If you ever store a high-res URL too, you can add:
-  // image?: string;
+  thumbnail: string | null;
 }
 
 export default function AccountClient() {
@@ -22,16 +22,13 @@ export default function AccountClient() {
   const [favoriteGames, setFavoriteGames] = useState<GameItem[]>([]);
   const [loadingGames, setLoadingGames] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const [deactivating, setDeactivating] = useState(false);
   const [deactivateError, setDeactivateError] = useState<string | null>(null);
 
-  // Fetch saved & favorite games
+  // Load favorites & saved
   useEffect(() => {
     if (status !== "authenticated" || !session?.user?.id) return;
-
     const userId = session.user.id;
-
     (async () => {
       try {
         setLoadingGames(true);
@@ -41,41 +38,33 @@ export default function AccountClient() {
           fetch(`/api/auth/savedGames?userId=${userId}`),
           fetch(`/api/auth/favoriteService?userId=${userId}`),
         ]);
-
         if (!savedRes.ok) throw new Error(await savedRes.text());
         if (!favRes.ok) throw new Error(await favRes.text());
 
-        const savedData: GameItem[] = await savedRes.json();
-        const favData:  GameItem[] = await favRes.json();
-
-        setSavedGames(savedData);
-        setFavoriteGames(favData);
+        setSavedGames((await savedRes.json()) as GameItem[]);
+        setFavoriteGames((await favRes.json()) as GameItem[]);
       } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(err.message || "Failed to load games.");
-        } else {
-          setError("Failed to load games.");
-        }
+        setError(err instanceof Error ? err.message : "Failed to load games.");
       } finally {
         setLoadingGames(false);
       }
     })();
   }, [status, session]);
 
-  // Handlers
-  const removeSavedGame = async (id: number) => {
+  const removeSavedGame = useCallback(async (id: number) => {
     await fetch(`/api/auth/savedGames?id=${id}`, { method: "DELETE" });
-    setSavedGames((g) => g.filter((x) => x.id !== id));
-  };
-  const removeFavoriteGame = async (id: number) => {
-    await fetch(`/api/auth/favoriteService?id=${id}`, { method: "DELETE" });
-    setFavoriteGames((g) => g.filter((x) => x.id !== id));
-  };
+    setSavedGames((list) => list.filter((g) => g.id !== id));
+  }, []);
 
-  // Logout & deactivate
+  const removeFavoriteGame = useCallback(async (id: number) => {
+    await fetch(`/api/auth/favoriteService?id=${id}`, { method: "DELETE" });
+    setFavoriteGames((list) => list.filter((g) => g.id !== id));
+  }, []);
+
   const handleLogout = useCallback(() => {
     signOut({ callbackUrl: "/login" });
   }, []);
+
   const handleDeactivate = useCallback(async () => {
     if (!confirm("Really deactivate your account? This cannot be undone.")) return;
     setDeactivating(true);
@@ -86,21 +75,18 @@ export default function AccountClient() {
       if (!res.ok) throw new Error(body.error || "Deactivation failed");
       await signOut({ callbackUrl: "/" });
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setDeactivateError(err.message || "Error deactivating");
-      } else {
-        setDeactivateError("An unknown error occurred.");
-      }
+      setDeactivateError(err instanceof Error ? err.message : "Unknown error.");
       setDeactivating(false);
     }
   }, []);
 
-  // Redirect if not logged in
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
   }, [status, router]);
 
-  if (status === "loading") return <div className="p-6">Loading account…</div>;
+  if (status === "loading") {
+    return <div className="p-6">Loading account…</div>;
+  }
 
   return (
     <main className="p-6 min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -118,7 +104,7 @@ export default function AccountClient() {
         <button
           onClick={handleDeactivate}
           disabled={deactivating}
-          className="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900 disabled:opacity-50"
+          className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-900 disabled:opacity-50"
         >
           {deactivating ? "Deactivating…" : "Deactivate Account"}
         </button>
@@ -131,7 +117,7 @@ export default function AccountClient() {
         <p className="text-red-500">{error}</p>
       ) : (
         <>
-          {/* Favorites */}
+          {/* Favorite Games */}
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-2">Favorite Games</h2>
             {favoriteGames.length === 0 ? (
@@ -140,27 +126,31 @@ export default function AccountClient() {
               <ul className="space-y-4">
                 {favoriteGames.map((g) => (
                   <li
-                    key={g.id}
-                    className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow flex items-start space-x-4"
+                    key={`fav-${g.id}`}
+                    className="bg-gray-100 dark:bg-gray-400 p-4 rounded shadow flex items-start space-x-4"
                   >
-                    {g.thumbnail ? (
-                      <Image
-                        src={g.thumbnail}
-                        alt={g.title}
-                        width={128}
-                        height={96}
-                        quality={80}           // higher-fidelity
-                        placeholder="blur"     // blur-up placeholder
-                        blurDataURL={g.thumbnail}
-                        className="rounded flex-shrink-0"
-                      />
-                    ) : (
-                      <div className="w-32 h-24 bg-gray-300 flex items-center justify-center rounded">
-                        <span>No Image</span>
-                      </div>
-                    )}
+                    <Link href={`/game/${g.gameId}`} className="flex-shrink-0">
+                      {g.thumbnail ? (
+                        <Image
+                          src={g.thumbnail}
+                          alt={`${g.title} thumbnail`}
+                          width={128}
+                          height={96}
+                          className="rounded cursor-pointer"
+                        />
+                      ) : (
+                        <div className="w-32 h-24 bg-gray-300 rounded flex items-center justify-center">
+                          <span>No Image</span>
+                        </div>
+                      )}
+                    </Link>
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold">{g.title}</h3>
+                      <Link
+                        href={`/game/${g.gameId}`}
+                        className="text-xl font-semibold hover:underline block"
+                      >
+                        {g.title}
+                      </Link>
                       <button
                         onClick={() => removeFavoriteGame(g.id)}
                         className="mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
@@ -174,7 +164,7 @@ export default function AccountClient() {
             )}
           </section>
 
-          {/* Saved */}
+          {/* Saved Games */}
           <section>
             <h2 className="text-2xl font-semibold mb-2">Saved Games</h2>
             {savedGames.length === 0 ? (
@@ -183,27 +173,31 @@ export default function AccountClient() {
               <ul className="space-y-4">
                 {savedGames.map((g) => (
                   <li
-                    key={g.id}
-                    className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow flex items-start space-x-4"
+                    key={`saved-${g.id}`}
+                    className="bg-gray-100 dark:bg-gray-400 p-4 rounded shadow flex items-start space-x-4"
                   >
-                    {g.thumbnail ? (
-                      <Image
-                        src={g.thumbnail}
-                        alt={g.title}
-                        width={128}
-                        height={96}
-                        quality={80}
-                        placeholder="blur"
-                        blurDataURL={g.thumbnail}
-                        className="rounded flex-shrink-0"
-                      />
-                    ) : (
-                      <div className="w-32 h-24 bg-gray-300 flex items-center justify-center rounded">
-                        <span>No Image</span>
-                      </div>
-                    )}
+                    <Link href={`/game/${g.gameId}`} className="flex-shrink-0">
+                      {g.thumbnail ? (
+                        <Image
+                          src={g.thumbnail}
+                          alt={`${g.title} thumbnail`}
+                          width={128}
+                          height={96}
+                          className="rounded cursor-pointer"
+                        />
+                      ) : (
+                        <div className="w-32 h-24 bg-gray-300 rounded flex items-center justify-center">
+                          <span>No Image</span>
+                        </div>
+                      )}
+                    </Link>
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold">{g.title}</h3>
+                      <Link
+                        href={`/game/${g.gameId}`}
+                        className="text-xl font-semibold hover:underline block"
+                      >
+                        {g.title}
+                      </Link>
                       <button
                         onClick={() => removeSavedGame(g.id)}
                         className="mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
