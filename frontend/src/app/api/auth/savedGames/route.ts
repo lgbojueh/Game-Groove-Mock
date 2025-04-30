@@ -10,13 +10,12 @@ import {
   getUserSavedGames,
 } from "@/services/savedGames";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const userId = Number(session.user.id);
-  const list = await getUserSavedGames(userId);
+  const list = await getUserSavedGames(Number(session.user.id));
   return NextResponse.json(list);
 }
 
@@ -33,10 +32,16 @@ export async function POST(req: NextRequest) {
   };
 
   try {
-    const saved = await createSavedGame(userId, { gameId: gameId!, title: title!, thumbnail });
+    const saved = await createSavedGame(userId, {
+      gameId:    gameId!,
+      title:     title!,
+      thumbnail,
+    });
     return NextResponse.json(saved, { status: 201 });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 400 });
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 }
 
@@ -49,9 +54,7 @@ export async function DELETE(req: NextRequest) {
   if (!idParam) {
     return NextResponse.json({ error: "ID is required" }, { status: 400 });
   }
-  const deleted = await prisma.savedGame.delete({
-    where: { id: Number(idParam) },
-  });
+  const deleted = await prisma.savedGame.delete({ where: { id: Number(idParam) } });
   return NextResponse.json({
     id:        deleted.id,
     gameId:    deleted.gameId,
