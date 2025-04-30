@@ -15,7 +15,6 @@ type ReplyDTO = {
   username: string;
   parentId: number;
 };
-
 type CommentDTO = {
   id: number;
   userId: string;
@@ -28,12 +27,8 @@ type CommentDTO = {
 
 export async function GET(req: NextRequest) {
   const gameId = req.nextUrl.searchParams.get("gameId");
-  if (!gameId) {
-    // nothing to fetch!
-    return NextResponse.json<CommentDTO[]>([], { status: 200 });
-  }
+  if (!gameId) return NextResponse.json<CommentDTO[]>([], { status: 200 });
 
-  // 1) fetch root comments + replies
   const [parents, replies] = await Promise.all([
     prisma.comment.findMany({
       where: { gameId, parentId: null },
@@ -45,8 +40,9 @@ export async function GET(req: NextRequest) {
     }),
   ]);
 
-  // 2) lookup all userIds so we can map them to usernames
-  const allIds = Array.from(new Set([...parents, ...replies].map((c) => c.userId)));
+  const allIds = Array.from(
+    new Set([...parents, ...replies].map((c) => c.userId))
+  );
   const numericIds = allIds.filter((id) => /^\d+$/.test(id)).map(Number);
   const users = await prisma.user.findMany({
     where: { id: { in: numericIds } },
@@ -54,7 +50,6 @@ export async function GET(req: NextRequest) {
   });
   const nameById = Object.fromEntries(users.map((u) => [String(u.id), u.username]));
 
-  // 3) build the tree
   const output: CommentDTO[] = parents.map((p) => ({
     id: p.id,
     userId: p.userId,
@@ -83,18 +78,13 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { gameId, text, parentId } = (await req.json()) as {
+  const { gameId, text, parentId, userId: bodyUserId } = (await req.json()) as {
     gameId?: string;
     text?: string;
     parentId?: number | null;
+    userId?: string;
   };
 
-  // basic validation
   if (!gameId || !text?.trim()) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
@@ -105,27 +95,36 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // create it, stamping on the logged-in user
+  // determine who is posting
+  const session = await getServerSession(authOptions);
+  const userId = session
+    ? String(session.user.id)
+    : typeof bodyUserId === "string"
+    ? bodyUserId
+    : null;
+
+  if (!userId) {
+    // if no session and no guest id provided
+    return NextResponse.json({ error: "Missing userId" }, { status: 400 });
+  }
+
   const created = await prisma.comment.create({
     data: {
       gameId,
       text: text.trim(),
       parentId: parentId ?? null,
-      userId: String(session.user.id),
+      userId,
     },
   });
 
-  // pick a friendly display name from session
-  const username =
-    typeof session.user.name === "string" && session.user.name
-      ? session.user.name
-      : session.user.email ?? "Guest";
+  const username = session
+    ? session.user.name || session.user.email || "User"
+    : "Guest";
 
-  // return minimal record (your front-end typically re-fetches the full tree)
   return NextResponse.json(
     {
       id: created.id,
-      userId: String(session.user.id),
+      userId,
       text: created.text,
       createdAt: created.createdAt.toISOString(),
       username,

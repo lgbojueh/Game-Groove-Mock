@@ -7,17 +7,28 @@ import ReactStars from "react-rating-stars-component";
 import { FaRegStar, FaStar } from "react-icons/fa";
 import { getGuestId } from "@/utils/guest";
 
+interface Reply {
+  id: number;
+  userId: string;
+  username: string;
+  text: string;
+  createdAt: string;
+  parentId: number;
+}
+
 interface Comment {
   id: number;
   userId: string;
+  username: string;
   text: string;
   createdAt: string;
   parentId: number | null;
-  replies: Comment[];
+  replies: Reply[];
 }
 
 export default function RatingAndComments({ gameId }: { gameId: string }) {
   const { data: session } = useSession();
+  // for guests we generate a persistent id
   const userId = session?.user?.id ?? getGuestId();
 
   const [rating, setRating] = useState(0);
@@ -28,50 +39,36 @@ export default function RatingAndComments({ gameId }: { gameId: string }) {
   const [replyText, setReplyText] = useState("");
   const [feedbackMessage, setFeedbackMessage] = useState("");
 
+  // load rating, average, and comments
   useEffect(() => {
-    // Load this user's rating
     fetch(`/api/auth/ratings?gameId=${gameId}&userId=${userId}`)
       .then((r) => r.json())
       .then((d) => setRating(d.rating ?? 0))
       .catch(console.error);
 
-    // Load average rating
     fetch(`/api/auth/ratings/average?gameId=${gameId}`)
       .then((r) => r.json())
       .then((d) => setAverage(d.average ?? 0))
       .catch(console.error);
 
-    // Load comments + replies
     fetch(`/api/auth/comments?gameId=${gameId}`)
       .then((r) => r.json())
-      .then(setComments)
+      .then((list: Comment[]) => setComments(list))
       .catch(console.error);
   }, [gameId, userId]);
 
   const handleRate = async (newRating: number) => {
     setRating(newRating);
+    await fetch("/api/auth/ratings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ gameId, userId, rating: newRating }),
+    }).catch(console.error);
 
-    // upsert this user's rating
-    try {
-      await fetch("/api/auth/ratings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ gameId, userId, rating: newRating }),
-      });
-    } catch (err) {
-      console.error("Failed to save rating:", err);
-    }
+    const avgRes = await fetch(`/api/auth/ratings/average?gameId=${gameId}`);
+    const avgData = await avgRes.json();
+    setAverage(avgData.average ?? 0);
 
-    // re-fetch the average
-    try {
-      const avgRes = await fetch(`/api/auth/ratings/average?gameId=${gameId}`);
-      const avgData = await avgRes.json();
-      setAverage(avgData.average ?? 0);
-    } catch (err) {
-      console.error("Failed to load average:", err);
-    }
-
-    // show thank-you message
     setFeedbackMessage("Thank you for rating!");
     setTimeout(() => setFeedbackMessage(""), 3000);
   };
@@ -80,24 +77,20 @@ export default function RatingAndComments({ gameId }: { gameId: string }) {
     const text = parentId ? replyText : newComment;
     if (!text.trim()) return;
 
-    try {
-      await fetch("/api/auth/comments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ gameId, text, parentId }),
-      });
-    } catch (err) {
-      console.error("Failed to post comment:", err);
-    }
+    await fetch("/api/auth/comments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ gameId, text, parentId, userId }),
+    }).catch(console.error);
 
     setNewComment("");
     setReplyText("");
     setReplyTo(null);
 
-    // refresh comments
+    // refresh
     fetch(`/api/auth/comments?gameId=${gameId}`)
       .then((r) => r.json())
-      .then(setComments)
+      .then((list: Comment[]) => setComments(list))
       .catch(console.error);
   };
 
@@ -157,9 +150,7 @@ export default function RatingAndComments({ gameId }: { gameId: string }) {
               key={c.id}
               className="p-4 bg-gray-100 dark:bg-gray-400 rounded"
             >
-              <p className="font-medium">
-                {c.userId === session?.user?.id ? session.user.name : "Guest"}
-              </p>
+              <p className="font-medium">{c.username}</p>
               <p>{c.text}</p>
               <p className="mt-1 text-xs text-gray-500">
                 {new Date(c.createdAt).toLocaleString()}
@@ -172,9 +163,7 @@ export default function RatingAndComments({ gameId }: { gameId: string }) {
                       key={r.id}
                       className="p-2 bg-gray-200 dark:bg-gray-500 rounded"
                     >
-                      <p className="font-medium">
-                        {r.userId === session?.user?.id ? session.user.name : "Guest"}
-                      </p>
+                      <p className="font-medium">{r.username}</p>
                       <p>{r.text}</p>
                       <p className="mt-1 text-xs text-gray-500">
                         {new Date(r.createdAt).toLocaleString()}
