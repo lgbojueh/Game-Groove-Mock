@@ -1,11 +1,7 @@
-// src/app/search/SearchClient.tsx
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
-import GameCamera from "@/components/GameCamera";
 import { fetchGames } from "@/utils/fetchGames";
 import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
 import { cleanDescription, shortenDescription } from "@/utils/cleanup";
@@ -31,16 +27,10 @@ interface BasicGame {
   description?: string;
 }
 
+type FilterOption = { value: string; label: string };
+
 export default function SearchClient() {
   const router = useRouter();
-
-  // Camera recognition state
-  const [showCam, setShowCam] = useState(false);
-  const [recognition, setRecognition] = useState<{
-    id: string;
-    name: string;
-    thumbnail: string;
-  } | null>(null);
 
   // Text search & filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -51,9 +41,15 @@ export default function SearchClient() {
   const [age, setAge] = useState<string[]>([]);
   const [theme, setTheme] = useState<string[]>([]);
 
-  const filters = [
+  const filters: {
+    id: string;
+    label: string;
+    options: FilterOption[];
+    selected: string[];
+    setSelected: (vals: string[]) => void;
+  }[] = [
     {
-      id: "players" as const,
+      id: "players",
       label: "Number of Players",
       options: [
         { value: "2", label: "2 Players" },
@@ -64,7 +60,7 @@ export default function SearchClient() {
       setSelected: setPlayers,
     },
     {
-      id: "complexity" as const,
+      id: "complexity",
       label: "Complexity",
       options: [
         { value: "easy", label: "Easy" },
@@ -75,7 +71,7 @@ export default function SearchClient() {
       setSelected: setComplexity,
     },
     {
-      id: "playtime" as const,
+      id: "playtime",
       label: "Play Time",
       options: [
         { value: "short", label: "Short (≤30 min)" },
@@ -86,7 +82,7 @@ export default function SearchClient() {
       setSelected: setPlaytime,
     },
     {
-      id: "genre" as const,
+      id: "genre",
       label: "Genre",
       options: [
         { value: "strategy", label: "Strategy" },
@@ -98,7 +94,7 @@ export default function SearchClient() {
       setSelected: setGenre,
     },
     {
-      id: "age" as const,
+      id: "age",
       label: "Age Rating",
       options: [
         { value: "kids", label: "Kids (5+)" },
@@ -109,7 +105,7 @@ export default function SearchClient() {
       setSelected: setAge,
     },
     {
-      id: "theme" as const,
+      id: "theme",
       label: "Theme",
       options: [
         { value: "fantasy", label: "Fantasy" },
@@ -127,30 +123,14 @@ export default function SearchClient() {
     setArr: (vals: string[]) => void,
     val: string
   ) => {
-    if (arr.includes(val)) setArr(arr.filter((x) => x !== val));
-    else setArr([...arr, val]);
+    setArr(arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val]);
   };
 
-  // Handle camera capture & recognition
-  const handleCapture = async (blob: Blob) => {
-    setShowCam(false);
-    const form = new FormData();
-    form.append("photo", blob, "snap.jpg");
-    const res = await fetch("/api/recognize", { method: "POST", body: form });
-    if (res.ok) {
-      const info = await res.json();
-      setRecognition(info);
-    } else {
-      console.error("Recognition failed");
-    }
-  };
-
-  // Handle traditional text+filter search
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const q = searchQuery.trim() || "board game";
 
-    // 1) fetch summaries + details
+    // 1️⃣ fetch basic → detailed
     const basic = await fetchGames(q);
     const ids = basic.map((g) => g.id!).filter(Boolean);
     const detailed: BasicGame[] = [];
@@ -165,7 +145,7 @@ export default function SearchClient() {
     }
     localStorage.setItem("searchResults", JSON.stringify(detailed));
 
-    // 2) push into your Results page with filters
+    // 2️⃣ navigate to results with filters
     const params = new URLSearchParams();
     params.set("query", q);
     filters.forEach((f) =>
@@ -176,60 +156,18 @@ export default function SearchClient() {
 
   return (
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen">
-      {/* Camera / Recognition UI */}
-      <div className="text-center mb-8">
-        <button
-          onClick={() => setShowCam(true)}
-          className="px-6 py-3 bg-[#800020] text-white rounded-lg shadow hover:bg-red-700 transition"
-        >
-          📷 Use Camera to Identify
-        </button>
-      </div>
+      <h1 className="text-4xl sm:text-6xl font-bold text-center mb-8">
+        Find Your Next Board Game
+      </h1>
 
-      {recognition && (
-        <div className="mb-8 mx-auto max-w-xl p-4 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-md flex items-center space-x-4">
-          <Image
-            src={recognition.thumbnail}
-            alt={recognition.name}
-            width={96}
-            height={96}
-            className="object-cover rounded"
-            unoptimized
-          />
-          <div>
-            <h2 className="text-2xl font-semibold">{recognition.name}</h2>
-            <Link
-              href={`/game/${recognition.id}`}
-              className="mt-2 inline-block text-blue-600 hover:underline"
-            >
-              View Details →
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {showCam && (
-        <GameCamera onCapture={handleCapture} onClose={() => setShowCam(false)} />
-      )}
-
-      {/* Traditional Text Search + Filters Form */}
       <form
         onSubmit={handleSubmit}
-        className="
-          max-w-4xl mx-auto
-          bg-gray-50 dark:bg-gray-800
-          p-6 rounded-xl shadow-lg
-          grid gap-6 md:grid-cols-2
-        "
+        className="max-w-4xl mx-auto bg-gray-50 dark:bg-gray-700 p-6 rounded-xl shadow-lg grid gap-6 md:grid-cols-2"
       >
         {filters.map((f) => (
           <fieldset
             key={f.id}
-            className="
-              bg-gray-100 dark:bg-gray-700
-              border border-gray-300 dark:border-gray-600
-              rounded p-4
-            "
+            className="bg-gray-100 dark:bg-gray-500 border border-gray-300 dark:border-gray-500 rounded p-4"
           >
             <legend className="font-semibold mb-2 text-gray-900 dark:text-gray-100">
               {f.label}
@@ -244,9 +182,7 @@ export default function SearchClient() {
                     type="checkbox"
                     className="h-4 w-4 text-red-600 focus:ring-red-500"
                     checked={f.selected.includes(opt.value)}
-                    onChange={() =>
-                      toggleValue(f.selected, f.setSelected, opt.value)
-                    }
+                    onChange={() => toggleValue(f.selected, f.setSelected, opt.value)}
                   />
                   <span>{opt.label}</span>
                 </label>
@@ -261,14 +197,7 @@ export default function SearchClient() {
             placeholder="Search for a game…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="
-              w-full p-3 rounded-lg
-              bg-gray-100 dark:bg-gray-900
-              text-black dark:text-white
-              placeholder-gray-500 dark:placeholder-gray-400
-              border border-gray-300 dark:border-gray-600
-              focus:outline-none focus:ring-2 focus:ring-red-500
-            "
+            className="w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-900 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500"
           />
         </div>
 

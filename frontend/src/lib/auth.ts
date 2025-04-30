@@ -1,5 +1,3 @@
-// src/lib/auth.ts
-
 import { NextAuthOptions, DefaultSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
@@ -33,7 +31,8 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          return null;
+          // missing fields
+          throw new Error("Please enter both email and password.");
         }
 
         // Normalize email to lowercase and trim whitespace
@@ -47,8 +46,14 @@ export const authOptions: NextAuthOptions = {
           },
         });
 
-        if (!user || !user.password) {
-          return null;
+        if (!user) {
+          // no account with that email
+          throw new Error("Email not found. Please sign up.");
+        }
+
+        if (!user.password) {
+          // user exists but no password set (e.g. OAuth)
+          throw new Error("No local login available. Please sign up or use another sign-in method.");
         }
 
         const isValid = await bcrypt.compare(
@@ -56,7 +61,8 @@ export const authOptions: NextAuthOptions = {
           user.password
         );
         if (!isValid) {
-          return null;
+          // password incorrect
+          throw new Error("Incorrect email or password.");
         }
 
         return {

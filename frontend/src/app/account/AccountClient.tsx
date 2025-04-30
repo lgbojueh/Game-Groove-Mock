@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";  // bring back signOut
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,7 +10,7 @@ import Link from "next/link";
 interface GameItem {
   id: number;
   gameId: string;
-  title: string;          // now non‐empty
+  title: string;
   thumbnail: string | null;
 }
 
@@ -22,6 +22,8 @@ export default function AccountClient() {
   const [savedGames, setSavedGames]       = useState<GameItem[]>([]);
   const [loading, setLoading]             = useState(true);
   const [error, setError]                 = useState<string>();
+  const [deactivating, setDeactivating]   = useState(false);
+  const [deactivateError, setDeactivateError] = useState<string | null>(null);
 
   // fetch both lists
   useEffect(() => {
@@ -56,6 +58,25 @@ export default function AccountClient() {
     setSavedGames((l) => l.filter((g) => g.id !== id));
   }, []);
 
+  const handleLogout = useCallback(() => {
+    signOut({ callbackUrl: "/login" });
+  }, []);
+
+  const handleDeactivate = useCallback(async () => {
+    if (!confirm("Really deactivate your account? This cannot be undone.")) return;
+    setDeactivating(true);
+    setDeactivateError(null);
+    try {
+      const res = await fetch("/api/auth/deactivate", { method: "POST" });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error || "Deactivation failed");
+      await signOut({ callbackUrl: "/" });
+    } catch (err: unknown) {
+      setDeactivateError(err instanceof Error ? err.message : "Unknown error.");
+      setDeactivating(false);
+    }
+  }, []);
+
   // redirect if logged out
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
@@ -67,6 +88,24 @@ export default function AccountClient() {
   return (
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen">
       <h1 className="text-3xl font-bold mb-6">Welcome, {session?.user?.name}</h1>
+
+      {/* Logout / Deactivate */}
+      <div className="space-x-4 mb-6">
+        <button
+          onClick={handleLogout}
+          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+        >
+          Logout
+        </button>
+        <button
+          onClick={handleDeactivate}
+          disabled={deactivating}
+          className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 disabled:opacity-50"
+        >
+          {deactivating ? "Deactivating…" : "Deactivate Account"}
+        </button>
+        {deactivateError && <p className="text-red-500 mt-2">{deactivateError}</p>}
+      </div>
 
       {/* Favorite Games */}
       <section className="mb-8">
@@ -80,11 +119,7 @@ export default function AccountClient() {
                 key={`fav-${g.id}`} 
                 className="flex items-start space-x-4 bg-gray-100 dark:bg-gray-400 p-4 rounded shadow"
               >
-                {/* thumbnail */}
-                <Link 
-                  href={`/game/${g.gameId}`} 
-                  className="flex-shrink-0 rounded overflow-hidden"
-                >
+                <Link href={`/game/${g.gameId}`} className="flex-shrink-0 rounded overflow-hidden">
                   {g.thumbnail ? (
                     <Image
                       src={g.thumbnail}
@@ -99,8 +134,6 @@ export default function AccountClient() {
                     </div>
                   )}
                 </Link>
-
-                {/* title & action */}
                 <div className="flex-1">
                   <Link
                     href={`/game/${g.gameId}`}
@@ -121,7 +154,7 @@ export default function AccountClient() {
         )}
       </section>
 
-      {/* Saved Games (layout matches exactly) */}
+      {/* Saved Games */}
       <section>
         <h2 className="text-2xl font-semibold mb-4">Saved Games</h2>
         {savedGames.length === 0 ? (
@@ -133,10 +166,7 @@ export default function AccountClient() {
                 key={`saved-${g.id}`} 
                 className="flex items-start space-x-4 bg-gray-100 dark:bg-gray-400 p-4 rounded shadow"
               >
-                <Link 
-                  href={`/game/${g.gameId}`} 
-                  className="flex-shrink-0 rounded overflow-hidden"
-                >
+                <Link href={`/game/${g.gameId}`} className="flex-shrink-0 rounded overflow-hidden">
                   {g.thumbnail ? (
                     <Image
                       src={g.thumbnail}
@@ -151,7 +181,6 @@ export default function AccountClient() {
                     </div>
                   )}
                 </Link>
-
                 <div className="flex-1">
                   <Link
                     href={`/game/${g.gameId}`}

@@ -1,3 +1,4 @@
+// src/app/blog/[id]/BlogPostClient.tsx
 "use client";
 
 import { useParams } from "next/navigation";
@@ -17,44 +18,45 @@ const posts: Record<string, BlogPostType> = {
     title: "Top 5 Board Games for Family Game Night",
     date: "January 15, 2025",
     dateTime: "2025-01-15",
-    fullContent: `Family game nights are a cherished tradition, and choosing the right board games can make them even more memorable.
+    fullContent: `Family game night is a time-honored tradition, and the right games can make it truly special. Here are our top five picks:
 
-Here are our top 5 recommendations:
-1. Game A – A classic that never disappoints.
-2. Game B – Engaging and fun for all ages.
-3. Game C – Perfect for long nights of strategy.
-4. Game D – Quick and easy to learn.
-5. Game E – A modern twist on a timeless favorite.
+1. <strong>Catan</strong> – A modern classic where resource trading and strategy lead to endless replayability.  
+2. <strong>Ticket to Ride</strong> – Easy to learn and always competitive, perfect for all ages.  
+3. <strong>Pandemic</strong> – A cooperative challenge that brings everyone together against a common threat.  
+4. <strong>Azul</strong> – Beautifully designed tile-laying that’s quick to teach and endlessly engaging.  
+5. <strong>Wingspan</strong> – A serene strategy game where you build a network of birds in your wildlife preserve.
 
-These games have been carefully selected for their replayability and ability to bring everyone together. Enjoy your next family game night!`,
+Each title excels at bringing families closer through laughter, strategy, and teamwork. Enjoy your next game night!`,
   },
   "2": {
     id: "2",
     title: "How to Host an Unforgettable Game Night",
     date: "February 10, 2025",
     dateTime: "2025-02-10",
-    fullContent: `Hosting a game night can be both exciting and challenging. Here are some tips to ensure your game night is unforgettable:
+    fullContent: `Hosting a standout game night involves planning, atmosphere, and engagement. Follow these best practices:
 
-- **Plan Ahead:** Choose a mix of games that suit different interests.
-- **Set the Mood:** Create a comfortable environment with good lighting and snacks.
-- **Mix it Up:** Include both competitive and cooperative games.
-- **Engage Everyone:** Ensure every guest feels included by rotating teams or partners.
-- **Relax and Enjoy:** Remember, the goal is to have fun together!
+- <strong>Curate Your Lineup:</strong> Mix heavy hitters like <strong>Catan</strong> with light fillers like <strong>Dixit</strong>.  
+- <strong>Set the Vibe:</strong> Soft lighting, comfortable seating, and a variety of snacks keep players relaxed.  
+- <strong>Balance Competition:</strong> Alternate competitive games (e.g., <strong>Risk</strong>) with cooperative experiences (e.g., <strong>Forbidden Island</strong>).  
+- <strong>Rotate Teams:</strong> Change pairings each round to keep conversations fresh and inclusive.  
+- <strong>Debrief Together:</strong> After gameplay, share favorite moments and strategies to build community.
 
-Follow these steps and you'll be well on your way to hosting a game night that your guests will talk about for months to come.`,
+With these tips, your game night will be the talk of the town—time after time!`,
   },
   "3": {
     id: "3",
     title: "New Releases: The Hottest Board Games of 2025",
     date: "March 5, 2025",
     dateTime: "2025-03-05",
-    fullContent: `The board game world is constantly evolving, and 2025 is no exception. Here are some of the hottest new releases this year:
+    fullContent: `2025 has brought an exciting wave of innovation to tabletop gaming. Don’t miss these standout releases:
 
-- **Game X:** A groundbreaking strategy game that challenges your planning skills.
-- **Game Y:** An innovative party game that has everyone laughing.
-- **Game Z:** A beautifully designed game that combines art with engaging mechanics.
+- <strong>Eclipse: Second Dawn</strong> – A space 4X epic with deep strategy and gorgeous miniatures.  
+- <strong>Everdell: Spirecrest</strong> – Expands the beloved Everdell universe with new challenges and environments.  
+- <strong>Sleeping Gods</strong> – An open-world cooperative narrative that unfolds over multiple sessions.  
+- <strong>Red Rising</strong> – A card-driven engine builder set in Pierce Brown’s sci-fi universe.  
+- <strong>The Artemis Project: Deep Space</strong> – A reimagining of the Arctic survival game as a sci-fi colony simulator.
 
-These new releases are already creating a buzz in the gaming community. Be sure to check them out and discover your next favorite game!`,
+These titles are already generating buzz for their unique mechanics, stunning components, and immersive themes. Be sure to add them to your collection!`,
   },
 };
 
@@ -65,7 +67,7 @@ export default function BlogPostClient() {
   if (!post) {
     return (
       <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen">
-        <p>Post not found. Please check the URL or go back to the homepage.</p>
+        <p>Post not found. Please check the URL or return to the blog index.</p>
       </main>
     );
   }
@@ -79,10 +81,13 @@ export default function BlogPostClient() {
             {post.date}
           </time>
         </header>
+
         <section className="prose prose-invert">
-          {post.fullContent.split("\n").map((para: string, idx: number) => (
-            <p key={idx}>{para}</p>
-          ))}
+          {post.fullContent.split("\n").map((para, idx) =>
+            para.trim() ? (
+              <p key={idx} dangerouslySetInnerHTML={{ __html: para }} />
+            ) : null
+          )}
         </section>
       </article>
     </main>

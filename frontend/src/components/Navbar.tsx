@@ -15,7 +15,17 @@ import {
   X as XIcon,
 } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
-import styles from "../styles/styles.module.css";
+import { fetchGames } from "@/utils/fetchGames";
+import { fetchDetailedGames } from "@/utils/fetchDetailedGames";
+import { cleanDescription, shortenDescription } from "@/utils/cleanup";
+
+function chunkArray<T>(arr: T[], size: number): T[][] {
+  const results: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    results.push(arr.slice(i, i + size));
+  }
+  return results;
+}
 
 export default function Navbar() {
   const { data: session } = useSession();
@@ -23,45 +33,62 @@ export default function Navbar() {
   const router = useRouter();
   const {} = useTheme();
 
-  // Only render logo after hydration to avoid flicker
+  // Only render logo after hydration
   const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => setMounted(true), []);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
-
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close account dropdown if clicking outside
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setDropdownOpen(false);
       }
     }
     document.addEventListener("mousedown", onClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
-  // Handle search submit
-  const handleSearch = (e: React.FormEvent) => {
+  // **New**: run exactly the same pipeline as SearchClient
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchTerm.trim()) {
-      router.push(
-        `/results?query=${encodeURIComponent(searchTerm.trim())}`
-      );
-      setSearchTerm("");
-      setSearchOpen(false);
-      setMobileOpen(false);
+    const q = searchTerm.trim() || "board game";
+
+    // 1) fetch basic summaries
+    const basic = await fetchGames(q);
+    const ids = basic.map((g) => g.id!).filter(Boolean);
+
+    // 2) fetch detailed in chunks of 20
+    interface GameDetails {
+      id: string;
+      name: string;
+      description: string;
+      // Add other relevant fields based on the structure of the fetched data
     }
+
+    const detailed: GameDetails[] = [];
+    for (const chunk of chunkArray(ids, 20)) {
+      const dets = await fetchDetailedGames(chunk);
+      detailed.push(
+        ...dets.map((g) => ({
+          ...g,
+          description: shortenDescription(cleanDescription(g.description)),
+        }))
+      );
+    }
+
+    // 3) store to localStorage for Results page
+    localStorage.setItem("searchResults", JSON.stringify(detailed));
+
+    // 4) navigate
+    router.push(`/results?query=${encodeURIComponent(q)}`);
+    setSearchTerm("");
+    setSearchOpen(false);
+    setMobileOpen(false);
   };
 
   return (
@@ -70,7 +97,6 @@ export default function Navbar() {
         {/* Left: Logo */}
         <div className="flex items-center space-x-3">
           <Link href="/">
-            {/* only show logo after client mount to match theme */}
             {mounted && (
               <Image
                 src="/game-groove-icon.svg"
@@ -88,23 +114,12 @@ export default function Navbar() {
 
         {/* Center (desktop only): Nav Links + Search Icon */}
         <div className="hidden lg:flex items-center space-x-6 relative">
-          <Link href="/" className="text-white hover:text-gray-200">
-            Home
-          </Link>
-          <Link href="/games" className="text-white hover:text-gray-200">
-            All Games
-          </Link>
-          <Link href="/featured" className="text-white hover:text-gray-200">
-            Featured
-          </Link>
-          <Link href="/blog" className="text-white hover:text-gray-200">
-            Blog
-          </Link>
-          <Link href="/about" className="text-white hover:text-gray-200">
-            About
-          </Link>
+          <Link href="/" className="text-white hover:text-gray-200">Home</Link>
+          <Link href="/games" className="text-white hover:text-gray-200">All Games</Link>
+          <Link href="/featured" className="text-white hover:text-gray-200">Featured</Link>
+          <Link href="/blog" className="text-white hover:text-gray-200">Blog</Link>
+          <Link href="/about" className="text-white hover:text-gray-200">About</Link>
 
-          {/* Search icon */}
           {!searchOpen ? (
             <button
               type="button"
@@ -123,7 +138,7 @@ export default function Navbar() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="px-3 py-1 w-48 rounded-l bg-gray-100 dark:bg-gray-700 focus:outline-none"
+                className="px-3 py-1 w-48 rounded-l bg-gray-100 dark:bg-gray-500 focus:outline-none"
                 placeholder="Search games…"
                 autoFocus
               />
@@ -161,19 +176,19 @@ export default function Navbar() {
                 >
                   <button
                     onClick={() => router.push("/account")}
-                    className={`${styles.accountInfo} block w-full text-left px-4 py-2`}
+                    className="block w-full text-left px-4 py-2"
                   >
                     My Account
                   </button>
                   <button
                     onClick={() => router.push("/account/favorites")}
-                    className={`${styles.accountInfo} block w-full text-left px-4 py-2`}
+                    className="block w-full text-left px-4 py-2"
                   >
                     Favorite Games
                   </button>
                   <button
                     onClick={() => router.push("/account/saved")}
-                    className={`${styles.accountInfo} block w-full text-left px-4 py-2`}
+                    className="block w-full text-left px-4 py-2"
                   >
                     Saved Games
                   </button>
@@ -188,18 +203,8 @@ export default function Navbar() {
             </div>
           ) : (
             <>
-              <Link
-                href="/login"
-                className="text-white hover:text-gray-200"
-              >
-                Login
-              </Link>
-              <Link
-                href="/signup"
-                className="text-white hover:text-gray-200"
-              >
-                Sign Up
-              </Link>
+              <Link href="/login" className="text-white hover:text-gray-200">Login</Link>
+              <Link href="/signup" className="text-white hover:text-gray-200">Sign Up</Link>
             </>
           )}
         </div>
@@ -208,7 +213,6 @@ export default function Navbar() {
         <div className="flex lg:hidden items-center space-x-2">
           <ThemeToggle />
 
-          {/* Mobile Search icon */}
           {!searchOpen ? (
             <button
               type="button"
@@ -217,8 +221,7 @@ export default function Navbar() {
                 setMobileOpen(false);
               }}
               aria-label="Open search"
-              aria-expanded="false"
-              className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+              className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-500"
             >
               <SearchIcon className="text-white" />
             </button>
@@ -244,13 +247,11 @@ export default function Navbar() {
             </form>
           )}
 
-          {/* Hamburger toggle */}
           {!mobileOpen ? (
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
               aria-label="Open navigation"
-              aria-expanded="false"
               className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
             >
               <MenuIcon className="text-white" />
@@ -260,7 +261,6 @@ export default function Navbar() {
               type="button"
               onClick={() => setMobileOpen(false)}
               aria-label="Close navigation"
-              aria-expanded="true"
               className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
             >
               <XIcon className="text-white" />
@@ -272,42 +272,21 @@ export default function Navbar() {
       {/* Mobile drawer */}
       {mobileOpen && (
         <div className="lg:hidden bg-red-500 px-4 pb-4 space-y-2">
-          <Link href="/" className="block text-white hover:text-gray-200" onClick={() => setMobileOpen(false)}>
-            Home
-          </Link>
-          <Link href="/games" className="block text-white hover:text-gray-200" onClick={() => setMobileOpen(false)}>
-            All Games
-          </Link>
-          <Link href="/featured" className="block text-white hover:text-gray-200" onClick={() => setMobileOpen(false)}>
-            Featured
-          </Link>
-          <Link href="/blog" className="block text-white hover:text-gray-200" onClick={() => setMobileOpen(false)}>
-            Blog
-          </Link>
-          <Link href="/about" className="block text-white hover:text-gray-200" onClick={() => setMobileOpen(false)}>
-            About
-          </Link>
-
+          <Link href="/" className="block text-white hover:text-gray-200" onClick={() => setMobileOpen(false)}>Home</Link>
+          <Link href="/games" className="block text-white hover:text-gray-200" onClick={() => setMobileOpen(false)}>All Games</Link>
+          <Link href="/featured" className="block text-white hover:text-gray-200" onClick={() => setMobileOpen(false)}>Featured</Link>
+          <Link href="/blog" className="block text-white hover:text-gray-200" onClick={() => setMobileOpen(false)}>Blog</Link>
+          <Link href="/about" className="block text-white hover:text-gray-200" onClick={() => setMobileOpen(false)}>About</Link>
           {user ? (
-            <button
-              onClick={() => signOut({ callbackUrl: "/" })}
-              className="block w-full text-left text-red-200 hover:text-red-100"
-            >
-              Logout
-            </button>
+            <button onClick={() => signOut({ callbackUrl: "/" })} className="block w-full text-left text-red-200 hover:text-red-100">Logout</button>
           ) : (
             <>
-              <Link href="/login" className="block text-white hover:text-gray-200" onClick={() => setMobileOpen(false)}>
-                Login
-              </Link>
-              <Link href="/signup" className="block text-white hover:text-gray-200" onClick={() => setMobileOpen(false)}>
-                Sign Up
-              </Link>
+              <Link href="/login" className="block text-white hover:text-gray-200" onClick={() => setMobileOpen(false)}>Login</Link>
+              <Link href="/signup" className="block text-white hover:text-gray-200" onClick={() => setMobileOpen(false)}>Sign Up</Link>
             </>
           )}
         </div>
       )}
-          {/* Closing tag for the navigation bar */}
-        </nav>
-      );
-    }
+    </nav>
+  );
+}
