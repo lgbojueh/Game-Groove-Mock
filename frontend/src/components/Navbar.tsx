@@ -172,7 +172,7 @@ export default function Navbar() {
               {dropdownOpen && (
                 <div
                   id="account-menu"
-                  className="absolute right-0 mt-2 bg-white dark:bg-gray-400 rounded shadow w-48"
+                  className="absolute right-0 mt-2 bg-white dark:bg-gray-500 rounded shadow w-48"
                 >
                   <button
                     onClick={() => router.push("/account")}

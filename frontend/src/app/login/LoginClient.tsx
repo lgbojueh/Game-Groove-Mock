@@ -52,7 +52,7 @@ export default function LoginClient() {
 
   return (
     <main className="p-6 bg-[var(--background)] text-[var(--foreground)] min-h-screen flex items-center justify-center">
-      <div className="max-w-md w-full bg-gray-100 dark:bg-gray-400 p-8 rounded-lg shadow-lg">
+      <div className="max-w-md w-full bg-gray-100 dark:bg-gray-500 p-8 rounded-lg shadow-lg">
         <h1 className={`${styles.SignUp} text-3xl font-bold text-center mb-6`}>
           Login
         </h1>

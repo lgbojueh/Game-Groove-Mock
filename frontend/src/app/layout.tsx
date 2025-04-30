@@ -1,23 +1,22 @@
 // src/app/layout.tsx
-import type { Metadata } from "next";
-import React from "react";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import Providers from "../components/Providers";
+
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import './globals.css';
+import Providers from '../components/Providers';
 
 export const metadata: Metadata = {
-  title: "Game Groove",
-  description: "Find the perfect board game",
+  title: 'Game Groove',
+  description: 'Find the perfect board game',
 };
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
-
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 export default function RootLayout({
@@ -27,7 +26,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body
+        className={`
+          ${geistSans.variable} ${geistMono.variable}
+          antialiased
+          bg-[var(--background)]
+          text-[var(--foreground)]
+        `}
+      >
         <Providers>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {children}

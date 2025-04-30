@@ -92,7 +92,7 @@ export default function FeaturedClient() {
               <Link
                 key={game.id}
                 href={`/game/${game.id}`}
-                className="block p-4 bg-gray-100 dark:bg-gray-400 rounded shadow hover:shadow-xl transition"
+                className="block p-4 bg-gray-100 dark:bg-gray-500 rounded shadow hover:shadow-xl transition"
               >
                 <h3 className="font-semibold mb-2 text-lg text-[var(--foreground)]">{game.name}</h3>
 

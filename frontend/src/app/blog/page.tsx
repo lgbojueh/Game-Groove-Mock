@@ -43,7 +43,7 @@ export default function Blog() {
         {posts.map((post) => (
           <article
             key={post.id}
-            className="p-6 bg-gray-50 dark:bg-gray-400 rounded-lg shadow-md hover:shadow-xl transition"
+            className="p-6 bg-gray-50 dark:bg-gray-500 rounded-lg shadow-md hover:shadow-xl transition"
           >
             {/* Post Header */}
             <header>

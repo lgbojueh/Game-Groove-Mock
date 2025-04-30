@@ -82,7 +82,7 @@ export default function ResultsClient() {
         <h1 className="text-4xl font-bold text-[var(--foreground)]">Search Results</h1>
         <button
           onClick={() => router.back()}
-          className="px-4 py-2 bg-gray-400 rounded hover:bg-gray-500"
+          className="px-4 py-2 bg-gray-500 rounded hover:bg-gray-500"
         >
           Back
         </button>
@@ -98,7 +98,7 @@ export default function ResultsClient() {
             {games.map((game) => (
               <li
                 key={game.id}
-                className="p-4 bg-gray-100 dark:bg-gray-400 rounded shadow"
+                className="p-4 bg-gray-100 dark:bg-gray-500 rounded shadow"
               >
                 <Link href={`/game/${game.id}`} className="block">
                   <h3 className="font-semibold mb-2 text-[var(--foreground)]">

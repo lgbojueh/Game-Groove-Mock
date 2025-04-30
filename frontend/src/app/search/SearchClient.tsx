@@ -167,7 +167,7 @@ export default function SearchClient() {
         {filters.map((f) => (
           <fieldset
             key={f.id}
-            className="bg-gray-100 dark:bg-gray-500 border border-gray-300 dark:border-gray-500 rounded p-4"
+            className="bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded p-4"
           >
             <legend className="font-semibold mb-2 text-gray-900 dark:text-gray-100">
               {f.label}

@@ -112,7 +112,7 @@ export default function GamesClient() {
           placeholder="Search games..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-grow border border-gray-400 p-2 rounded mr-2"
+          className="flex-grow border border-gray-500 p-2 rounded mr-2"
         />
         <button type="submit" className="bg-blue-500 text-white p-2 rounded">
           Search
@@ -129,7 +129,7 @@ export default function GamesClient() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {games.slice(0, visibleCount).map((game) => (
                 <Link key={game.id} href={`/game/${game.id}`} className="block">
-                  <div className="p-4 bg-gray-200 dark:bg-gray-400 rounded shadow hover:shadow-lg transition">
+                  <div className="p-4 bg-gray-200 dark:bg-gray-500 rounded shadow hover:shadow-lg transition">
                     <Image
                       src={game.image}
                       alt={`${game.name} cover art`}
